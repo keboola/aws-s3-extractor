@@ -24,7 +24,7 @@ define('ROOT_PATH', __DIR__ . '/..');
 try {
     $jsonDecode = new JsonDecode(true);
     $config = $jsonDecode->decode(
-        file_get_contents($arguments['data'] . '/config.json'),
+        file_get_contents($dataDir . '/config.json'),
         JsonEncoder::FORMAT
     );
     $outputPath = $dataDir . '/out/files';
