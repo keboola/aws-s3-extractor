@@ -10,18 +10,18 @@ before_install:
   - docker-compose build
 
 install:
-  - docker-compose run --rm php composer install -n
-  - docker-compose run --rm php ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
-  - docker-compose run --rm php ./vendor/bin/phpstan analyse ./src --level=4 -c phpstan.neon
-  - docker-compose run --rm php php ./tests/loadS3.php
+  - docker-compose run --rm dev composer install -n
+  - docker-compose run --rm dev ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
+  - docker-compose run --rm dev ./vendor/bin/phpstan analyse ./src --level=4 -c phpstan.neon
+  - docker-compose run --rm dev php ./tests/loadS3.php
 
 script:
-  - docker-compose run --rm php-tests
+  - docker-compose run --rm tests
 
 after_success:
   - docker images
-  - docker-compose run --rm php-code-coverage
-  - docker-compose run --rm php-code-coverage ./vendor/bin/test-reporter --stdout > codeclimate.json
+  - docker-compose run --rm code-coverage
+  - docker-compose run --rm code-coverage ./vendor/bin/test-reporter --stdout > codeclimate.json
   - "curl -X POST -d @codeclimate.json -H 'Content-Type: application/json' -H 'User-Agent: Code Climate (PHP Test Reporter v0.1.1)' https://codeclimate.com/test_reports"
 
 deploy:

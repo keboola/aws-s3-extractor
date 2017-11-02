@@ -30,19 +30,19 @@ docker-compose build
 - Install Composer packages
 
 ```
-docker-compose run --rm php composer install --prefer-dist --no-interaction
+docker-compose run --rm dev composer install --prefer-dist --no-interaction
 ```
 
 Upload test fixtures to S3:
 ```
-docker-compose run php php ./tests/loadS3.php
+docker-compose run dev php ./tests/loadS3.php
 ```
 
 ### Tests Execution
 Run tests with following command.
 
 ```
-docker-compose run --rm php-tests
+docker-compose run --rm tests
 ```
 
 Tests are executed against real S3. S3 credentials have to be provided.
