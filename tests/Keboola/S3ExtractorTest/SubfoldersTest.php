@@ -54,8 +54,9 @@ class SubfoldersTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => true
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => true,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
@@ -83,8 +84,9 @@ class SubfoldersTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => true
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => true,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3("/file1.csv", $testHandler, "/folder2");
@@ -110,8 +112,9 @@ class SubfoldersTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => true
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => true,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2/file3");
@@ -135,8 +138,9 @@ class SubfoldersTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => true
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => true,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
@@ -159,8 +163,9 @@ class SubfoldersTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => true
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => true,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));

@@ -19,6 +19,8 @@ if (!file_exists($configFile)) {
     exit(2);
 }
 
+
+
 define('ROOT_PATH', __DIR__ . '/..');
 
 try {
@@ -31,8 +33,25 @@ try {
 
     $streamHandler = new \Monolog\Handler\StreamHandler('php://stdout');
     $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%"));
-    $application = new Application($config, $streamHandler);
-    $application->actionRun($outputPath);
+
+    // read state
+    $inputState = [];
+    $inputStateFile = $dataDir . '/in/state.json';
+    if (file_exists($stateFile)) {
+        $inputState = $jsonDecode->decode(
+            file_get_contents($inputStateFile),
+            JsonEncoder::FORMAT
+        );
+    }
+
+    $application = new Application($config, $inputState, $streamHandler);
+    $outputState = $application->actionRun($outputPath);
+
+    // write state
+    $outputStateFile = $dataDir . '/out/state.json';
+    $jsonEncode = new \Symfony\Component\Serializer\Encoder\JsonEncode();
+    file_put_contents($outputStateFile, $jsonEncode->encode($outputState, JsonEncoder::FORMAT));
+
     exit(0);
 } catch (\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException $e) {
     echo "Invalid configuration";

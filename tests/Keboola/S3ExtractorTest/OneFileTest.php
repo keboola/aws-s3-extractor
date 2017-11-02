@@ -43,8 +43,9 @@ class OneFileTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $expectedFile = $this->path . '/' . 'file1.csv';
@@ -70,8 +71,9 @@ class OneFileTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $expectedFile = $this->path . '/' . 'file1.csv';

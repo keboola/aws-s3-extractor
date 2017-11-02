@@ -19,14 +19,21 @@ class Extractor
     private $logger;
 
     /**
+     * @var array
+     */
+    private $state;
+
+    /**
      * Extractor constructor.
      *
      * @param array $parameters
+     * @param array $state
      * @param Logger|null $logger
      */
-    public function __construct(array $parameters, Logger $logger = null)
+    public function __construct(array $parameters, array $state = [], Logger $logger = null)
     {
         $this->parameters = $parameters;
+        $this->state = $state;
         if ($logger) {
             $this->logger = $logger;
         } else {
@@ -171,5 +178,6 @@ class Extractor
             }
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
+        return $this->state;
     }
 }

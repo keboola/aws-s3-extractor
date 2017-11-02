@@ -34,7 +34,8 @@ class ExceptionsTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV) . "_invalid",
             "key" => "/file1.csv",
-            "includeSubfolders" => false
+            "includeSubfolders" => false,
+            "incremental" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -50,7 +51,8 @@ class ExceptionsTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV) . "_invalid",
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/file1.csv",
-            "includeSubfolders" => false
+            "includeSubfolders" => false,
+            "incremental" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -65,7 +67,8 @@ class ExceptionsTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/doesnotexist",
-            "includeSubfolders" => false
+            "includeSubfolders" => false,
+            "incremental" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -80,7 +83,8 @@ class ExceptionsTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/notawildcard",
-            "includeSubfolders" => true
+            "includeSubfolders" => true,
+            "incremental" => false
         ]);
         $extractor->extract($this->path);
     }

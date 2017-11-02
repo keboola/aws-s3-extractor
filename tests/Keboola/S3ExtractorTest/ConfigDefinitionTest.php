@@ -20,7 +20,8 @@ class ConfigDefinitionTest extends TestCase
         "#secretAccessKey": "b",
         "bucket": "c",
         "key": "d",
-        "includeSubfolders": false
+        "includeSubfolders": false,
+        "incremental": false
     }
 }
 JSON;

@@ -54,8 +54,9 @@ class WildcardKeyTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
@@ -79,8 +80,9 @@ class WildcardKeyTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2");
@@ -106,8 +108,9 @@ class WildcardKeyTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2/file3");
@@ -131,8 +134,9 @@ class WildcardKeyTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
@@ -155,8 +159,9 @@ class WildcardKeyTest extends TestCase
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
-            "includeSubfolders" => false
-        ], (new Logger('test'))->pushHandler($testHandler));
+            "includeSubfolders" => false,
+            "incremental" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
