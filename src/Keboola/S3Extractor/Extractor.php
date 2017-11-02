@@ -117,6 +117,9 @@ class Extractor
                 ];
             }
         } else {
+            if ($this->parameters['includeSubfolders'] === true) {
+                throw new Exception("Cannot include subfolders without wildcard.");
+            }
             $dst = $outputPath . '/' . substr($key, strrpos($key, '/'));
             $filesToDownload[] = [
                 'Bucket' => $this->parameters['bucket'],

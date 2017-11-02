@@ -66,4 +66,19 @@ class ExceptionsTest extends TestCase
         ]);
         $extractor->extract($this->path);
     }
+
+    public function testIncludeSubfoldersWithoutWildcard()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Cannot include subfolders without wildcard.");
+
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => "/notawildcard",
+            "includeSubfolders" => true
+        ]);
+        $extractor->extract($this->path);
+    }
 }
