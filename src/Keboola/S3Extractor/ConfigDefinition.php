@@ -30,6 +30,10 @@ class ConfigDefinition implements ConfigurationInterface
                     ->isRequired()
                     ->cannotBeEmpty()
                 ->end()
+                ->booleanNode('includeSubfolders')
+                    ->defaultFalse()
+                ->end()
+
             ->end()
         ;
 
