@@ -11,13 +11,9 @@ use Keboola\S3Extractor\Application;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
-$arguments = getopt('', ['data:']);
-if (!isset($arguments['data'])) {
-    echo 'Data folder not set.' . "\n";
-    exit(2);
-}
+$dataDir = getenv('KBC_DATADIR') === false ? '/data/' : getenv('KBC_DATADIR');
 
-$configFile = $arguments['data'] . '/config.json';
+$configFile = $dataDir . '/config.json';
 if (!file_exists($configFile)) {
     echo 'Config file not found' . "\n";
     exit(2);
@@ -31,7 +27,7 @@ try {
         file_get_contents($arguments['data'] . '/config.json'),
         JsonEncoder::FORMAT
     );
-    $outputPath = $arguments['data'] . '/out/files';
+    $outputPath =$dataDir . '/out/files';
 
     $streamHandler = new \Monolog\Handler\StreamHandler('php://stdout');
     $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%"));
