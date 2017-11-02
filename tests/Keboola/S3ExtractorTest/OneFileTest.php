@@ -42,7 +42,8 @@ class OneFileTest extends TestCase
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key
+            "key" => $key,
+            "includeSubfolders" => false
         ], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -68,7 +69,8 @@ class OneFileTest extends TestCase
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key
+            "key" => $key,
+            "includeSubfolders" => false
         ], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

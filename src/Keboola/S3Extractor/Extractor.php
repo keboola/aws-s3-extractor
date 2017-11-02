@@ -84,7 +84,7 @@ class Extractor
             try {
                 $iterator = $client->getIterator('ListObjects', [
                     'Bucket' => $this->parameters['bucket'],
-                    'Prefix' => substr($key, 0, strlen($key) - 1)
+                    'Prefix' => substr($key, 0, -1)
                 ]);
             } catch (S3Exception $e) {
                 if ($e->getStatusCode() == 403) {
@@ -105,11 +105,37 @@ class Extractor
                     continue;
                 }
 
-                // Skip objects in subfolders
-                if (strrpos($object['Key'], '/', strlen($key)) !== false) {
+                // Skip objects in subfolders if not includeSubfolders
+                if (strrpos($object['Key'], '/', strlen($key)) !== false && !$this->parameters['includeSubfolders']) {
                     continue;
                 }
-                $dst = $outputPath . '/' . substr($object['Key'], strrpos($object['Key'], '/'));
+
+                // remove wilcard mask from search key
+                $keyWithoutWildcard = trim($key, "*%");
+
+                // search key contains folder
+                $dirPrefixToBeRemoved = '';
+                if (strrpos($keyWithoutWildcard, '/') !== false) {
+                    $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
+                }
+
+                // remove folder mask from object key to figure out, if there is a subfolder
+                $objectKeyWithoutDirPrefix = substr($object['Key'], strlen($dirPrefixToBeRemoved));
+
+                // trim object key without dir and figure out the dir name
+                $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
+
+                // complete path
+                if ($dstDir) {
+                    // create destination folder if not exists
+                    if (!file_exists($outputPath . '/' . $dstDir)) {
+                        mkdir($outputPath . '/' . $dstDir, 0777, true);
+                    }
+                    $dst = $outputPath . '/' . $dstDir . '/' . basename($object['Key']);
+                } else {
+                    $dst = $outputPath . '/' . basename($object['Key']);
+                }
+
                 $filesToDownload[] = [
                     'Bucket' => $this->parameters['bucket'],
                     'Key' => $object['Key'],

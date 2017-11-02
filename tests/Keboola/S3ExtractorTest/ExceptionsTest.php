@@ -33,7 +33,8 @@ class ExceptionsTest extends TestCase
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV) . "_invalid",
-            "key" => "/file1.csv"
+            "key" => "/file1.csv",
+            "includeSubfolders" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -48,7 +49,8 @@ class ExceptionsTest extends TestCase
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV) . "_invalid",
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => "/file1.csv"
+            "key" => "/file1.csv",
+            "includeSubfolders" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -62,7 +64,8 @@ class ExceptionsTest extends TestCase
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
             "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => "/doesnotexist"
+            "key" => "/doesnotexist",
+            "includeSubfolders" => false
         ]);
         $extractor->extract($this->path);
     }
