@@ -15,8 +15,8 @@ $client =  new \Aws\S3\S3Client([
     'region' => getenv('AWS_REGION'),
     'version' => '2006-03-01',
     'credentials' => [
-        'key' => getenv('PREPARE_TESTS_AWS_ACCESS_KEY'),
-        'secret' => getenv('PREPARE_TESTS_AWS_SECRET_KEY'),
+        'key' => getenv('UPLOAD_USER_AWS_ACCESS_KEY'),
+        'secret' => getenv('UPLOAD_USER_AWS_SECRET_KEY'),
     ],
 ]);
 

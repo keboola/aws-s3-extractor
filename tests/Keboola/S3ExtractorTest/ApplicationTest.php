@@ -11,8 +11,8 @@ class ApplicationTest extends TestCase
 {
     const AWS_REGION_ENV = 'AWS_REGION';
     const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'TESTS_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'TESTS_AWS_SECRET_KEY';
+    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
+    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
     protected $path = '/tmp/application';
 
     public function setUp()
