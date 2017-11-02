@@ -98,6 +98,31 @@ class SubfoldersTest extends TestCase
      * @dataProvider initialForwardSlashProvider
      * @param $initialForwardSlash
      */
+    public function testSuccessfulDownloadFromNestedFolder($initialForwardSlash)
+    {
+        $key = "folder2/file3/*";
+        if ($initialForwardSlash) {
+            $key = "/" . $key;
+        }
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => true
+        ], (new Logger('test'))->pushHandler($testHandler));
+        $extractor->extract($this->path);
+
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2/file3");
+        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        $this->assertCount(2, $testHandler->getRecords());
+    }
+
+    /**
+     * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
+     */
     public function testSuccessfulDownloadFromEmptyFolder($initialForwardSlash)
     {
         $key = "emptyfolder/*";

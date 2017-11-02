@@ -39,14 +39,6 @@ class WildcardKeyTest extends TestCase
     }
 
     /**
-     * @param $testFile
-     */
-    private function assertFileNotDownloadedFromS3($testFile)
-    {
-        $this->assertFileNotExists($this->path . $testFile);
-    }
-
-    /**
      * @dataProvider initialForwardSlashProvider
      * @param $initialForwardSlash
      */
@@ -67,10 +59,6 @@ class WildcardKeyTest extends TestCase
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
-        $this->assertFileNotDownloadedFromS3('/folder1/file1.csv');
-        $this->assertFileNotDownloadedFromS3('/folder2/file1.csv');
-        $this->assertFileNotDownloadedFromS3('/folder2/file2.csv');
-        $this->assertFileNotDownloadedFromS3('/folder2/file3/file1.csv');
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
     }
@@ -97,10 +85,34 @@ class WildcardKeyTest extends TestCase
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2");
         $this->assertFileDownloadedFromS3('/file2.csv', $testHandler, "/folder2");
-        $this->assertFileNotDownloadedFromS3('/file3/file1.csv');
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 2 file(s)"));
         $this->assertCount(3, $testHandler->getRecords());
+    }
+
+    /**
+     * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
+     */
+    public function testSuccessfulDownloadFromNestedFolder($initialForwardSlash)
+    {
+        $key = "folder2/file3/*";
+        if ($initialForwardSlash) {
+            $key = "/" . $key;
+        }
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => false
+        ], (new Logger('test'))->pushHandler($testHandler));
+        $extractor->extract($this->path);
+
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2/file3");
+        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        $this->assertCount(2, $testHandler->getRecords());
     }
 
     /**
