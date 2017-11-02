@@ -27,7 +27,7 @@ try {
         file_get_contents($arguments['data'] . '/config.json'),
         JsonEncoder::FORMAT
     );
-    $outputPath =$dataDir . '/out/files';
+    $outputPath = $dataDir . '/out/files';
 
     $streamHandler = new \Monolog\Handler\StreamHandler('php://stdout');
     $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%"));
