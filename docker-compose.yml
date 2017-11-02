@@ -2,7 +2,7 @@ version: "2"
 services:
   php:
     build: .
-    image: keboola/s3-extractor
+    image: keboola/aws-s3-extractor
     tty: true
     stdin_open: true
     volumes:
@@ -13,7 +13,7 @@ services:
       - PREPARE_TESTS_AWS_ACCESS_KEY
       - PREPARE_TESTS_AWS_SECRET_KEY
   php-tests:
-    image: keboola/s3-extractor
+    image: keboola/aws-s3-extractor
     command: >
              sh -c '
              ./tests.sh
@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/dockerfile/code-coverage
-    image: keboola/s3-extractor-code-coverage
+    image: keboola/aws-s3-extractor-code-coverage
     command: >
              sh -c '
              ./code-coverage.sh

@@ -1,11 +1,18 @@
 #!/bin/bash
-pip install --user awscli
-# put aws in the path
-export PATH=$PATH:$HOME/.local/bin
-# needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
-eval $(aws ecr get-login --region us-east-1)
-docker tag keboola/s3-extractor:latest 147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/ex-s3:$TRAVIS_TAG
-docker tag keboola/s3-extractor:latest 147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/ex-s3:latest
-docker images
-docker push 147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/ex-s3:$TRAVIS_TAG
-docker push 147946154733.dkr.ecr.us-east-1.amazonaws.com/keboola/ex-s3:latest
+set -e
+
+docker pull quay.io/keboola/developer-portal-cli-v2:latest
+export REPOSITORY=`docker run --rm  \
+    -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD  \
+    quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository keboola keboola.ex-aws-s3`
+docker tag keboola/ex-aws-s3:latest ${REPOSITORY}:${TRAVIS_TAG}
+docker tag keboola/ex-aws-s3:latest ${REPOSITORY}:latest
+eval $(docker run --rm \
+    -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL \
+    quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login keboola keboola.ex-aws-s3)
+docker push ${REPOSITORY}:${TRAVIS_TAG}
+docker push ${REPOSITORY}:latest
+
+# Deploy to KBC -> update the tag in Keboola Developer Portal (needs $KBC_DEVELOPERPORTAL_VENDOR & $KBC_DEVELOPERPORTAL_APP)
+docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL \
+    quay.io/keboola/developer-portal-cli-v2:latest update-app-repository keboola keboola.ex-aws-s3 ${TRAVIS_TAG}

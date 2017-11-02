@@ -24,13 +24,9 @@ after_success:
   - docker-compose run --rm php-code-coverage ./vendor/bin/test-reporter --stdout > codeclimate.json
   - "curl -X POST -d @codeclimate.json -H 'Content-Type: application/json' -H 'User-Agent: Code Climate (PHP Test Reporter v0.1.1)' https://codeclimate.com/test_reports"
 
-
 deploy:
   provider: script
   skip_cleanup: true
   script: ./deploy.sh
   on:
     tags: true
-
-notifications:
-  slack: keboola:hDCSoKFw77r0k7cJ8LkzoK5p

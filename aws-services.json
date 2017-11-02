@@ -7,7 +7,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "keboola-s3-extractor-tests"
+            "Value": "keboola-aws-s3-extractor-tests"
           }
         ]
       }
