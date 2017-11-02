@@ -27,7 +27,28 @@ class WildcardKeyTest extends TestCase
     }
 
     /**
+     * @param $testFile
+     * @param TestHandler $testHandler
+     * @param string $prefix
+     */
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
+    {
+        $this->assertFileExists($this->path . $testFile);
+        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . $testFile);
+        $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
+    }
+
+    /**
+     * @param $testFile
+     */
+    private function assertFileNotDownloadedFromS3($testFile)
+    {
+        $this->assertFileNotExists($this->path . $testFile);
+    }
+
+    /**
      * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
      */
     public function testSuccessfulDownloadFromRoot($initialForwardSlash)
     {
@@ -44,21 +65,18 @@ class WildcardKeyTest extends TestCase
         ], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/file1.csv';
-        $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
-
-        $this->assertFileNotExists($this->path . '/file2.csv');
-        $this->assertFileNotExists($this->path . '/folder1/file1.csv');
-        $this->assertFileNotExists($this->path . '/folder2/file1.csv');
-        $this->assertFileNotExists($this->path . '/folder2/file2.csv');
-        $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
+        $this->assertFileNotDownloadedFromS3('/folder1/file1.csv');
+        $this->assertFileNotDownloadedFromS3('/folder2/file1.csv');
+        $this->assertFileNotDownloadedFromS3('/folder2/file2.csv');
+        $this->assertFileNotDownloadedFromS3('/folder2/file3/file1.csv');
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
      */
     public function testSuccessfulDownloadFromFolder($initialForwardSlash)
     {
@@ -75,22 +93,17 @@ class WildcardKeyTest extends TestCase
         ], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/file1.csv';
-        $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data/folder2/file1.csv", $expectedFile);
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2");
+        $this->assertFileDownloadedFromS3('/file2.csv', $testHandler, "/folder2");
+        $this->assertFileNotDownloadedFromS3('/file3/file1.csv');
 
-        $expectedFile = $this->path . '/file2.csv';
-        $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data/folder2/file2.csv", $expectedFile);
-
-        $this->assertTrue($testHandler->hasInfo("Downloading file /folder2/file1.csv"));
-        $this->assertTrue($testHandler->hasInfo("Downloading file /folder2/file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 2 file(s)"));
         $this->assertCount(3, $testHandler->getRecords());
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
      */
     public function testSuccessfulDownloadFromEmptyFolder($initialForwardSlash)
     {
@@ -113,6 +126,7 @@ class WildcardKeyTest extends TestCase
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
      */
     public function testNoFilesDownloaded($initialForwardSlash)
     {
