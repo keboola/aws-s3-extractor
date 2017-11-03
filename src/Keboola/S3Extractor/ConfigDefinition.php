@@ -33,7 +33,7 @@ class ConfigDefinition implements ConfigurationInterface
                 ->booleanNode('includeSubfolders')
                     ->defaultFalse()
                 ->end()
-                ->booleanNode('incremental')
+                ->booleanNode('onlyNewFiles')
                     ->defaultFalse()
                 ->end()
             ->end()

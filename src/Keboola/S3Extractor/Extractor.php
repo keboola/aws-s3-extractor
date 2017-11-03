@@ -1,6 +1,7 @@
 <?php
 namespace Keboola\S3Extractor;
 
+use Aws\Api\DateTimeResult;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Monolog\Handler\NullHandler;
@@ -134,10 +135,6 @@ class Extractor
 
                 // complete path
                 if ($dstDir) {
-                    // create destination folder if not exists
-                    if (!file_exists($outputPath . '/' . $dstDir)) {
-                        mkdir($outputPath . '/' . $dstDir, 0777, true);
-                    }
                     $dst = $outputPath . '/' . $dstDir . '/' . basename($object['Key']);
                 } else {
                     $dst = $outputPath . '/' . basename($object['Key']);
@@ -161,9 +158,32 @@ class Extractor
             ];
         }
 
+        // Filter out old files with onlyNewFiles flag
+        if ($this->parameters['onlyNewFiles'] === true) {
+            $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
+            $newLastDownloadedFileTimestamp = $lastDownloadedFileTimestamp;
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($client, $lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {
+                $object = $client->headObject($fileToDownload);
+                /** @var DateTimeResult $lastModified */
+                $lastModified = $object["LastModified"];
+                if ($lastModified->format("U") > $lastDownloadedFileTimestamp) {
+                    $newLastDownloadedFileTimestamp = max($newLastDownloadedFileTimestamp, $lastModified->format("U"));
+                    return true;
+                }
+                return false;
+            });
+            $nextState['lastDownloadedFileTimestamp'] = $newLastDownloadedFileTimestamp;
+        } else {
+            $nextState = [];
+        }
+
         $downloadedFiles = 0;
         foreach ($filesToDownload as $fileToDownload) {
             try {
+                // create folder
+                if (!file_exists(dirname($fileToDownload['SaveAs']))) {
+                    mkdir(dirname($fileToDownload['SaveAs']), 0777, true);
+                }
                 $this->logger->info("Downloading file /" . $fileToDownload["Key"]);
                 $client->getObject($fileToDownload);
                 $downloadedFiles++;
@@ -178,6 +198,6 @@ class Extractor
             }
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
-        return $this->state;
+        return $nextState;
     }
 }

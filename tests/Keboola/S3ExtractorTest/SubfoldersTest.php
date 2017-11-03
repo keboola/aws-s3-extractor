@@ -55,7 +55,7 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -85,7 +85,7 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -113,7 +113,7 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -139,7 +139,7 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -164,7 +164,7 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

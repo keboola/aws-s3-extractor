@@ -37,7 +37,7 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "incremental" => false
+                "onlyNewFiles" => false
             ]
         ];
         $testHandler = new TestHandler();
@@ -46,7 +46,7 @@ class ApplicationTest extends TestCase
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
     }
 
-    public function testApplicationStateFileIncremental()
+    public function testApplicationStateFileOnlyNewFiles()
     {
         $config = [
             "parameters" => [
@@ -54,7 +54,7 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "incremental" => true
+                "onlyNewFiles" => true
             ]
         ];
         $testHandler = new TestHandler();
@@ -63,6 +63,7 @@ class ApplicationTest extends TestCase
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
         $this->assertCount(2, $testHandler->getRecords());
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state);
+        $this->assertGreaterThan(0, $state['lastDownloadedFileTimestamp']);
 
         $testHandler = new TestHandler();
         $application = new Application($config, $state, $testHandler);

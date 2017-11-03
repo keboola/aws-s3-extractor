@@ -44,7 +44,7 @@ class OneFileTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -72,7 +72,7 @@ class OneFileTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "incremental" => false
+            "onlyNewFiles" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

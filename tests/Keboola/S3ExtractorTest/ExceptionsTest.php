@@ -35,7 +35,7 @@ class ExceptionsTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV) . "_invalid",
             "key" => "/file1.csv",
             "includeSubfolders" => false,
-            "incremental" => false
+            "onlyNewFiles" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -52,7 +52,7 @@ class ExceptionsTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/file1.csv",
             "includeSubfolders" => false,
-            "incremental" => false
+            "onlyNewFiles" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -68,7 +68,7 @@ class ExceptionsTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/doesnotexist",
             "includeSubfolders" => false,
-            "incremental" => false
+            "onlyNewFiles" => false
         ]);
         $extractor->extract($this->path);
     }
@@ -84,7 +84,7 @@ class ExceptionsTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => "/notawildcard",
             "includeSubfolders" => true,
-            "incremental" => false
+            "onlyNewFiles" => false
         ]);
         $extractor->extract($this->path);
     }
