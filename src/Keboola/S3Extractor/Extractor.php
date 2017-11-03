@@ -88,7 +88,7 @@ class Extractor
         $filesToDownload = [];
 
         // Detect wildcard at the end
-        if (substr($key, -1) == '*' || substr($key, - 1) == '%') {
+        if (substr($key, -1) == '*') {
             try {
                 $iterator = $client->getIterator('ListObjects', [
                     'Bucket' => $this->parameters['bucket'],
@@ -119,7 +119,7 @@ class Extractor
                 }
 
                 // remove wilcard mask from search key
-                $keyWithoutWildcard = trim($key, "*%");
+                $keyWithoutWildcard = trim($key, "*");
 
                 // search key contains folder
                 $dirPrefixToBeRemoved = '';
