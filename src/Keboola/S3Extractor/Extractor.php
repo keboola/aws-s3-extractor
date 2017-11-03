@@ -158,8 +158,8 @@ class Extractor
             ];
         }
 
-        // Filter out old files with onlyNewFiles flag
-        if ($this->parameters['onlyNewFiles'] === true) {
+        // Filter out old files with newFilesOnly flag
+        if ($this->parameters['newFilesOnly'] === true) {
             $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
             $newLastDownloadedFileTimestamp = $lastDownloadedFileTimestamp;
             $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($client, $lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {

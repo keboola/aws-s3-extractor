@@ -21,7 +21,7 @@ class ConfigDefinitionTest extends TestCase
         "bucket": "c",
         "key": "d",
         "includeSubfolders": false,
-        "onlyNewFiles": false
+        "newFilesOnly": false
     }
 }
 JSON;

@@ -53,7 +53,7 @@ class Application
     /**
      * Runs data extraction
      * @param $outputPath
-     * @return array 
+     * @return array
      * @throws \Exception
      */
     public function actionRun($outputPath)

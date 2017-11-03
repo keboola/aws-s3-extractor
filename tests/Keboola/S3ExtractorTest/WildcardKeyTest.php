@@ -55,7 +55,7 @@ class WildcardKeyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => false
+            "newFilesOnly" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -81,7 +81,7 @@ class WildcardKeyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => false
+            "newFilesOnly" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -109,7 +109,7 @@ class WildcardKeyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => false
+            "newFilesOnly" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -135,7 +135,7 @@ class WildcardKeyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => false
+            "newFilesOnly" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -160,7 +160,7 @@ class WildcardKeyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => false
+            "newFilesOnly" => false
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

@@ -37,7 +37,7 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "onlyNewFiles" => false
+                "newFilesOnly" => false
             ]
         ];
         $testHandler = new TestHandler();
@@ -46,7 +46,7 @@ class ApplicationTest extends TestCase
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
     }
 
-    public function testApplicationStateFileOnlyNewFiles()
+    public function testApplicationStateFilenewFilesOnly()
     {
         $config = [
             "parameters" => [
@@ -54,7 +54,7 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "onlyNewFiles" => true
+                "newFilesOnly" => true
             ]
         ];
         $testHandler = new TestHandler();

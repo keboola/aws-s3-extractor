@@ -8,7 +8,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 
-class OnlyNewFilesTest extends TestCase
+class NewFilesOnlyTest extends TestCase
 {
     const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
     const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
@@ -42,7 +42,7 @@ class OnlyNewFilesTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => true
+            "newFilesOnly" => true
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
@@ -66,7 +66,7 @@ class OnlyNewFilesTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => true
+            "newFilesOnly" => true
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
@@ -98,7 +98,7 @@ class OnlyNewFilesTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => true
+            "newFilesOnly" => true
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
@@ -116,7 +116,7 @@ class OnlyNewFilesTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "onlyNewFiles" => true
+            "newFilesOnly" => true
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 
