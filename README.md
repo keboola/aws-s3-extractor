@@ -5,7 +5,61 @@
 Download files from S3 to `/data/out/files`. 
 
 ## Features
-- Wildcard - use `*` or `%` at the end for wildcards; wildcards do not download subfolders.
+- Use `*` or `%` for wildcards
+- Subfolders
+- Process only new files
+
+## Configuration options
+
+- `accessKeyId` (required) -- AWS Access Key ID
+- `#secretAccessKey` (required) -- AWS Secret Access Key
+- `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
+- `key` (required) -- Search key, optionally ending with a `*` wildcard 
+- `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the key.  
+- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.  
+
+### Sample configurations
+
+#### Single file
+
+```json
+{
+    "accessKeyId": "AKIA****",
+    "#secretAccessKey":  "****",
+    "bucket": "myBucket",
+    "key": "myfile.csv",
+    "includeSubfolders": false,
+    "newFilesOnly": false
+}
+```
+
+#### Wildcard 
+
+```json
+{
+    "accessKeyId": "AKIA****",
+    "#secretAccessKey":  "****",
+    "bucket": "myBucket",
+    "key": "myfolder/*",
+    "includeSubfolders": false,
+    "newFilesOnly": false
+}
+```
+
+#### Wildcard, subfolders and new files only
+
+```json
+{
+    "accessKeyId": "AKIA****",
+    "#secretAccessKey":  "****",
+    "bucket": "myBucket",
+    "key": "myfolder/*",
+    "includeSubfolders": true,
+    "newFilesOnly": true
+}
+```
+
+*Note: state.json has to be provided in this case*
 
 ## Development
 
@@ -13,6 +67,7 @@ Download files from S3 to `/data/out/files`.
 
 - Create AWS S3 bucket and IAM user using [`aws-services.json`](./aws-services.json) CloudFormation template.
 - Create `.env` file. Use output of `aws-services` CloudFront stack to fill the variables and your Redshift credentials.
+
 ```
 AWS_S3_BUCKET=
 AWS_REGION=
@@ -45,4 +100,3 @@ Run tests with following command.
 docker-compose run --rm tests
 ```
 
-Tests are executed against real S3. S3 credentials have to be provided.
