@@ -124,6 +124,5 @@ class OnlyNewFilesTest extends TestCase
         $this->assertCount(1, $testHandler->getRecords());
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state3);
         $this->assertEquals($state3, $state2);
-
     }
 }

@@ -2,3 +2,4 @@ parameters:
 	ignoreErrors:
 		- '#Call to an undefined method Aws\\S3\\S3Client::getBucketLocation().#'
 		- '#Call to an undefined method Aws\\S3\\S3Client::getObject().#'
+		- '#Call to an undefined method Aws\\S3\\S3Client::headObject().#'

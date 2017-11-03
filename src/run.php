@@ -37,7 +37,7 @@ try {
     // read state
     $inputState = [];
     $inputStateFile = $dataDir . '/in/state.json';
-    if (file_exists($stateFile)) {
+    if (file_exists($inputStateFile)) {
         $inputState = $jsonDecode->decode(
             file_get_contents($inputStateFile),
             JsonEncoder::FORMAT
