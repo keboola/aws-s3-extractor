@@ -2,7 +2,6 @@
 namespace Keboola\S3Extractor;
 
 use Aws\Api\DateTimeResult;
-use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -59,17 +58,7 @@ class Extractor
                 'secret' => $this->parameters['#secretAccessKey'],
             ]
         ]);
-        try {
-            $region = $client->getBucketLocation(["Bucket" => $this->parameters["bucket"]])->get('LocationConstraint');
-        } catch (S3Exception $e) {
-            if ($e->getStatusCode() == 404) {
-                throw new Exception("Bucket {$this->parameters["bucket"]} not found.");
-            }
-            if ($e->getStatusCode() == 403) {
-                throw new Exception("Invalid credentials or permissions not set correctly. Did you set s3:GetBucketLocation?");
-            }
-            throw $e;
-        }
+        $region = $client->getBucketLocation(["Bucket" => $this->parameters["bucket"]])->get('LocationConstraint');
         $client = new S3Client([
             'region' => $region,
             'version' => '2006-03-01',
@@ -89,18 +78,10 @@ class Extractor
 
         // Detect wildcard at the end
         if (substr($key, -1) == '*') {
-            try {
-                $iterator = $client->getIterator('ListObjects', [
-                    'Bucket' => $this->parameters['bucket'],
-                    'Prefix' => substr($key, 0, -1)
-                ]);
-            } catch (S3Exception $e) {
-                if ($e->getStatusCode() == 403) {
-                    throw new Exception("Invalid credentials or permissions not set correctly. Did you set s3:ListObjects?");
-                }
-                throw $e;
-            }
-
+            $iterator = $client->getIterator('ListObjects', [
+                'Bucket' => $this->parameters['bucket'],
+                'Prefix' => substr($key, 0, -1)
+            ]);
             foreach ($iterator as $object) {
                 // Skip objects in Glacier
                 if ($object['StorageClass'] === "GLACIER") {
@@ -179,23 +160,13 @@ class Extractor
 
         $downloadedFiles = 0;
         foreach ($filesToDownload as $fileToDownload) {
-            try {
-                // create folder
-                if (!file_exists(dirname($fileToDownload['SaveAs']))) {
-                    mkdir(dirname($fileToDownload['SaveAs']), 0777, true);
-                }
-                $this->logger->info("Downloading file /" . $fileToDownload["Key"]);
-                $client->getObject($fileToDownload);
-                $downloadedFiles++;
-            } catch (S3Exception $e) {
-                if ($e->getStatusCode() == 404) {
-                    throw new Exception("File {$fileToDownload["Key"]} not found.");
-                }
-                if ($e->getStatusCode() == 403) {
-                    throw new Exception("Invalid credentials or permissions not set correctly. Did you set s3:GetObject?");
-                }
-                throw $e;
+            // create folder
+            if (!file_exists(dirname($fileToDownload['SaveAs']))) {
+                mkdir(dirname($fileToDownload['SaveAs']), 0777, true);
             }
+            $this->logger->info("Downloading file /" . $fileToDownload["Key"]);
+            $client->getObject($fileToDownload);
+            $downloadedFiles++;
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
         return $nextState;

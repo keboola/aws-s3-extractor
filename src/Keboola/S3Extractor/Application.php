@@ -2,6 +2,8 @@
 
 namespace Keboola\S3Extractor;
 
+use Aws\S3\Exception\S3Exception;
+use GuzzleHttp\Exception\ClientException;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Processor;
@@ -59,6 +61,29 @@ class Application
     public function actionRun($outputPath)
     {
         $extractor = new Extractor($this->parameters, $this->state, $this->logger);
-        return $extractor->extract($outputPath);
+        try {
+            return $extractor->extract($outputPath);
+        } catch (S3Exception $e) {
+            if ($e->getStatusCode() === 403) {
+                throw new Exception("Invalid credentials or permissions.", $e->getCode(), $e);
+            }
+            if ($e->getStatusCode() === 400 || $e->getStatusCode() === 401 || $e->getStatusCode() === 404 ) {
+                if (get_class($e->getPrevious()) === ClientException::class) {
+                    /** @var ClientException $previous */
+                    $previous = $e->getPrevious();
+                    throw new Exception(
+                        $previous->getResponse()->getStatusCode()
+                        . " "
+                        . $previous->getResponse()->getReasonPhrase()
+                        . " ("
+                        . $e->getAwsErrorCode()
+                        . ")\n"
+                        . $previous->getResponse()->getBody()->__toString()
+                    );
+                }
+                throw new Exception($e->getMessage());
+            }
+            throw $e;
+        }
     }
 }
