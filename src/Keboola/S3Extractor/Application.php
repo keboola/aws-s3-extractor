@@ -67,7 +67,7 @@ class Application
             if ($e->getStatusCode() === 403) {
                 throw new Exception("Invalid credentials or permissions.", $e->getCode(), $e);
             }
-            if ($e->getStatusCode() === 400 || $e->getStatusCode() === 401 || $e->getStatusCode() === 404 ) {
+            if ($e->getStatusCode() === 400 || $e->getStatusCode() === 401 || $e->getStatusCode() === 404) {
                 if (get_class($e->getPrevious()) === ClientException::class) {
                     /** @var ClientException $previous */
                     $previous = $e->getPrevious();
