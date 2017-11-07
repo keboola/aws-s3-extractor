@@ -2,7 +2,7 @@ version: "2"
 services:
   dev:
     build: .
-    image: keboola/aws-s3-extractor
+    image: keboola/ex-aws-s3
     tty: true
     stdin_open: true
     volumes:
@@ -15,7 +15,7 @@ services:
       - DOWNLOAD_USER_AWS_ACCESS_KEY
       - DOWNLOAD_USER_AWS_SECRET_KEY
   tests:
-    image: keboola/aws-s3-extractor
+    image: keboola/ex-aws-s3
     command: >
              sh -c '
              ./tests.sh
@@ -34,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/dockerfile/code-coverage
-    image: keboola/aws-s3-extractor-code-coverage
+    image: keboola/ex-aws-s3-code-coverage
     command: >
              sh -c '
              ./code-coverage.sh
