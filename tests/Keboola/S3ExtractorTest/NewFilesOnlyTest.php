@@ -70,8 +70,8 @@ class NewFilesOnlyTest extends TestCase
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
-        $this->assertTrue($testHandler->hasInfo("Downloaded 2 file(s)"));
-        $this->assertCount(3, $testHandler->getRecords());
+        $this->assertTrue($testHandler->hasInfo("Downloaded 3 file(s)"));
+        $this->assertCount(4, $testHandler->getRecords());
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state1);
         $this->assertGreaterThan(0, $state1['lastDownloadedFileTimestamp']);
 
