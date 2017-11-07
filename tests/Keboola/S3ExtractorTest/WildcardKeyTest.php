@@ -68,6 +68,32 @@ class WildcardKeyTest extends TestCase
      * @dataProvider initialForwardSlashProvider
      * @param $initialForwardSlash
      */
+    public function testSuccessfulCollisionDownloadFromRoot($initialForwardSlash)
+    {
+        $key = "c*";
+        if ($initialForwardSlash) {
+            $key = "/" . $key;
+        }
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => false,
+            "newFilesOnly" => false
+        ], [], (new Logger('test'))->pushHandler($testHandler));
+        $extractor->extract($this->path);
+
+        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        $this->assertCount(2, $testHandler->getRecords());
+    }
+
+    /**
+     * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
+     */
     public function testSuccessfulDownloadFromFolder($initialForwardSlash)
     {
         $key = "folder2/*";
@@ -87,9 +113,10 @@ class WildcardKeyTest extends TestCase
 
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2");
         $this->assertFileDownloadedFromS3('/file2.csv', $testHandler, "/folder2");
+        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler, "/folder2");
 
-        $this->assertTrue($testHandler->hasInfo("Downloaded 2 file(s)"));
-        $this->assertCount(3, $testHandler->getRecords());
+        $this->assertTrue($testHandler->hasInfo("Downloaded 3 file(s)"));
+        $this->assertCount(4, $testHandler->getRecords());
     }
 
     /**

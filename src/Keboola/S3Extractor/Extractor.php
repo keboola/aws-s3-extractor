@@ -115,8 +115,21 @@ class Extractor
                 $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
 
                 // complete path
-                if ($dstDir) {
-                    $dst = $outputPath . '/wildcard/' . $dstDir . '/' . basename($object['Key']);
+                if ($this->parameters['includeSubfolders']) {
+                    if ($dstDir && $dstDir != '.') {
+                        $flattened = str_replace(
+                            '/',
+                            '-',
+                            str_replace('-', '--', $dstDir . '/' . basename($object['Key']))
+                        );
+                    } else {
+                        $flattened = str_replace(
+                            '/',
+                            '-',
+                            str_replace('-', '--', basename($object['Key']))
+                        );
+                    }
+                    $dst = $outputPath . '/wildcard/' . $flattened;
                 } else {
                     $dst = $outputPath . '/wildcard/' . basename($object['Key']);
                 }
