@@ -26,12 +26,14 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
 
 ```json
 {
-    "accessKeyId": "AKIA****",
-    "#secretAccessKey":  "****",
-    "bucket": "myBucket",
-    "key": "myfile.csv",
-    "includeSubfolders": false,
-    "newFilesOnly": false
+    "parameters": {
+        "accessKeyId": "AKIA****",
+        "#secretAccessKey": "****",
+        "bucket": "myBucket",
+        "key": "myfile.csv",
+        "includeSubfolders": false,
+        "newFilesOnly": false
+    }
 }
 ```
 
@@ -39,12 +41,14 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
 
 ```json
 {
-    "accessKeyId": "AKIA****",
-    "#secretAccessKey":  "****",
-    "bucket": "myBucket",
-    "key": "myfolder/*",
-    "includeSubfolders": false,
-    "newFilesOnly": false
+    "parameters": {
+        "accessKeyId": "AKIA****",
+        "#secretAccessKey": "****",
+        "bucket": "myBucket",
+        "key": "myfolder/*",
+        "includeSubfolders": false,
+        "newFilesOnly": false
+    }
 }
 ```
 
@@ -52,12 +56,14 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
 
 ```json
 {
-    "accessKeyId": "AKIA****",
-    "#secretAccessKey":  "****",
-    "bucket": "myBucket",
-    "key": "myfolder/*",
-    "includeSubfolders": true,
-    "newFilesOnly": true
+    "parameters": {
+        "accessKeyId": "AKIA****",
+        "#secretAccessKey":  "****",
+        "bucket": "myBucket",
+        "key": "myfolder/*",
+        "includeSubfolders": true,
+        "newFilesOnly": true
+    }
 }
 ```
 
