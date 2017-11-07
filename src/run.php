@@ -32,7 +32,7 @@ try {
     $outputPath = $dataDir . '/out/files';
 
     $streamHandler = new \Monolog\Handler\StreamHandler('php://stdout');
-    $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%"));
+    $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%\n"));
 
     // read state
     $inputState = [];
