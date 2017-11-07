@@ -19,7 +19,9 @@ class ConfigDefinitionTest extends TestCase
         "accessKeyId": "a",
         "#secretAccessKey": "b",
         "bucket": "c",
-        "key": "d"
+        "key": "d",
+        "includeSubfolders": false,
+        "newFilesOnly": false
     }
 }
 JSON;

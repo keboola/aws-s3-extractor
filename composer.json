@@ -1,8 +1,8 @@
 {
-  "name": "keboola/s3-extractor",
+  "name": "keboola/aws-s3-extractor",
   "license": "MIT",
   "type": "project",
-  "description": "Keboola S3 Extractor",
+  "description": "Keboola AWS S3 Extractor",
   "keywords": [
     "keboola",
     "s3",

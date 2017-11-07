@@ -1,8 +1,8 @@
 version: "2"
 services:
-  php:
+  dev:
     build: .
-    image: keboola/s3-extractor
+    image: keboola/aws-s3-extractor
     tty: true
     stdin_open: true
     volumes:
@@ -10,10 +10,12 @@ services:
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
-      - PREPARE_TESTS_AWS_ACCESS_KEY
-      - PREPARE_TESTS_AWS_SECRET_KEY
-  php-tests:
-    image: keboola/s3-extractor
+      - UPLOAD_USER_AWS_ACCESS_KEY
+      - UPLOAD_USER_AWS_SECRET_KEY
+      - DOWNLOAD_USER_AWS_ACCESS_KEY
+      - DOWNLOAD_USER_AWS_SECRET_KEY
+  tests:
+    image: keboola/aws-s3-extractor
     command: >
              sh -c '
              ./tests.sh
@@ -23,14 +25,16 @@ services:
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
-      - TESTS_AWS_ACCESS_KEY
-      - TESTS_AWS_SECRET_KEY
+      - DOWNLOAD_USER_AWS_ACCESS_KEY
+      - DOWNLOAD_USER_AWS_SECRET_KEY
+      - UPLOAD_USER_AWS_ACCESS_KEY
+      - UPLOAD_USER_AWS_SECRET_KEY
 
-  php-code-coverage:
+  code-coverage:
     build:
       context: .
       dockerfile: ./docker/dockerfile/code-coverage
-    image: keboola/s3-extractor-code-coverage
+    image: keboola/aws-s3-extractor-code-coverage
     command: >
              sh -c '
              ./code-coverage.sh
@@ -40,6 +44,6 @@ services:
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
-      - TESTS_AWS_ACCESS_KEY
-      - TESTS_AWS_SECRET_KEY
+      - DOWNLOAD_USER_AWS_ACCESS_KEY
+      - DOWNLOAD_USER_AWS_SECRET_KEY
       - CODECLIMATE_REPO_TOKEN

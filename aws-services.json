@@ -7,7 +7,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "keboola-s3-extractor-tests"
+            "Value": "keboola-aws-s3-extractor-tests"
           }
         ]
       }
@@ -125,24 +125,7 @@
           }
         ]
       }
-    },
-    "AccessKeyIdUploadUser": {
-      "Type": "AWS::IAM::AccessKey",
-      "Properties": {
-        "UserName": {
-          "Ref": "UploadUser"
-        }
-      }
-    },
-    "AccessKeyIdDownloadUser": {
-      "Type": "AWS::IAM::AccessKey",
-      "Properties": {
-        "UserName": {
-          "Ref": "DownloadUser"
-        }
-      }
     }
-
   },
   "Outputs": {
     "region": {
@@ -155,30 +138,14 @@
         "Ref": "S3FilesBucket"
       }
     },
-    "AccessKeyIdKeyUploadUser": {
+    "DownloadUser": {
       "Value": {
-        "Ref": "AccessKeyIdUploadUser"
+        "Ref": "DownloadUser"
       }
     },
-    "SecretKeyUploadUser": {
+    "UploadUser": {
       "Value": {
-        "Fn::GetAtt": [
-          "AccessKeyIdUploadUser",
-          "SecretAccessKey"
-        ]
-      }
-    },
-    "AccessKeyIdDownloadUser": {
-      "Value": {
-        "Ref": "AccessKeyIdDownloadUser"
-      }
-    },
-    "SecretKeyDownloadUser": {
-      "Value": {
-        "Fn::GetAtt": [
-          "AccessKeyIdDownloadUser",
-          "SecretAccessKey"
-        ]
+        "Ref": "UploadUser"
       }
     }
   }

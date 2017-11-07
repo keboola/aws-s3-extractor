@@ -1,16 +1,18 @@
 <?php
+
 namespace Keboola\S3ExtractorTest;
 
+use Keboola\S3Extractor\Application;
 use Keboola\S3Extractor\Exception;
 use Keboola\S3Extractor\Extractor;
+use Monolog\Handler\TestHandler;
 use PHPUnit\Framework\TestCase;
 
 class ExceptionsTest extends TestCase
 {
     const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'TESTS_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'TESTS_AWS_SECRET_KEY';
-
+    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
+    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
     protected $path = '/tmp/errors';
 
     public function setUp()
@@ -28,42 +30,92 @@ class ExceptionsTest extends TestCase
     public function testInvalidBucket()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Bucket " . getenv(self::AWS_S3_BUCKET_ENV) . "_invalid" . " not found.");
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV) . "_invalid",
-            "key" => "/file1.csv"
-        ]);
-        $extractor->extract($this->path);
+        $this->expectExceptionMessage("404 Not Found (NoSuchBucket)");
+        $this->expectExceptionMessage("The specified bucket does not exist");
+        $this->expectExceptionMessage(getenv(self::AWS_S3_BUCKET_ENV) . "_invalid");
+        $application = new Application(
+            [
+                "parameters" => [
+                    "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    "bucket" => getenv(self::AWS_S3_BUCKET_ENV) . "_invalid",
+                    "key" => "/file1.csv",
+                    "includeSubfolders" => false,
+                    "newFilesOnly" => false,
+                ],
+            ],
+            [],
+            new TestHandler()
+        );
+        $application->actionRun($this->path);
     }
 
     public function testInvalidCredentials()
     {
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("Invalid credentials or permissions not set correctly. Did you set s3:GetBucketLocation?");
+        $this->expectExceptionMessage("Invalid credentials or permissions.");
 
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV) . "_invalid",
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => "/file1.csv"
-        ]);
-        $extractor->extract($this->path);
+        $application = new Application(
+            [
+                "parameters" => [
+                    "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV) . "_invalid",
+                    "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                    "key" => "/file1.csv",
+                    "includeSubfolders" => false,
+                    "newFilesOnly" => false,
+                ],
+            ],
+            [],
+            new TestHandler()
+        );
+        $application->actionRun($this->path);
     }
 
     public function testInvalidKey()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("File doesnotexist not found.");
+        $this->expectExceptionMessage("404 Not Found (NoSuchKey)");
+        $this->expectExceptionMessage("The specified key does not exist.");
+        $this->expectExceptionMessage("<Key>doesnotexist</Key>");
 
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => "/doesnotexist"
-        ]);
-        $extractor->extract($this->path);
+        $application = new Application(
+            [
+                "parameters" => [
+                    "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                    "key" => "/doesnotexist",
+                    "includeSubfolders" => false,
+                    "newFilesOnly" => false,
+                ],
+            ],
+            [],
+            new TestHandler()
+        );
+        $application->actionRun($this->path);
+    }
+
+    public function testIncludeSubfoldersWithoutWildcard()
+    {
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Cannot include subfolders without wildcard.");
+
+        $application = new Application(
+            [
+                "parameters" => [
+                    "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                    "key" => "/notawildcard",
+                    "includeSubfolders" => true,
+                    "newFilesOnly" => false,
+                ],
+            ],
+            [],
+            new TestHandler()
+        );
+        $application->actionRun($this->path);
     }
 }
