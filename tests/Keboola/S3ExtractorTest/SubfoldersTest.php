@@ -33,8 +33,8 @@ class SubfoldersTest extends TestCase
      */
     private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
     {
-        $this->assertFileExists($this->path . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . $testFile);
+        $this->assertFileExists($this->path  . '/wildcard' . $testFile);
+        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/wildcard' . $testFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
