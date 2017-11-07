@@ -14,7 +14,7 @@ Download files from S3 to `/data/out/files`.
 - `accessKeyId` (required) -- AWS Access Key ID
 - `#secretAccessKey` (required) -- AWS Secret Access Key
 - `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
-- `key` (required) -- Search key, optionally ending with a `*` wildcard 
+- `key` (required) -- Search key, optionally ending with a `*` wildcard; all filed downloaded with a wildcard are stored in `/data/out/files/wildcard` folder.
 - `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the key.  
 - `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.  
 
@@ -86,11 +86,6 @@ docker-compose build
 
 ```
 docker-compose run --rm dev composer install --prefer-dist --no-interaction
-```
-
-Upload test fixtures to S3:
-```
-docker-compose run dev php ./tests/loadS3.php
 ```
 
 ### Tests Execution

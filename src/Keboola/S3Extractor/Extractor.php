@@ -116,9 +116,9 @@ class Extractor
 
                 // complete path
                 if ($dstDir) {
-                    $dst = $outputPath . '/' . $dstDir . '/' . basename($object['Key']);
+                    $dst = $outputPath . '/wildcard/' . $dstDir . '/' . basename($object['Key']);
                 } else {
-                    $dst = $outputPath . '/' . basename($object['Key']);
+                    $dst = $outputPath . '/wildcard/' . basename($object['Key']);
                 }
 
                 $filesToDownload[] = [
