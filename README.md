@@ -5,9 +5,10 @@
 Download files from S3 to `/data/out/files`. 
 
 ## Features
-- Use `*` or `%` for wildcards
+- Use `*` for wildcards
 - Subfolders
-- Process only new files
+- Can process only new files
+- Skips files stored in Glacier
 
 ## Configuration options
 
@@ -15,10 +16,12 @@ Download files from S3 to `/data/out/files`.
 - `#secretAccessKey` (required) -- AWS Secret Access Key
 - `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
 - `key` (required) -- Search key prefix, optionally ending with a `*` wildcard. all filed downloaded with a wildcard are stored in `/data/out/files/wildcard` folder.
+- `saveAs` (required) -- Store downloaded file(s) into a defined file/folder (for wildcards).
 - `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the search key prefix. 
 Subfolder structure will be flattened, `/` in the path will be replaced with a `-` character, eg `folder1/file1.csv => folder1-file1.csv`. 
 Existing `-` characters will be escaped with an extra `-` character to resolve possible collisions, eg. `collision-file.csv => collision--file.csv`.  
-- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.  
+- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.
+  
 
 ### Sample configurations
 
@@ -31,6 +34,7 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
         "#secretAccessKey": "****",
         "bucket": "myBucket",
         "key": "myfile.csv",
+        "saveAs": "myfile.csv",
         "includeSubfolders": false,
         "newFilesOnly": false
     }
@@ -46,6 +50,7 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
         "#secretAccessKey": "****",
         "bucket": "myBucket",
         "key": "myfolder/*",
+        "saveAs": "myfolder.csv",
         "includeSubfolders": false,
         "newFilesOnly": false
     }
@@ -61,6 +66,7 @@ Existing `-` characters will be escaped with an extra `-` character to resolve p
         "#secretAccessKey":  "****",
         "bucket": "myBucket",
         "key": "myfolder/*",
+        "saveAs": "mycompletefolder.csv",        
         "includeSubfolders": true,
         "newFilesOnly": true
     }

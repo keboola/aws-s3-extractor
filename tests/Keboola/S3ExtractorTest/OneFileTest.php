@@ -14,13 +14,13 @@ class OneFileTest extends TestCase
     const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
     const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
 
-    protected $path = '/tmp/one-file';
+    protected $path;
 
     public function setUp()
     {
-        if (!file_exists($this->path)) {
-            mkdir($this->path);
-        }
+        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
+        mkdir($this->path, 0777, true);
+
     }
 
     public function tearDown()
@@ -44,11 +44,12 @@ class OneFileTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'file1.csv';
+        $expectedFile = $this->path . '/' . 'myfile.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
@@ -72,11 +73,12 @@ class OneFileTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'file1.csv';
+        $expectedFile = $this->path . '/' . 'myfile.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../_data/folder1/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /folder1/file1.csv"));
