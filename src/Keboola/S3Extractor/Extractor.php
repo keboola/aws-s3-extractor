@@ -5,6 +5,7 @@ use Aws\Api\DateTimeResult;
 use Aws\S3\S3Client;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Extractor
 {
@@ -129,9 +130,9 @@ class Extractor
                             str_replace('-', '--', basename($object['Key']))
                         );
                     }
-                    $dst = $outputPath . '/wildcard/' . $flattened;
+                    $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . $flattened;
                 } else {
-                    $dst = $outputPath . '/wildcard/' . basename($object['Key']);
+                    $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . basename($object['Key']);
                 }
 
                 $filesToDownload[] = [
@@ -144,7 +145,7 @@ class Extractor
             if ($this->parameters['includeSubfolders'] === true) {
                 throw new Exception("Cannot include subfolders without wildcard.");
             }
-            $dst = $outputPath . '/' . substr($key, strrpos($key, '/'));
+            $dst = $outputPath . '/' . $this->parameters['saveAs'];
             $filesToDownload[] = [
                 'Bucket' => $this->parameters['bucket'],
                 'Key' => $key,
@@ -171,11 +172,14 @@ class Extractor
             $nextState = [];
         }
 
+        $fs = new Filesystem();
+
         $downloadedFiles = 0;
         foreach ($filesToDownload as $fileToDownload) {
             // create folder
-            if (!file_exists(dirname($fileToDownload['SaveAs']))) {
-                mkdir(dirname($fileToDownload['SaveAs']), 0777, true);
+
+            if (!$fs->exists(dirname($fileToDownload['SaveAs']))) {
+                $fs->mkdir(dirname($fileToDownload['SaveAs']));
             }
             $this->logger->info("Downloading file /" . $fileToDownload["Key"]);
             $client->getObject($fileToDownload);

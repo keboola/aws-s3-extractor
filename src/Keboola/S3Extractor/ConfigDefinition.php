@@ -36,6 +36,11 @@ class ConfigDefinition implements ConfigurationInterface
                 ->booleanNode('newFilesOnly')
                     ->defaultFalse()
                 ->end()
+                ->scalarNode('saveAs')
+                    ->isRequired()
+                    ->cannotBeEmpty()
+                ->end()
+
             ->end()
         ;
 

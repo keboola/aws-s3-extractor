@@ -21,7 +21,8 @@ class ConfigDefinitionTest extends TestCase
         "bucket": "c",
         "key": "d",
         "includeSubfolders": false,
-        "newFilesOnly": false
+        "newFilesOnly": false,
+        "saveAs": "myfile.csv"
     }
 }
 JSON;

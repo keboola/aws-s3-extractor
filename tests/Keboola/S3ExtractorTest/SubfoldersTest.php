@@ -12,13 +12,12 @@ class SubfoldersTest extends TestCase
     const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
     const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
 
-    protected $path = '/tmp/subfolders';
+    protected $path;
 
     public function setUp()
     {
-        if (!file_exists($this->path)) {
-            mkdir($this->path);
-        }
+        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
+        mkdir($this->path, 0777, true);
     }
 
     public function tearDown()
@@ -30,12 +29,13 @@ class SubfoldersTest extends TestCase
      * @param $testFile
      * @param TestHandler $testHandler
      * @param string $prefix
+     * @param string $saveAs
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
     {
         $testFileReplaced = '/' . str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
-        $this->assertFileExists($this->path  . '/wildcard' . $testFileReplaced);
-        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/wildcard' . $testFileReplaced);
+        $this->assertFileExists($this->path . '/' . $saveAs . $testFileReplaced);
+        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFileReplaced);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
@@ -56,7 +56,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -88,7 +89,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -115,7 +117,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -146,7 +149,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -174,7 +178,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -200,7 +205,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -225,7 +231,8 @@ class SubfoldersTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => true,
-            "newFilesOnly" => false
+            "newFilesOnly" => false,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

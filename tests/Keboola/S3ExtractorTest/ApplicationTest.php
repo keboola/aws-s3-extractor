@@ -37,7 +37,8 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "newFilesOnly" => false
+                "newFilesOnly" => false,
+                "saveAs" => "myfile.csv"
             ]
         ];
         $testHandler = new TestHandler();
@@ -54,7 +55,8 @@ class ApplicationTest extends TestCase
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
-                "newFilesOnly" => true
+                "newFilesOnly" => true,
+                "saveAs" => "myfile.csv"
             ]
         ];
         $testHandler = new TestHandler();

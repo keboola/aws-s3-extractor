@@ -18,18 +18,17 @@ class NewFilesOnlyTest extends TestCase
     const UPDATE_AWS_S3_BUCKET = 'AWS_S3_BUCKET';
     const UPDATE_AWS_REGION = 'AWS_REGION';
 
-    protected $path = '/tmp/one-file';
+    protected $path;
 
     public function setUp()
     {
-        if (!file_exists($this->path)) {
-            mkdir($this->path);
-        }
+        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
+        mkdir($this->path, 0777, true);
     }
 
     public function tearDown()
     {
-        passthru('rm -rf ' . $this->path);
+        system('rm -rf ' . $this->path);
     }
 
     public function testSuccessfulDownloadFromRoot()
@@ -42,11 +41,12 @@ class NewFilesOnlyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => true
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'file1.csv';
+        $expectedFile = $this->path . '/' . 'myfile.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
@@ -66,7 +66,8 @@ class NewFilesOnlyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => true
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
@@ -98,7 +99,8 @@ class NewFilesOnlyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => true
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv"
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
@@ -108,7 +110,7 @@ class NewFilesOnlyTest extends TestCase
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state2);
         $this->assertGreaterThan($state1['lastDownloadedFileTimestamp'], $state2['lastDownloadedFileTimestamp']);
 
-        // do not dowload anything
+        // do not dowlnoad anything
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -116,7 +118,8 @@ class NewFilesOnlyTest extends TestCase
             "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
             "key" => $key,
             "includeSubfolders" => false,
-            "newFilesOnly" => true
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv"
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 
