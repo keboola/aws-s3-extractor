@@ -24,7 +24,6 @@ class NewFilesOnlyTest extends TestCase
     {
         $this->path = '/tmp/aws-s3-extractor/' . uniqid();
         mkdir($this->path, 0777, true);
-
     }
 
     public function tearDown()
