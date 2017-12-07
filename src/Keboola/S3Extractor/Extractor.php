@@ -3,6 +3,7 @@ namespace Keboola\S3Extractor;
 
 use Aws\Api\DateTimeResult;
 use Aws\S3\S3Client;
+use Aws\S3\S3MultiRegionClient;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -51,8 +52,7 @@ class Extractor
      */
     public function extract($outputPath)
     {
-        $client = new S3Client([
-            'region' => 'us-east-1',
+        $client = new S3MultiRegionClient([
             'version' => '2006-03-01',
             'credentials' => [
                 'key' => $this->parameters['accessKeyId'],
