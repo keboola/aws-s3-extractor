@@ -141,7 +141,7 @@ class Extractor
                     'SaveAs' => $dst
                 ];
                 $filesToDownload[] = [
-                    "timestamp" => $client->headObject($parameters)["LastModified"]->format("U"),
+                    "timestamp" => $object['LastModified']->format("U"),
                     "parameters" => $parameters
                 ];
             }
@@ -177,6 +177,18 @@ class Extractor
         } else {
             $nextState = [];
         }
+
+        /*
+        // Apply limit
+        var_dump($filesToDownload);
+        if (count($filesToDownload) > $this->parameters["limit"]) {
+            // Sort files to download using timestamp
+            usort($filesToDownload, function($a, $b) {
+               return intval($a["timestamp"]) - intval($b["timestamp"]);
+            });
+            var_dump($filesToDownload);
+        }
+        */
 
         $fs = new Filesystem();
 
