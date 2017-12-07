@@ -68,12 +68,11 @@ foreach ($files as $file) {
     sleep(1);
 }
 
-// put empty folder
+// Create empty folder
 print "Creating /emptyfolder/\n";
 $client->putObject([
     'Bucket' => $bucket,
     'Key' => 'emptyfolder/'
 ]);
-
 
 echo "Data loaded OK\n";
