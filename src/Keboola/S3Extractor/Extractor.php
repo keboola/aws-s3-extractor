@@ -165,7 +165,7 @@ class Extractor
         if ($this->parameters['newFilesOnly'] === true) {
             $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
             $newLastDownloadedFileTimestamp = $lastDownloadedFileTimestamp;
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($client, $lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {
                 /** @var DateTimeResult $lastModified */
                 if ($fileToDownload["timestamp"] > $lastDownloadedFileTimestamp) {
                     $newLastDownloadedFileTimestamp = max($newLastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
