@@ -178,17 +178,15 @@ class Extractor
             $nextState = [];
         }
 
-        /*
         // Apply limit
-        var_dump($filesToDownload);
         if (count($filesToDownload) > $this->parameters["limit"]) {
             // Sort files to download using timestamp
-            usort($filesToDownload, function($a, $b) {
-               return intval($a["timestamp"]) - intval($b["timestamp"]);
+            usort($filesToDownload, function ($a, $b) {
+                return intval($a["timestamp"]) - intval($b["timestamp"]);
             });
-            var_dump($filesToDownload);
+            $this->logger->info("Downloading only {$this->parameters["limit"]} oldest file(s) out of " . count($filesToDownload));
+            $filesToDownload = array_slice($filesToDownload, 0, $this->parameters["limit"]);
         }
-        */
 
         $fs = new Filesystem();
 
