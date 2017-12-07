@@ -1,12 +1,12 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Application;
 use Keboola\S3Extractor\Exception;
 use Monolog\Handler\TestHandler;
 
-class ExceptionsTest extends TestCase
+class ExceptionsFunctionalTest extends FunctionalTestCase
 {
     public function testInvalidBucket()
     {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Symfony\Component\Process\Process;
 
-class TestCase extends \PHPUnit\Framework\TestCase
+class FunctionalTestCase extends \PHPUnit\Framework\TestCase
 {
     const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
     const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
@@ -18,7 +18,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
-        (new Process('php ' . __DIR__ . '/../../loadS3.php'))->mustRun();
+        (new Process('php ' . __DIR__ . '/../../../loadS3.php'))->mustRun();
     }
 
     public function setUp()

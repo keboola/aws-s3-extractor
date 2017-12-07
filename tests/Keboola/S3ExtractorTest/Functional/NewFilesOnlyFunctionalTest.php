@@ -1,12 +1,12 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
-class NewFilesOnlyTest extends TestCase
+class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 {
     public function testSuccessfulDownloadFromRoot()
     {
@@ -26,7 +26,7 @@ class NewFilesOnlyTest extends TestCase
 
         $expectedFile = $this->path . '/' . 'myfile.csv';
         $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
+        $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
@@ -67,7 +67,7 @@ class NewFilesOnlyTest extends TestCase
         $client->putObject([
             'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
             'Key' => 'folder2/file1.csv',
-            'Body' => fopen(__DIR__ . '/../../_data/folder2/file1.csv', 'r+')
+            'Body' => fopen(__DIR__ . '/../../../_data/folder2/file1.csv', 'r+')
         ]);
 
         // download only the new file

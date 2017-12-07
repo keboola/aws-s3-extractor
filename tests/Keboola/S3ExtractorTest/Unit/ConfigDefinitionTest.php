@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Unit;
 
 use Keboola\S3Extractor\ConfigDefinition;
 use PHPUnit\Framework\TestCase;

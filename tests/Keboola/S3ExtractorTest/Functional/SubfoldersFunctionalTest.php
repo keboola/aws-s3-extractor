@@ -1,12 +1,12 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
-class SubfoldersTest extends TestCase
+class SubfoldersFunctionalTest extends FunctionalTestCase
 {
     /**
      * @param $testFile
@@ -18,7 +18,7 @@ class SubfoldersTest extends TestCase
     {
         $testFileReplaced = '/' . str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
         $this->assertFileExists($this->path . '/' . $saveAs . $testFileReplaced);
-        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFileReplaced);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFileReplaced);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 

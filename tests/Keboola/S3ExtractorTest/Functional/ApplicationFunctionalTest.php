@@ -1,11 +1,11 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Application;
 use Monolog\Handler\TestHandler;
 
-class ApplicationTest extends TestCase
+class ApplicationFunctionalTest extends FunctionalTestCase
 {
     public function testApplication()
     {

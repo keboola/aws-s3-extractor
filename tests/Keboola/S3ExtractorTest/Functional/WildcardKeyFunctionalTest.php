@@ -1,12 +1,12 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
-class WildcardKeyTest extends TestCase
+class WildcardKeyFunctionalTest extends FunctionalTestCase
 {
     /**
      * @param $testFile
@@ -17,7 +17,7 @@ class WildcardKeyTest extends TestCase
     private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
     {
         $this->assertFileExists($this->path . '/' . $saveAs . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFile);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
