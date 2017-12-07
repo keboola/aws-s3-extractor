@@ -135,10 +135,14 @@ class Extractor
                     $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . basename($object['Key']);
                 }
 
-                $filesToDownload[] = [
+                $parameters = [
                     'Bucket' => $this->parameters['bucket'],
                     'Key' => $object['Key'],
                     'SaveAs' => $dst
+                ];
+                $filesToDownload[] = [
+                    "timestamp" => $client->headObject($parameters)["LastModified"]->format("U"),
+                    "parameters" => $parameters
                 ];
             }
         } else {
@@ -146,10 +150,14 @@ class Extractor
                 throw new Exception("Cannot include subfolders without wildcard.");
             }
             $dst = $outputPath . '/' . $this->parameters['saveAs'];
-            $filesToDownload[] = [
+            $parameters = [
                 'Bucket' => $this->parameters['bucket'],
                 'Key' => $key,
                 'SaveAs' => $dst
+            ];
+            $filesToDownload[] = [
+                "timestamp" => $client->headObject($parameters)["LastModified"]->format("U"),
+                "parameters" => $parameters
             ];
         }
 
@@ -158,11 +166,9 @@ class Extractor
             $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
             $newLastDownloadedFileTimestamp = $lastDownloadedFileTimestamp;
             $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($client, $lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {
-                $object = $client->headObject($fileToDownload);
                 /** @var DateTimeResult $lastModified */
-                $lastModified = $object["LastModified"];
-                if ($lastModified->format("U") > $lastDownloadedFileTimestamp) {
-                    $newLastDownloadedFileTimestamp = max($newLastDownloadedFileTimestamp, $lastModified->format("U"));
+                if ($fileToDownload["timestamp"] > $lastDownloadedFileTimestamp) {
+                    $newLastDownloadedFileTimestamp = max($newLastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
                     return true;
                 }
                 return false;
@@ -177,12 +183,11 @@ class Extractor
         $downloadedFiles = 0;
         foreach ($filesToDownload as $fileToDownload) {
             // create folder
-
-            if (!$fs->exists(dirname($fileToDownload['SaveAs']))) {
-                $fs->mkdir(dirname($fileToDownload['SaveAs']));
+            if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
+                $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
-            $this->logger->info("Downloading file /" . $fileToDownload["Key"]);
-            $client->getObject($fileToDownload);
+            $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
+            $client->getObject($fileToDownload["parameters"]);
             $downloadedFiles++;
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");

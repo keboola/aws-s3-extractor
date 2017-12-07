@@ -78,9 +78,7 @@ class ExceptionsTest extends TestCase
     public function testInvalidKey()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("404 Not Found (NoSuchKey)");
-        $this->expectExceptionMessage("The specified key does not exist.");
-        $this->expectExceptionMessage("<Key>doesnotexist</Key>");
+        $this->expectExceptionMessage("404 Not Found (NotFound)");
 
         $application = new Application(
             [
