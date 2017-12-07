@@ -90,7 +90,7 @@ class NewFilesOnlyTest extends TestCase
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state2);
         $this->assertGreaterThan($state1['lastDownloadedFileTimestamp'], $state2['lastDownloadedFileTimestamp']);
 
-        // do not dowlnoad anything
+        // do not download anything
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),

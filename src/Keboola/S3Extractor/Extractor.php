@@ -161,21 +161,18 @@ class Extractor
             ];
         }
 
+        // Timestamp of last downloaded file
+        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
+
         // Filter out old files with newFilesOnly flag
         if ($this->parameters['newFilesOnly'] === true) {
-            $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
-            $newLastDownloadedFileTimestamp = $lastDownloadedFileTimestamp;
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp, &$newLastDownloadedFileTimestamp) {
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp) {
                 /** @var DateTimeResult $lastModified */
                 if ($fileToDownload["timestamp"] > $lastDownloadedFileTimestamp) {
-                    $newLastDownloadedFileTimestamp = max($newLastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
                     return true;
                 }
                 return false;
             });
-            $nextState['lastDownloadedFileTimestamp'] = $newLastDownloadedFileTimestamp;
-        } else {
-            $nextState = [];
         }
 
         // Apply limit
@@ -189,8 +186,9 @@ class Extractor
         }
 
         $fs = new Filesystem();
-
         $downloadedFiles = 0;
+
+        // Download files
         foreach ($filesToDownload as $fileToDownload) {
             // create folder
             if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
@@ -198,9 +196,15 @@ class Extractor
             }
             $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
             $client->getObject($fileToDownload["parameters"]);
+            $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
             $downloadedFiles++;
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
-        return $nextState;
+
+        if ($this->parameters['newFilesOnly'] === true) {
+            return ['lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp];
+        } else {
+            return [];
+        }
     }
 }

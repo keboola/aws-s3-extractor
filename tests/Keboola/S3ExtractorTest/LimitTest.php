@@ -71,4 +71,44 @@ class LimitTest extends TestCase
         $this->assertTrue($testHandler->hasInfo("Downloaded 10 file(s)"));
         $this->assertCount(11, $testHandler->getRecords());
     }
+
+    public function testNewFilesOnly()
+    {
+        $key = "*";
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => true,
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv",
+            "limit" => 1
+        ], [], (new Logger('test'))->pushHandler($testHandler));
+        $state = $extractor->extract($this->path);
+
+        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 10"));
+        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        $this->assertCount(3, $testHandler->getRecords());
+
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => true,
+            "newFilesOnly" => true,
+            "saveAs" => "myfile.csv",
+            "limit" => 1
+        ], $state, (new Logger('test'))->pushHandler($testHandler));
+        $extractor->extract($this->path);
+
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 9"));
+        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        $this->assertCount(3, $testHandler->getRecords());
+    }
 }
