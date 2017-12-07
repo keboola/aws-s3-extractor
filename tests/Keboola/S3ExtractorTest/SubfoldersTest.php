@@ -1,30 +1,13 @@
 <?php
+
 namespace Keboola\S3ExtractorTest;
 
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
 
 class SubfoldersTest extends TestCase
 {
-    const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
-
-    protected $path;
-
-    public function setUp()
-    {
-        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
-        mkdir($this->path, 0777, true);
-    }
-
-    public function tearDown()
-    {
-        passthru('rm -rf ' . $this->path);
-    }
-
     /**
      * @param $testFile
      * @param TestHandler $testHandler

@@ -14,21 +14,6 @@ services:
       - UPLOAD_USER_AWS_SECRET_KEY
       - DOWNLOAD_USER_AWS_ACCESS_KEY
       - DOWNLOAD_USER_AWS_SECRET_KEY
-  tests:
-    image: keboola/ex-aws-s3
-    command: >
-             sh -c '
-             ./tests.sh
-             '
-    volumes:
-      - ./:/code
-    environment:
-      - AWS_S3_BUCKET
-      - AWS_REGION
-      - DOWNLOAD_USER_AWS_ACCESS_KEY
-      - DOWNLOAD_USER_AWS_SECRET_KEY
-      - UPLOAD_USER_AWS_ACCESS_KEY
-      - UPLOAD_USER_AWS_SECRET_KEY
 
   code-coverage:
     build:

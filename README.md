@@ -106,6 +106,6 @@ docker-compose run --rm dev composer install --prefer-dist --no-interaction
 Run tests with following command.
 
 ```
-docker-compose run --rm tests
+docker-compose run --rm dev ./vendor/bin/phpunit
 ```
 
