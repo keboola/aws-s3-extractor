@@ -25,7 +25,8 @@ class OneFileTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -34,6 +35,7 @@ class OneFileTest extends TestCase
         $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
+        var_dump($testHandler->getRecords());
         $this->assertCount(2, $testHandler->getRecords());
     }
 
@@ -54,7 +56,8 @@ class OneFileTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

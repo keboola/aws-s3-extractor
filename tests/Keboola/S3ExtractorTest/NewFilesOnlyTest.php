@@ -19,7 +19,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
@@ -44,7 +45,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
@@ -77,7 +79,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
@@ -96,7 +99,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 

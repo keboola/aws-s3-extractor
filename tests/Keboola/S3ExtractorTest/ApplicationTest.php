@@ -16,7 +16,8 @@ class ApplicationTest extends TestCase
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
                 "newFilesOnly" => false,
-                "saveAs" => "myfile.csv"
+                "saveAs" => "myfile.csv",
+                "limit" => 1000
             ]
         ];
         $testHandler = new TestHandler();
@@ -34,7 +35,8 @@ class ApplicationTest extends TestCase
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
                 "newFilesOnly" => true,
-                "saveAs" => "myfile.csv"
+                "saveAs" => "myfile.csv",
+                "limit" => 1000
             ]
         ];
         $testHandler = new TestHandler();

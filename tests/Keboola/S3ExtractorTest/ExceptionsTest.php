@@ -23,7 +23,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -47,7 +48,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -70,7 +72,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/doesnotexist",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -93,7 +96,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/notawildcard",
                     "includeSubfolders" => true,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
