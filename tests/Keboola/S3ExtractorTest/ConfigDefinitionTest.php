@@ -22,7 +22,8 @@ class ConfigDefinitionTest extends TestCase
         "key": "d",
         "includeSubfolders": false,
         "newFilesOnly": false,
-        "saveAs": "myfile.csv"
+        "saveAs": "myfile.csv",
+        "limit": 1
     }
 }
 JSON;
@@ -44,6 +45,29 @@ JSON;
         "accessKeyId": "a",
         "#secretAccessKey": "b",
         "bucket": "c"
+    }   
+}
+JSON;
+
+        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
+        (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
+    }
+
+    public function testInvalidLimit()
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $json = <<<JSON
+{
+    "parameters": {
+        "accessKeyId": "a",
+        "#secretAccessKey": "b",
+        "bucket": "c",
+        "key": "d",
+        "includeSubfolders": false,
+        "newFilesOnly": false,
+        "saveAs": "myfile.csv",
+        "limit": 0
     }   
 }
 JSON;
