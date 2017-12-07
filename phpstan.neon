@@ -1,5 +1,3 @@
 parameters:
 	ignoreErrors:
-		- '#Call to an undefined method Aws\\S3\\S3Client::getBucketLocation().#'
-		- '#Call to an undefined method Aws\\S3\\S3Client::getObject().#'
-		- '#Call to an undefined method Aws\\S3\\S3Client::headObject().#'
+		- '#Call to an undefined method Symfony\\Component\\Config\\Definition\\Builder\\NodeDefinition::children().#'

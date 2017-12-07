@@ -46,7 +46,7 @@ class Extractor
 
     /**
      * Creates exports and runs extraction
-     * @param $outputPath
+     * @param string $outputPath
      * @return array
      * @throws \Exception
      */

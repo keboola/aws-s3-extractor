@@ -32,7 +32,7 @@ class Application
     /**
      * Application constructor.
      *
-     * @param $config
+     * @param array $config
      * @param array $state
      * @param HandlerInterface|null $handler
      */
@@ -54,7 +54,7 @@ class Application
 
     /**
      * Runs data extraction
-     * @param $outputPath
+     * @param string $outputPath
      * @return array
      * @throws \Exception
      */
@@ -72,15 +72,19 @@ class Application
                 if (get_class($e->getPrevious()) === ClientException::class) {
                     /** @var ClientException $previous */
                     $previous = $e->getPrevious();
-                    throw new Exception(
-                        $previous->getResponse()->getStatusCode()
-                        . " "
-                        . $previous->getResponse()->getReasonPhrase()
-                        . " ("
-                        . $e->getAwsErrorCode()
-                        . ")\n"
-                        . $previous->getResponse()->getBody()->__toString()
-                    );
+                    if ($previous->getResponse()) {
+                        throw new Exception(
+                            $previous->getResponse()->getStatusCode()
+                            . " "
+                            . $previous->getResponse()->getReasonPhrase()
+                            . " ("
+                            . $e->getAwsErrorCode()
+                            . ")\n"
+                            . $previous->getResponse()->getBody()->__toString()
+                        );
+                    } else {
+                        throw new Exception($previous->getMessage());
+                    }
                 }
                 throw new Exception($e->getMessage());
             }
