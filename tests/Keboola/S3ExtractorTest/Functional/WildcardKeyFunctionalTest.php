@@ -1,30 +1,13 @@
 <?php
-namespace Keboola\S3ExtractorTest;
+
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
 
-class WildcardKeyTest extends TestCase
+class WildcardKeyFunctionalTest extends FunctionalTestCase
 {
-    const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
-
-    protected $path;
-
-    public function setUp()
-    {
-        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
-        mkdir($this->path, 0777, true);
-    }
-
-    public function tearDown()
-    {
-        passthru('rm -rf ' . $this->path);
-    }
-
     /**
      * @param $testFile
      * @param TestHandler $testHandler
@@ -34,7 +17,7 @@ class WildcardKeyTest extends TestCase
     private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
     {
         $this->assertFileExists($this->path . '/' . $saveAs . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFile);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
@@ -56,7 +39,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -83,7 +67,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -110,7 +95,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -140,7 +126,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -167,7 +154,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -193,7 +181,8 @@ class WildcardKeyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

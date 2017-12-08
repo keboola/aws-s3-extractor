@@ -1,32 +1,13 @@
 <?php
 
-namespace Keboola\S3ExtractorTest;
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Application;
 use Keboola\S3Extractor\Exception;
-use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
-use PHPUnit\Framework\TestCase;
 
-class ExceptionsTest extends TestCase
+class ExceptionsFunctionalTest extends FunctionalTestCase
 {
-    const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
-    protected $path = '/tmp/errors';
-
-    public function setUp()
-    {
-        if (!file_exists($this->path)) {
-            mkdir($this->path);
-        }
-    }
-
-    public function tearDown()
-    {
-        passthru('rm -rf ' . $this->path);
-    }
-
     public function testInvalidBucket()
     {
         $this->expectException(Exception::class);
@@ -42,7 +23,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -66,7 +48,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -78,9 +61,7 @@ class ExceptionsTest extends TestCase
     public function testInvalidKey()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("404 Not Found (NoSuchKey)");
-        $this->expectExceptionMessage("The specified key does not exist.");
-        $this->expectExceptionMessage("<Key>doesnotexist</Key>");
+        $this->expectExceptionMessage("404 Not Found (NotFound)");
 
         $application = new Application(
             [
@@ -91,7 +72,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/doesnotexist",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],
@@ -114,7 +96,8 @@ class ExceptionsTest extends TestCase
                     "key" => "/notawildcard",
                     "includeSubfolders" => true,
                     "newFilesOnly" => false,
-                    "saveAs" => "myfile.csv"
+                    "saveAs" => "myfile.csv",
+                    "limit" => 1000
                 ],
             ],
             [],

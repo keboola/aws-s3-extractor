@@ -17,23 +17,24 @@
     }
   ],
   "require": {
-    "symfony/process": "~3.1",
-    "symfony/filesystem": "~3.1",
-    "symfony/console": "~3.1",
-    "aws/aws-sdk-php": "~3.19.8",
-    "symfony/serializer": "~3.1",
+    "symfony/process": "^3.1",
+    "symfony/filesystem": "^3.1",
+    "symfony/console": "^3.1",
+    "aws/aws-sdk-php": "^3.19",
+    "symfony/serializer": "^3.1",
     "symfony/config": "^3.0",
-    "monolog/monolog": "~1.22"
+    "monolog/monolog": "^1.22"
   },
   "require-dev": {
-    "phpunit/phpunit": "~6.0",
-    "squizlabs/php_codesniffer": "~2.6",
-    "codeclimate/php-test-reporter": "~0.4",
-    "phpstan/phpstan": "~0.6.4"
+    "phpunit/phpunit": "^6.0",
+    "squizlabs/php_codesniffer": "^2.6",
+    "codeclimate/php-test-reporter": "^0.4",
+    "phpstan/phpstan": "^0.9"
   },
   "autoload": {
     "psr-4": {
-      "Keboola\\": "src/Keboola/"
+      "Keboola\\": "src/Keboola/",
+      "Keboola\\S3ExtractorTest\\": "tests/Keboola/S3ExtractorTest"
     }
   }
 }

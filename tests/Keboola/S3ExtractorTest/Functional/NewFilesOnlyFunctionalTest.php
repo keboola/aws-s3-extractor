@@ -1,36 +1,13 @@
 <?php
-namespace Keboola\S3ExtractorTest;
+
+namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Extractor;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use PHPUnit\Framework\TestCase;
 
-class NewFilesOnlyTest extends TestCase
+class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 {
-    const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
-    const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
-    const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
-    const UPDATE_AWS_S3_ACCESS_KEY_ENV = 'UPLOAD_USER_AWS_ACCESS_KEY';
-    const UPDATE_AWS_S3_SECRET_KEY_ENV = 'UPLOAD_USER_AWS_SECRET_KEY';
-    const UPDATE_AWS_S3_BUCKET = 'AWS_S3_BUCKET';
-    const UPDATE_AWS_REGION = 'AWS_REGION';
-
-    protected $path;
-
-    public function setUp()
-    {
-        $this->path = '/tmp/aws-s3-extractor/' . uniqid();
-        mkdir($this->path, 0777, true);
-    }
-
-    public function tearDown()
-    {
-        system('rm -rf ' . $this->path);
-    }
-
     public function testSuccessfulDownloadFromRoot()
     {
         $key = "file1.csv";
@@ -42,13 +19,14 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
         $expectedFile = $this->path . '/' . 'myfile.csv';
         $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../_data/file1.csv", $expectedFile);
+        $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
@@ -67,7 +45,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
@@ -88,7 +67,7 @@ class NewFilesOnlyTest extends TestCase
         $client->putObject([
             'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
             'Key' => 'folder2/file1.csv',
-            'Body' => fopen(__DIR__ . '/../../_data/folder2/file1.csv', 'r+')
+            'Body' => fopen(__DIR__ . '/../../../_data/folder2/file1.csv', 'r+')
         ]);
 
         // download only the new file
@@ -100,7 +79,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
@@ -110,7 +90,7 @@ class NewFilesOnlyTest extends TestCase
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state2);
         $this->assertGreaterThan($state1['lastDownloadedFileTimestamp'], $state2['lastDownloadedFileTimestamp']);
 
-        // do not dowlnoad anything
+        // do not download anything
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -119,7 +99,8 @@ class NewFilesOnlyTest extends TestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv"
+            "saveAs" => "myfile.csv",
+            "limit" => 1000
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 

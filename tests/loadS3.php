@@ -46,20 +46,33 @@ if ($objects) {
     ]);
 }
 
-// Create a transfer object.
-$manager = new \Aws\S3\Transfer($client, $source, $dest, [
-    'debug' => true,
-]);
+// Manually transfer files
+$files = [
+    'collision-file1.csv',
+    'file1.csv',
+    'collision/file1.csv',
+    'folder1/file1.csv',
+    'folder2/collision-file1.csv',
+    'folder2/file1.csv',
+    'folder2/file2.csv',
+    'folder2/collision/file1.csv',
+    'folder2/file3/file1.csv'
+];
+foreach ($files as $file) {
+    echo "Transferring {$file}\n";
+    $client->putObject([
+        'Bucket' => $bucket,
+        'Key' => $file,
+        'Body' => fopen($source . '/' . $file, 'r')
+    ]);
+    sleep(1);
+}
 
-// Perform the transfer synchronously.
-$manager->transfer();
-
-// put empty folder
+// Create empty folder
 print "Creating /emptyfolder/\n";
 $client->putObject([
     'Bucket' => $bucket,
     'Key' => 'emptyfolder/'
 ]);
-
 
 echo "Data loaded OK\n";
