@@ -65,7 +65,6 @@ class Application
             return $extractor->extract($outputPath);
         } catch (S3Exception $e) {
             if ($e->getStatusCode() === 403) {
-                // var_dump($e->getMessage());
                 throw new Exception("Invalid credentials or permissions.", $e->getCode(), $e);
             }
             if ($e->getStatusCode() === 400 || $e->getStatusCode() === 401 || $e->getStatusCode() === 404) {
