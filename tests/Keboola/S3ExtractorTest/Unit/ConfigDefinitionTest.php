@@ -75,4 +75,25 @@ JSON;
         $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
         (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
     }
+    
+    public function testMissingLimit()
+    {
+        $json = <<<JSON
+{
+    "parameters": {
+        "accessKeyId": "a",
+        "#secretAccessKey": "b",
+        "bucket": "c",
+        "key": "d",
+        "includeSubfolders": false,
+        "newFilesOnly": false,
+        "saveAs": "myfile.csv"
+    }   
+}
+JSON;
+
+        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
+        $parameters = (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
+        $this->assertEquals(1000, $parameters["limit"]);
+    }
 }

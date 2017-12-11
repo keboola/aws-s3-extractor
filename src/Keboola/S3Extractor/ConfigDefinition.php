@@ -41,7 +41,6 @@ class ConfigDefinition implements ConfigurationInterface
                     ->cannotBeEmpty()
                 ->end()
                 ->integerNode('limit')
-                    ->isRequired()
                     ->defaultValue(1000)
                     ->min(1)
                     ->max(1000)
