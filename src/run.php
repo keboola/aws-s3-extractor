@@ -52,7 +52,7 @@ try {
 
     exit(0);
 } catch (\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException $e) {
-    echo "Invalid configuration";
+    echo "Invalid configuration: " . $e->getMessage();
     exit(1);
 } catch (\Keboola\S3Extractor\Exception $e) {
     echo $e->getMessage();
