@@ -5,8 +5,8 @@ docker pull quay.io/keboola/developer-portal-cli-v2:latest
 export REPOSITORY=`docker run --rm  \
     -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD  \
     quay.io/keboola/developer-portal-cli-v2:latest ecr:get-repository keboola keboola.ex-aws-s3`
-docker tag keboola/ex-aws-s3:latest ${REPOSITORY}:${TRAVIS_TAG}
-docker tag keboola/ex-aws-s3:latest ${REPOSITORY}:latest
+docker tag $APP_IMAGE:latest ${REPOSITORY}:${TRAVIS_TAG}
+docker tag $APP_IMAGE:latest ${REPOSITORY}:latest
 eval $(docker run --rm \
     -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL \
     quay.io/keboola/developer-portal-cli-v2:latest ecr:get-login keboola keboola.ex-aws-s3)
@@ -15,4 +15,4 @@ docker push ${REPOSITORY}:latest
 
 # Deploy to KBC -> update the tag in Keboola Developer Portal (needs $KBC_DEVELOPERPORTAL_VENDOR & $KBC_DEVELOPERPORTAL_APP)
 docker run --rm -e KBC_DEVELOPERPORTAL_USERNAME -e KBC_DEVELOPERPORTAL_PASSWORD -e KBC_DEVELOPERPORTAL_URL \
-    quay.io/keboola/developer-portal-cli-v2:latest update-app-repository keboola keboola.ex-aws-s3 ${TRAVIS_TAG} ecr ${REPOSITORY}
+    quay.io/keboola/developer-portal-cli-v2:latest update-app-repository $KBC_DEVELOPERPORTAL_VENDOR $KBC_DEVELOPERPORTAL_APP ${TRAVIS_TAG} ecr ${REPOSITORY}
