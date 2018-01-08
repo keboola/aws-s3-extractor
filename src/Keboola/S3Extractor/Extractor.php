@@ -155,23 +155,28 @@ class Extractor
                 'Key' => $key,
                 'SaveAs' => $dst
             ];
+            $head = $client->headObject($parameters);
             $filesToDownload[] = [
-                "timestamp" => $client->headObject($parameters)["LastModified"]->format("U"),
+                "timestamp" => $head["LastModified"]->format("U"),
                 "parameters" => $parameters
             ];
         }
 
-        // Timestamp of last downloaded file
+        // Timestamp of last downloaded file, processed files in the last timestamp second
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
+        $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
 
         // Filter out old files with newFilesOnly flag
         if ($this->parameters['newFilesOnly'] === true) {
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp) {
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp, $processedFilesInLastTimestampSecond) {
                 /** @var DateTimeResult $lastModified */
-                if ($fileToDownload["timestamp"] > $lastDownloadedFileTimestamp) {
-                    return true;
+                if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
+                    return false;
                 }
-                return false;
+                if (in_array($fileToDownload["parameters"]["Key"], $processedFilesInLastTimestampSecond)) {
+                    return false;
+                }
+                return true;
             });
         }
 
@@ -179,6 +184,9 @@ class Extractor
         if (count($filesToDownload) > $this->parameters["limit"]) {
             // Sort files to download using timestamp
             usort($filesToDownload, function ($a, $b) {
+                if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
+                    return strcmp($a["parameters"]["Key"], $b["parameters"]["Key"]);
+                }
                 return intval($a["timestamp"]) - intval($b["timestamp"]);
             });
             $this->logger->info("Downloading only {$this->parameters["limit"]} oldest file(s) out of " . count($filesToDownload));
@@ -196,13 +204,20 @@ class Extractor
             }
             $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
             $client->getObject($fileToDownload["parameters"]);
+            if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
+                $processedFilesInLastTimestampSecond = [];
+            }
             $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
+            $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
             $downloadedFiles++;
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
 
         if ($this->parameters['newFilesOnly'] === true) {
-            return ['lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp];
+            return [
+                'lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp,
+                'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond
+            ];
         } else {
             return [];
         }
