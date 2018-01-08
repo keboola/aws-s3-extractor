@@ -24,7 +24,7 @@ class LimitFunctionalTest extends FunctionalTestCase
 
     public function testLimitReached()
     {
-        $key = "*";
+        $key = "f*";
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -38,15 +38,15 @@ class LimitFunctionalTest extends FunctionalTestCase
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 10"));
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 7"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(3, $testHandler->getRecords());
     }
 
     public function testLimitNotExceeded()
     {
-        $key = "*";
+        $key = "f*";
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -60,7 +60,6 @@ class LimitFunctionalTest extends FunctionalTestCase
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
         $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
         $this->assertFileDownloadedFromS3('/folder1/file1.csv', $testHandler);
         $this->assertFileDownloadedFromS3('/folder2/file1.csv', $testHandler);
@@ -68,13 +67,13 @@ class LimitFunctionalTest extends FunctionalTestCase
         $this->assertFileDownloadedFromS3('/folder2/file3/file1.csv', $testHandler);
         $this->assertFileDownloadedFromS3('/folder2/collision/file1.csv', $testHandler);
         $this->assertFileDownloadedFromS3('/folder2/collision-file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloaded 10 file(s)"));
-        $this->assertCount(11, $testHandler->getRecords());
+        $this->assertTrue($testHandler->hasInfo("Downloaded 7 file(s)"));
+        $this->assertCount(8, $testHandler->getRecords());
     }
 
     public function testNewFilesOnly()
     {
-        $key = "*";
+        $key = "f*";
         $testHandler = new TestHandler();
         $extractor = new Extractor([
             "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -88,8 +87,8 @@ class LimitFunctionalTest extends FunctionalTestCase
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 10"));
+        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 7"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(3, $testHandler->getRecords());
 
@@ -106,8 +105,8 @@ class LimitFunctionalTest extends FunctionalTestCase
         ], $state, (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 9"));
+        $this->assertFileDownloadedFromS3('/folder1/file1.csv', $testHandler);
+        $this->assertTrue($testHandler->hasInfo("Downloading only 1 oldest file(s) out of 6"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(3, $testHandler->getRecords());
     }
