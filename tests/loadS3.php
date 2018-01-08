@@ -86,7 +86,7 @@ do {
             [
                 'Bucket' => $bucket,
                 'Key' => 'no-unique-timestamps/' . $file,
-                'Source' => $bucket . '/' . $file
+                'Body' => fopen($source . '/' . $file, 'r')
             ]
         );
     }
