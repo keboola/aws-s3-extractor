@@ -74,8 +74,7 @@ $files = [
     'folder2/collision-file1.csv',
     'folder2/file1.csv',
     'folder2/file2.csv',
-    'folder2/collision/file1.csv',
-    'folder2/file3/file1.csv'
+    'folder2/collision/file1.csv'
 ];
 
 $equalTimestamp = false;
@@ -106,7 +105,18 @@ do {
     }
 } while (!$equalTimestamp);
 
-// Create empty folder
+sleep(1);
+$file = 'folder2/file3/file1.csv';
+echo "Transferring {$bucket}/no-unique-timestamps/{$file} after a while\n";
+$client->putObject(
+    [
+        'Bucket' => $bucket,
+        'Key' => 'no-unique-timestamps/' . $file,
+        'Body' => fopen($source . '/' . $file, 'r')
+    ]
+);
+
+// Create an empty folder
 print "Creating /emptyfolder/\n";
 $client->putObject([
     'Bucket' => $bucket,
