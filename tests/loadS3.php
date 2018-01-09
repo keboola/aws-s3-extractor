@@ -59,16 +59,64 @@ $files = [
     'folder2/file3/file1.csv'
 ];
 foreach ($files as $file) {
-    echo "Transferring {$file}\n";
+    echo "Transferring {$bucket}/{$file} slowly\n";
     $client->putObject([
         'Bucket' => $bucket,
         'Key' => $file,
         'Body' => fopen($source . '/' . $file, 'r')
     ]);
+    // This ensures each file has a unique timestamp
     sleep(1);
 }
 
-// Create empty folder
+// Manually transfer files
+$files = [
+    'folder2/collision-file1.csv',
+    'folder2/file1.csv',
+    'folder2/file2.csv',
+    'folder2/collision/file1.csv'
+];
+
+$equalTimestamp = false;
+do {
+    foreach ($files as $file) {
+        echo "Transferring {$bucket}/no-unique-timestamps/{$file} quickly\n";
+        $client->putObject(
+            [
+                'Bucket' => $bucket,
+                'Key' => 'no-unique-timestamps/' . $file,
+                'Body' => fopen($source . '/' . $file, 'r')
+            ]
+        );
+    }
+    // check timestamps if all of them are equal
+    $timestamps = [];
+    foreach ($files as $file) {
+        $parameters = [
+            'Bucket' => $bucket,
+            'Key' => 'no-unique-timestamps/' . $file
+        ];
+        $timestamps[] = $client->headObject($parameters)["LastModified"]->format("U");
+    }
+    if (count(array_unique($timestamps)) === 1) {
+        $equalTimestamp = true;
+    } else {
+        echo "Timestamps not equal, retrying\n";
+    }
+} while (!$equalTimestamp);
+
+sleep(1);
+$file = 'folder2/file3/file1.csv';
+echo "Transferring {$bucket}/no-unique-timestamps/{$file} after a while\n";
+$client->putObject(
+    [
+        'Bucket' => $bucket,
+        'Key' => 'no-unique-timestamps/' . $file,
+        'Body' => fopen($source . '/' . $file, 'r')
+    ]
+);
+
+// Create an empty folder
 print "Creating /emptyfolder/\n";
 $client->putObject([
     'Bucket' => $bucket,
