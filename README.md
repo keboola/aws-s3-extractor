@@ -20,7 +20,8 @@ Download files from S3 to `/data/out/files`.
 - `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the search key prefix. 
 Subfolder structure will be flattened, `/` in the path will be replaced with a `-` character, eg `folder1/file1.csv => folder1-file1.csv`. 
 Existing `-` characters will be escaped with an extra `-` character to resolve possible collisions, eg. `collision-file.csv => collision--file.csv`.  
-- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.
+- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file. 
+If more files with the same timestamp exist, the state `processedFilesInLastTimestampSecond` property is used to save all processed files within the given second.
 - `limit` (optional, default `1000`, range from `1` to `1000`) -- Maximum number of files downloaded, if the `key` matches more files than `limit`, the oldest files will be downloaded. 
 If used together with `newFilesOnly`, the extractor will process `limit` number of files that have not yet been processed. 
 The maximum limit of `1000` is set due to limitations in Keboola Connection Storage API.
