@@ -24,7 +24,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'myfile.csv';
+        $expectedFile = $this->path . '/' . 'myfile.csv/file1.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));

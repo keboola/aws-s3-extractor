@@ -149,7 +149,7 @@ class Extractor
             if ($this->parameters['includeSubfolders'] === true) {
                 throw new Exception("Cannot include subfolders without wildcard.");
             }
-            $dst = $outputPath . '/' . $this->parameters['saveAs'];
+            $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . basename($key);
             $parameters = [
                 'Bucket' => $this->parameters['bucket'],
                 'Key' => $key,
