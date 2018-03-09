@@ -12,13 +12,12 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
      * @param $testFile
      * @param TestHandler $testHandler
      * @param string $prefix
-     * @param string $saveAs
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
     {
-        $testFileReplaced = '/' . str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
-        $this->assertFileExists($this->path . '/' . $saveAs . $testFileReplaced);
-        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFileReplaced);
+        $testFileReplaced = str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
+        $this->assertFileExists($this->path . '/' . $testFileReplaced);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $testFileReplaced);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
@@ -40,7 +39,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -74,7 +72,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -103,7 +100,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -136,7 +132,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -166,7 +161,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -194,7 +188,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -221,7 +214,6 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);

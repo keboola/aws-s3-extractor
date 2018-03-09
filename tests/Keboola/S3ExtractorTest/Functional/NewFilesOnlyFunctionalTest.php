@@ -19,12 +19,11 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'myfile.csv/file1.csv';
+        $expectedFile = $this->path . '/file1.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
@@ -45,7 +44,6 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
@@ -79,7 +77,6 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
@@ -99,7 +96,6 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);

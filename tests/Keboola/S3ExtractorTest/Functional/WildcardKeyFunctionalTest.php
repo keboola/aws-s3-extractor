@@ -12,12 +12,11 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
      * @param $testFile
      * @param TestHandler $testHandler
      * @param string $prefix
-     * @param string $saveAs
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
     {
-        $this->assertFileExists($this->path . '/' . $saveAs . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFile);
+        $this->assertFileExists($this->path . '/' . $testFile);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $testFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
@@ -39,7 +38,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -67,7 +65,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -95,7 +92,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -126,7 +122,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -154,7 +149,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -181,7 +175,6 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);

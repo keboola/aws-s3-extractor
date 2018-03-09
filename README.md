@@ -16,7 +16,7 @@ Download files from S3 to `/data/out/files`.
 - `#secretAccessKey` (required) -- AWS Secret Access Key
 - `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
 - `key` (required) -- Search key prefix, optionally ending with a `*` wildcard. all filed downloaded with a wildcard are stored in `/data/out/files/wildcard` folder.
-- `saveAs` (required) -- Store downloaded file(s) into a defined file/folder.
+- `saveAs` (optional) -- Store all downloaded file(s) in a folder.
 - `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the search key prefix. 
 Subfolder structure will be flattened, `/` in the path will be replaced with a `-` character, eg `folder1/file1.csv => folder1-file1.csv`. 
 Existing `-` characters will be escaped with an extra `-` character to resolve possible collisions, eg. `collision-file.csv => collision--file.csv`.  
@@ -25,7 +25,6 @@ If more files with the same timestamp exist, the state `processedFilesInLastTime
 - `limit` (optional, default `1000`, range from `1` to `1000`) -- Maximum number of files downloaded, if the `key` matches more files than `limit`, the oldest files will be downloaded. 
 If used together with `newFilesOnly`, the extractor will process `limit` number of files that have not yet been processed. 
 The maximum limit of `1000` is set due to limitations in Keboola Connection Storage API.
-  
 
 ### Sample configurations
 
@@ -38,7 +37,6 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
         "#secretAccessKey": "****",
         "bucket": "myBucket",
         "key": "myfile.csv",
-        "saveAs": "myfile.csv",
         "includeSubfolders": false,
         "newFilesOnly": false
     }
@@ -54,7 +52,7 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
         "#secretAccessKey": "****",
         "bucket": "myBucket",
         "key": "myfolder/*",
-        "saveAs": "myfolder.csv",
+        "saveAs": "myfolder",
         "includeSubfolders": false,
         "newFilesOnly": false
     }
@@ -70,7 +68,6 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
         "#secretAccessKey":  "****",
         "bucket": "myBucket",
         "key": "myfolder/*",
-        "saveAs": "mycompletefolder.csv",        
         "includeSubfolders": true,
         "newFilesOnly": true
     }
@@ -88,7 +85,6 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
         "#secretAccessKey":  "****",
         "bucket": "myBucket",
         "key": "myfolder/*",
-        "saveAs": "mycompletefolder.csv",        
         "includeSubfolders": true,
         "newFilesOnly": true,
         "limit": 100
