@@ -16,7 +16,6 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
                 "newFilesOnly" => false,
-                "saveAs" => "myfile.csv",
                 "limit" => 1000
             ]
         ];
@@ -35,7 +34,6 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
                 "key" => "/file1.csv",
                 "newFilesOnly" => true,
-                "saveAs" => "myfile.csv",
                 "limit" => 1000
             ]
         ];

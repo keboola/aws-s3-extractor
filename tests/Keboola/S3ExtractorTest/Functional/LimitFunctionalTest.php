@@ -12,13 +12,12 @@ class LimitFunctionalTest extends FunctionalTestCase
      * @param $testFile
      * @param TestHandler $testHandler
      * @param string $prefix
-     * @param string $saveAs
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "", $saveAs = 'myfile.csv')
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
     {
-        $testFileReplaced = '/' . str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
-        $this->assertFileExists($this->path . '/' . $saveAs . $testFileReplaced);
-        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $saveAs . $testFileReplaced);
+        $testFileReplaced = str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
+        $this->assertFileExists($this->path . '/' . $testFileReplaced);
+        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $testFileReplaced);
         $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
     }
 
@@ -33,7 +32,6 @@ class LimitFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -55,7 +53,6 @@ class LimitFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 10
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -82,7 +79,6 @@ class LimitFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
@@ -100,7 +96,6 @@ class LimitFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => true,
-            "saveAs" => "myfile.csv",
             "limit" => 1
         ], $state, (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);

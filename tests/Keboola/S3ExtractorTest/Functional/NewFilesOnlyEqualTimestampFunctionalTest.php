@@ -11,15 +11,14 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     /**
      * @param $testFile
      * @param TestHandler $testHandler
-     * @param string $saveAs
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $saveAs = 'myfile.csv')
+    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler)
     {
-        $testFileReplaced = '/' . str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
-        $this->assertFileExists($this->path . '/' . $saveAs . $testFileReplaced);
+        $testFileReplaced = str_replace('/', '-', str_replace('-', '--', substr($testFile, 1)));
+        $this->assertFileExists($this->path . '/' . $testFileReplaced);
         $this->assertFileEquals(
             __DIR__ . "/../../../_data" . $testFile,
-            $this->path . '/' . $saveAs . $testFileReplaced
+            $this->path . '/' . $testFileReplaced
         );
         $this->assertTrue($testHandler->hasInfo("Downloading file /no-unique-timestamps{$testFile}"));
     }
@@ -40,7 +39,6 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
                 "key" => $key,
                 "includeSubfolders" => true,
                 "newFilesOnly" => true,
-                "saveAs" => "myfile.csv",
                 "limit" => 1,
             ],
             $state,

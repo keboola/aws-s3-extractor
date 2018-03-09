@@ -25,12 +25,11 @@ class OneFileFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'myfile.csv/file1.csv';
+        $expectedFile = $this->path . '/file1.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
@@ -55,12 +54,11 @@ class OneFileFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "saveAs" => "myfile.csv",
             "limit" => 1000
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $expectedFile = $this->path . '/' . 'myfile.csv/file1.csv';
+        $expectedFile = $this->path . '/file1.csv';
         $this->assertFileExists($expectedFile);
         $this->assertFileEquals(__DIR__ . "/../../../_data/folder1/file1.csv", $expectedFile);
         $this->assertTrue($testHandler->hasInfo("Downloading file /folder1/file1.csv"));
