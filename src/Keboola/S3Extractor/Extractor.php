@@ -77,7 +77,7 @@ class Extractor
 
         $saveAsSubfolder = '';
         if (!empty($this->parameters['saveAs'])) {
-            $saveAsSubfolder = $saveAsSubfolder;
+            $saveAsSubfolder = $this->parameters['saveAs'] . '/';
         }
 
         $filesToDownload = [];
