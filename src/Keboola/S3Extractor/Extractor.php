@@ -105,6 +105,11 @@ class Extractor
                     continue;
                 }
 
+                // Skip empty folder files (https://github.com/keboola/s3-extractor/issues/13)
+                if (substr($object['Key'], -1, 1) === '/') {
+                    continue;
+                }
+
                 // remove wilcard mask from search key
                 $keyWithoutWildcard = trim($key, "*");
 
