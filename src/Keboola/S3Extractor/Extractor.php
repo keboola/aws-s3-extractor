@@ -75,6 +75,11 @@ class Extractor
             $key = substr($key, 1);
         }
 
+        $saveAsSubfolder = '';
+        if (!empty($this->parameters['saveAs'])) {
+            $saveAsSubfolder = $saveAsSubfolder;
+        }
+
         $filesToDownload = [];
 
         // Detect wildcard at the end
@@ -130,9 +135,9 @@ class Extractor
                             str_replace('-', '--', basename($object['Key']))
                         );
                     }
-                    $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . $flattened;
+                    $dst = $outputPath . '/' . $saveAsSubfolder . $flattened;
                 } else {
-                    $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . basename($object['Key']);
+                    $dst = $outputPath . '/' . $saveAsSubfolder . basename($object['Key']);
                 }
 
                 $parameters = [
@@ -149,7 +154,7 @@ class Extractor
             if ($this->parameters['includeSubfolders'] === true) {
                 throw new Exception("Cannot include subfolders without wildcard.");
             }
-            $dst = $outputPath . '/' . $this->parameters['saveAs'] . '/' . basename($key);
+            $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);
             $parameters = [
                 'Bucket' => $this->parameters['bucket'],
                 'Key' => $key,
