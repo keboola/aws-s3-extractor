@@ -131,6 +131,33 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
         $this->assertCount(2, $testHandler->getRecords());
     }
 
+
+    /**
+     * @dataProvider initialForwardSlashProvider
+     * @param $initialForwardSlash
+     */
+    public function testSuccessfulDownloadEmptyFolderWithoutTrailingForwardslash($initialForwardSlash)
+    {
+        $key = "emptyfolder*";
+        if ($initialForwardSlash) {
+            $key = "/" . $key;
+        }
+        $testHandler = new TestHandler();
+        $extractor = new Extractor([
+            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+            "key" => $key,
+            "includeSubfolders" => true,
+            "newFilesOnly" => false,
+            "limit" => 1000
+        ], [], (new Logger('test'))->pushHandler($testHandler));
+        $extractor->extract($this->path);
+
+        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
+        $this->assertCount(1, $testHandler->getRecords());
+    }
+
     /**
      * @dataProvider initialForwardSlashProvider
      * @param $initialForwardSlash
