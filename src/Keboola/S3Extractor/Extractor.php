@@ -105,7 +105,7 @@ class Extractor
                     continue;
                 }
 
-                // Skip empty folder files (https://github.com/keboola/s3-extractor/issues/13)
+                // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
                 if (substr($object['Key'], -1, 1) === '/') {
                     continue;
                 }
