@@ -38,7 +38,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "limit" => 1000,
+            "limit" => 0,
             "saveAs" => "folder"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -68,7 +68,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "limit" => 1000,
+            "limit" => 0,
             "saveAs" => "folder"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
@@ -99,7 +99,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "limit" => 1000,
+            "limit" => 0,
             "saveAs" => "folder"
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);

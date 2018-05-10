@@ -40,9 +40,8 @@ class ConfigDefinition implements ConfigurationInterface
                     ->defaultValue('')
                 ->end()
                 ->integerNode('limit')
-                    ->defaultValue(1000)
-                    ->min(1)
-                    ->max(1000)
+                    ->defaultValue(0)
+                    ->min(0)
                 ->end()
 
             ->end()

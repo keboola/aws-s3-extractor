@@ -19,7 +19,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
@@ -44,7 +44,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
@@ -77,7 +77,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "limit" => 1000
+            "limit" => 0
         ], $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
@@ -96,7 +96,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => true,
-            "limit" => 1000
+            "limit" => 0
         ], $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 
