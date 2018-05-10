@@ -1,8 +1,8 @@
 # Keboola AWS S3 Extractor
- 
+
 [![Build Status](https://travis-ci.org/keboola/aws-s3-extractor.svg?branch=master)](https://travis-ci.org/keboola/aws-s3-extractor) [![Code Climate](https://codeclimate.com/github/keboola/aws-s3-extractor/badges/gpa.svg)](https://codeclimate.com/github/keboola/aws-s3-extractor) [![Test Coverage](https://codeclimate.com/github/keboola/aws-s3-extractor/badges/coverage.svg)](https://codeclimate.com/github/keboola/aws-s3-extractor)
 
-Download files from S3 to `/data/out/files`. 
+Download files from S3 to `/data/out/files`.
 
 ## Features
 - Use `*` for wildcards
@@ -17,14 +17,13 @@ Download files from S3 to `/data/out/files`.
 - `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
 - `key` (required) -- Search key prefix, optionally ending with a `*` wildcard. all filed downloaded with a wildcard are stored in `/data/out/files/wildcard` folder.
 - `saveAs` (optional) -- Store all downloaded file(s) in a folder.
-- `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the search key prefix. 
-Subfolder structure will be flattened, `/` in the path will be replaced with a `-` character, eg `folder1/file1.csv => folder1-file1.csv`. 
-Existing `-` characters will be escaped with an extra `-` character to resolve possible collisions, eg. `collision-file.csv => collision--file.csv`.  
-- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file. 
+- `includeSubfolders` (optional) -- Download also all subfolders, only available with a wildcard in the search key prefix.
+Subfolder structure will be flattened, `/` in the path will be replaced with a `-` character, eg `folder1/file1.csv => folder1-file1.csv`.
+Existing `-` characters will be escaped with an extra `-` character to resolve possible collisions, eg. `collision-file.csv => collision--file.csv`.
+- `newFilesOnly` (optional) -- Download only new files. Last file timestamp is stored in the `lastDownloadedFileTimestamp` property of the state file.
 If more files with the same timestamp exist, the state `processedFilesInLastTimestampSecond` property is used to save all processed files within the given second.
-- `limit` (optional, default `1000`, range from `1` to `1000`) -- Maximum number of files downloaded, if the `key` matches more files than `limit`, the oldest files will be downloaded. 
-If used together with `newFilesOnly`, the extractor will process `limit` number of files that have not yet been processed. 
-The maximum limit of `1000` is set due to limitations in Keboola Connection Storage API.
+- `limit` (optional, default `0`) -- Maximum number of files downloaded, if the `key` matches more files than `limit`, the oldest files will be downloaded.
+If used together with `newFilesOnly`, the extractor will process `limit` number of files that have not yet been processed.
 
 ### Sample configurations
 
@@ -43,7 +42,7 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
 }
 ```
 
-#### Wildcard 
+#### Wildcard
 
 ```json
 {
@@ -59,7 +58,7 @@ The maximum limit of `1000` is set due to limitations in Keboola Connection Stor
 }
 ```
 
-#### Wildcard, subfolders and new files only (processes 1000 oldest files at a time)
+#### Wildcard, subfolders and new files only
 
 ```json
 {

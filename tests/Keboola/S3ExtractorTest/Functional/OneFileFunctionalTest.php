@@ -25,7 +25,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -54,7 +54,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => false,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 

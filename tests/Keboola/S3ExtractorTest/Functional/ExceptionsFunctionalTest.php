@@ -23,7 +23,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "limit" => 1000
+                    "limit" => 0
                 ],
             ],
             [],
@@ -47,7 +47,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
                     "key" => "/file1.csv",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "limit" => 1000
+                    "limit" => 0
                 ],
             ],
             [],
@@ -70,7 +70,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
                     "key" => "/doesnotexist",
                     "includeSubfolders" => false,
                     "newFilesOnly" => false,
-                    "limit" => 1000
+                    "limit" => 0
                 ],
             ],
             [],
@@ -93,7 +93,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
                     "key" => "/notawildcard",
                     "includeSubfolders" => true,
                     "newFilesOnly" => false,
-                    "limit" => 1000
+                    "limit" => 0
                 ],
             ],
             [],

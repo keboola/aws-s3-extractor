@@ -190,8 +190,8 @@ class Extractor
             });
         }
 
-        // Apply limit
-        if (count($filesToDownload) > $this->parameters["limit"]) {
+        // Apply limit if set
+        if ($this->parameters["limit"] > 0 && count($filesToDownload) > $this->parameters["limit"]) {
             // Sort files to download using timestamp
             usort($filesToDownload, function ($a, $b) {
                 if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {

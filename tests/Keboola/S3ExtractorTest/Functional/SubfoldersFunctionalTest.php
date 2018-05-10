@@ -39,7 +39,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -72,7 +72,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -100,7 +100,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -132,7 +132,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -161,7 +161,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -188,7 +188,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
@@ -214,7 +214,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             "key" => $key,
             "includeSubfolders" => true,
             "newFilesOnly" => false,
-            "limit" => 1000
+            "limit" => 0
         ], [], (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
