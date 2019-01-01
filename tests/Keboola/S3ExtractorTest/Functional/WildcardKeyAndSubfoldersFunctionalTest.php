@@ -8,18 +8,6 @@ use Monolog\Logger;
 
 class WildcardKeyAndSubfoldersFunctionalTest extends FunctionalTestCase
 {
-    /**
-     * @param $testFile
-     * @param TestHandler $testHandler
-     * @param string $prefix
-     */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
-    {
-        $this->assertFileExists($this->path . '/' . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data/" . $prefix .  $testFile, $this->path . '/' . $testFile);
-        $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
-    }
-
     public function testSuccessfulDownloadFromRoot()
     {
         $key = "collision*";
@@ -32,10 +20,12 @@ class WildcardKeyAndSubfoldersFunctionalTest extends FunctionalTestCase
             "includeSubfolders" => false,
             "newFilesOnly" => false,
             "limit" => 0
-        ], [], (new Logger('test'))->pushHandler($testHandler));
+        ], [], (new Logger("test"))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('collision-file1.csv', $testHandler);
+        $this->assertFileExists($this->path . "/collision-file1.csv");
+        $this->assertFileEquals(__DIR__ . "/../../../_data/collision-file1.csv", $this->path . "/collision-file1.csv");
+        $this->assertTrue($testHandler->hasInfo("Downloading file /collision-file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
     }
@@ -52,10 +42,12 @@ class WildcardKeyAndSubfoldersFunctionalTest extends FunctionalTestCase
             "includeSubfolders" => false,
             "newFilesOnly" => false,
             "limit" => 0
-        ], [], (new Logger('test'))->pushHandler($testHandler));
+        ], [], (new Logger("test"))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
-        $this->assertFileDownloadedFromS3('collision-file1.csv', $testHandler, 'folder2/');
+        $this->assertFileExists($this->path . "/collision-file1.csv");
+        $this->assertFileEquals(__DIR__ . "/../../../_data/folder2/collision-file1.csv", $this->path . "/collision-file1.csv");
+        $this->assertTrue($testHandler->hasInfo("Downloading file /folder2/collision-file1.csv"));
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
         $this->assertCount(2, $testHandler->getRecords());
     }
