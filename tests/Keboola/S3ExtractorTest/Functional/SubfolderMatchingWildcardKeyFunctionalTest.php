@@ -6,7 +6,7 @@ use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
-class WildcardKeyAndSubfoldersFunctionalTest extends FunctionalTestCase
+class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
 {
     public function testSuccessfulDownloadFromRoot()
     {
