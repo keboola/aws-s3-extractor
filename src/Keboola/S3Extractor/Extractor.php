@@ -101,7 +101,7 @@ class Extractor
                 }
 
                 // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($key)) !== false && !$this->parameters['includeSubfolders']) {
+                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->parameters['includeSubfolders']) {
                     continue;
                 }
 
