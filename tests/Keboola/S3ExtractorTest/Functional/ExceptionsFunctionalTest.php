@@ -79,6 +79,27 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         $application->actionRun($this->path);
     }
 
+    public function testMissingWildcardOrPathFile()
+    {
+        $application = new Application(
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => 'folder3/',
+                ],
+            ],
+            [],
+            new TestHandler()
+        );
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Use the wildcard flag or enter a full path to the file.');
+
+        $application->actionRun($this->path);
+    }
+
     public function testIncludeSubfoldersWithoutWildcard()
     {
         $this->expectException(Exception::class);
