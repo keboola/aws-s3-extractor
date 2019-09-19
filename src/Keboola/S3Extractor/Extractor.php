@@ -2,21 +2,14 @@
 namespace Keboola\S3Extractor;
 
 use Aws\Api\DateTimeResult;
-use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
 use Aws\S3\S3MultiRegionClient;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
-use Retry\RetryProxy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\BackOff\ExponentialBackOffPolicy;
 
 class Extractor
 {
-    private const DOWNLOAD_RETRIES = 5;
-    private const DOWNLOAD_BACKOFF = 500;
-
     /**
      * @var array
      */
@@ -221,15 +214,7 @@ class Extractor
             }
             $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
 
-            (new RetryProxy(
-                new SimpleRetryPolicy(self::DOWNLOAD_RETRIES, [
-                    S3Exception::class,
-                ]),
-                new ExponentialBackOffPolicy(self::DOWNLOAD_BACKOFF),
-                $this->logger
-            ))->call(static function () use ($client, $fileToDownload) {
-                $client->getObject($fileToDownload["parameters"]);
-            });
+            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
