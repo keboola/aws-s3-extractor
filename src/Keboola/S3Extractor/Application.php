@@ -56,10 +56,14 @@ class Application
      * Runs data extraction
      * @param string $outputPath
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function actionRun($outputPath)
     {
+        if (substr($this->parameters['key'], -1) === '/') {
+            throw new Exception('Use the wildcard flag or enter a full path to the file.');
+        }
+
         $extractor = new Extractor($this->parameters, $this->state, $this->logger);
         try {
             return $extractor->extract($outputPath);
