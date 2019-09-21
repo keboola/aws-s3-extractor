@@ -19,7 +19,7 @@ class S3ExceptionConverter
                 throw new Exception('Invalid credentials or permissions.', $e->getCode(), $e);
                 break;
             case 503:
-                throw new Exception('Error 503 Slow Down: The number of requests to the S3 bucket is very high, please check your bucket limit.', $e->getCode(), $e);
+                throw new Exception('Error 503 Slow Down: The number of requests to the S3 bucket is very high.', $e->getCode(), $e);
                 break;
             case 400:
             case 401:

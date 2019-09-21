@@ -23,7 +23,7 @@ class S3ExceptionConverterTest extends TestCase
     {
         $exception = $this->mockS3Exception(503);
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Error 503 Slow Down: The number of requests to the S3 bucket is very high, please check your bucket limit.');
+        $this->expectExceptionMessage('Error 503 Slow Down: The number of requests to the S3 bucket is very high.');
         /** @var S3Exception $exception */
         S3ExceptionConverter::resolve($exception);
     }
