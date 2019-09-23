@@ -67,7 +67,7 @@ class Application
         try {
             return $extractor->extract($outputPath);
         } catch (S3Exception $e) {
-            S3ExceptionConverter::resolve($e);
+            S3ExceptionConverter::resolve($e, $this->parameters['key']);
         }
     }
 }

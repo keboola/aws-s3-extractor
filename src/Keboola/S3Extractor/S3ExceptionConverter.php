@@ -8,13 +8,15 @@ use GuzzleHttp\Exception\ClientException;
 class S3ExceptionConverter
 {
     public const ERROR_CODE_SLOW_DOWN = 'SlowDown';
+    public const ERROR_CODE_NOT_FOUND_KEY = 'NotFound';
 
     /**
      * @param S3Exception $e
+     * @param string $searchKey
      * @throws Exception
      * @throws S3Exception
      */
-    public static function resolve(S3Exception $e): void
+    public static function resolve(S3Exception $e, string $searchKey): void
     {
         switch ($e->getStatusCode()) {
             case 403:
@@ -25,8 +27,10 @@ class S3ExceptionConverter
                 break;
             case 400:
             case 401:
-            case 404:
                 self::handleBaseUserErrors($e);
+                break;
+            case 404:
+                self::handleNotFound($e, $searchKey);
                 break;
             default:
                 throw $e;
@@ -69,5 +73,19 @@ class S3ExceptionConverter
             throw new Exception($previous->getMessage());
         }
         throw new Exception($e->getMessage());
+    }
+
+    /**
+     * @param S3Exception $e
+     * @param string $searchKey
+     * @throws Exception
+     */
+    private static function handleNotFound(S3Exception $e, string $searchKey): void
+    {
+        if ($e->getAwsErrorCode() === self::ERROR_CODE_NOT_FOUND_KEY) {
+            throw new Exception(sprintf('Error 404: Key "%s" not found.', $searchKey), $e->getCode(), $e);
+        }
+
+        self::handleBaseUserErrors($e);
     }
 }

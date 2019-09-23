@@ -59,7 +59,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
     public function testInvalidKey()
     {
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("404 Not Found (NotFound)");
+        $this->expectExceptionMessage('Error 404: Key "/doesnotexist" not found.');
 
         $application = new Application(
             [
