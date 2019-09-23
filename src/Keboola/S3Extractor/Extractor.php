@@ -213,7 +213,9 @@ class Extractor
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
             $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
-            $client->getObject($fileToDownload["parameters"]);
+
+            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
+
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
             }

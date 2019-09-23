@@ -7,6 +7,8 @@ use GuzzleHttp\Exception\ClientException;
 
 class S3ExceptionConverter
 {
+    public const ERROR_CODE_SLOW_DOWN = 'SlowDown';
+
     /**
      * @param S3Exception $e
      * @throws Exception
@@ -18,6 +20,9 @@ class S3ExceptionConverter
             case 403:
                 throw new Exception('Invalid credentials or permissions.', $e->getCode(), $e);
                 break;
+            case 503:
+                self::handleServiceUnavailable($e);
+                break;
             case 400:
             case 401:
             case 404:
@@ -26,6 +31,19 @@ class S3ExceptionConverter
             default:
                 throw $e;
         }
+    }
+
+    /**
+     * @param S3Exception $e
+     * @throws Exception
+     */
+    private static function handleServiceUnavailable(S3Exception $e): void
+    {
+        if ($e->getAwsErrorCode() === self::ERROR_CODE_SLOW_DOWN) {
+            throw new Exception('Error 503 Slow Down: The number of requests to the S3 bucket is very high.', $e->getCode(), $e);
+        }
+
+        throw new Exception($e->getMessage(), $e->getCode(), $e);
     }
 
     /**
