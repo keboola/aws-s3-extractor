@@ -16,7 +16,7 @@ class S3ExceptionConverterTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Invalid credentials or permissions.');
         /** @var S3Exception $exception */
-        S3ExceptionConverter::resolve($exception);
+        S3ExceptionConverter::resolve($exception, '/foo');
     }
 
     public function testSlowDown(): void
@@ -28,7 +28,7 @@ class S3ExceptionConverterTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Error 503 Slow Down: The number of requests to the S3 bucket is very high.');
         /** @var S3Exception $exception */
-        S3ExceptionConverter::resolve($exception);
+        S3ExceptionConverter::resolve($exception, 'foo');
     }
 
     /**
@@ -39,7 +39,7 @@ class S3ExceptionConverterTest extends TestCase
         $exception = $this->mockS3Exception($statusCode);
         $this->expectException(Exception::class);
         /** @var S3Exception $exception */
-        S3ExceptionConverter::resolve($exception);
+        S3ExceptionConverter::resolve($exception, '/foo');
     }
 
     public function testS3Exception(): void
@@ -47,7 +47,19 @@ class S3ExceptionConverterTest extends TestCase
         $exception = $this->mockS3Exception();
         $this->expectException(S3Exception::class);
         /** @var S3Exception $exception */
-        S3ExceptionConverter::resolve($exception);
+        S3ExceptionConverter::resolve($exception, '/foo');
+    }
+
+    public function testNotFoundKey(): void
+    {
+        $exception = $this->mockS3Exception(404);
+        $exception->method('getAwsErrorCode')
+            ->willReturn(S3ExceptionConverter::ERROR_CODE_NOT_FOUND_KEY);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Error 404: Key "foo.bar" not found.');
+        /** @var S3Exception $exception */
+        S3ExceptionConverter::resolve($exception, 'foo.bar');
     }
 
     public function basicUserErrorProvider(): array
