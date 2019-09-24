@@ -4,6 +4,7 @@ namespace Keboola\S3Extractor;
 
 use Aws\S3\Exception\S3Exception;
 use GuzzleHttp\Exception\ClientException;
+use Keboola\Component\UserException;
 
 class S3ExceptionConverter
 {
@@ -13,14 +14,14 @@ class S3ExceptionConverter
     /**
      * @param S3Exception $e
      * @param string $searchKey
-     * @throws Exception
+     * @throws UserException
      * @throws S3Exception
      */
     public static function resolve(S3Exception $e, string $searchKey): void
     {
         switch ($e->getStatusCode()) {
             case 403:
-                throw new Exception('Invalid credentials or permissions.', $e->getCode(), $e);
+                throw new UserException('Invalid credentials or permissions.', $e->getCode(), $e);
                 break;
             case 503:
                 self::handleServiceUnavailable($e);
@@ -39,20 +40,20 @@ class S3ExceptionConverter
 
     /**
      * @param S3Exception $e
-     * @throws Exception
+     * @throws UserException
      */
     private static function handleServiceUnavailable(S3Exception $e): void
     {
         if ($e->getAwsErrorCode() === self::ERROR_CODE_SLOW_DOWN) {
-            throw new Exception('Error 503 Slow Down: The number of requests to the S3 bucket is very high.', $e->getCode(), $e);
+            throw new UserException('Error 503 Slow Down: The number of requests to the S3 bucket is very high.', $e->getCode(), $e);
         }
 
-        throw new Exception($e->getMessage(), $e->getCode(), $e);
+        throw new UserException($e->getMessage(), $e->getCode(), $e);
     }
 
     /**
      * @param S3Exception $e
-     * @throws Exception
+     * @throws UserException
      */
     private static function handleBaseUserErrors(S3Exception $e): void
     {
@@ -60,7 +61,7 @@ class S3ExceptionConverter
             /** @var ClientException $previous */
             $previous = $e->getPrevious();
             if ($previous->getResponse()) {
-                throw new Exception(
+                throw new UserException(
                     $previous->getResponse()->getStatusCode()
                     . " "
                     . $previous->getResponse()->getReasonPhrase()
@@ -70,20 +71,20 @@ class S3ExceptionConverter
                     . $previous->getResponse()->getBody()->__toString()
                 );
             }
-            throw new Exception($previous->getMessage());
+            throw new UserException($previous->getMessage());
         }
-        throw new Exception($e->getMessage());
+        throw new UserException($e->getMessage());
     }
 
     /**
      * @param S3Exception $e
      * @param string $searchKey
-     * @throws Exception
+     * @throws UserException
      */
     private static function handleNotFound(S3Exception $e, string $searchKey): void
     {
         if ($e->getAwsErrorCode() === self::ERROR_CODE_NOT_FOUND_KEY) {
-            throw new Exception(sprintf('Error 404: Key "%s" not found.', $searchKey), $e->getCode(), $e);
+            throw new UserException(sprintf('Error 404: Key "%s" not found.', $searchKey), $e->getCode(), $e);
         }
 
         self::handleBaseUserErrors($e);

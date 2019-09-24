@@ -9,7 +9,7 @@ class Config extends BaseConfig
     /**
      * @return string
      */
-    public function key(): string
+    public function getKey(): string
     {
         return $this->getValue(['parameters', 'key']);
     }
@@ -17,7 +17,7 @@ class Config extends BaseConfig
     /**
      * @return string
      */
-    public function accessKeyId(): string
+    public function getAccessKeyId(): string
     {
         return $this->getValue(['parameters', 'accessKeyId']);
     }
@@ -25,7 +25,7 @@ class Config extends BaseConfig
     /**
      * @return string
      */
-    public function secretAccessKey(): string
+    public function getSecretAccessKey(): string
     {
         return $this->getValue(['parameters', '#secretAccessKey']);
     }
@@ -33,7 +33,7 @@ class Config extends BaseConfig
     /**
      * @return string
      */
-    public function bucket(): string
+    public function getBucket(): string
     {
         return $this->getValue(['parameters', 'bucket']);
     }
@@ -41,7 +41,7 @@ class Config extends BaseConfig
     /**
      * @return string
      */
-    public function saveAs(): string
+    public function getSaveAs(): string
     {
         return $this->getValue(['parameters', 'saveAs']);
     }
@@ -65,7 +65,7 @@ class Config extends BaseConfig
     /**
      * @return int
      */
-    public function limit(): int
+    public function getLimit(): int
     {
         return $this->getValue(['parameters', 'limit']);
     }

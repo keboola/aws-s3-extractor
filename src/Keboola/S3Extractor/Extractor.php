@@ -58,29 +58,29 @@ class Extractor
         $client = new S3MultiRegionClient([
             'version' => '2006-03-01',
             'credentials' => [
-                'key' => $this->config->accessKeyId(),
-                'secret' => $this->config->secretAccessKey(),
+                'key' => $this->config->getAccessKeyId(),
+                'secret' => $this->config->getSecretAccessKey(),
             ],
         ]);
-        $region = $client->getBucketLocation(["Bucket" => $this->config->bucket()])->get('LocationConstraint');
+        $region = $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
         $client = new S3Client([
             'region' => $region,
             'version' => '2006-03-01',
             'credentials' => [
-                'key' => $this->config->accessKeyId(),
-                'secret' => $this->config->secretAccessKey(),
+                'key' => $this->config->getAccessKeyId(),
+                'secret' => $this->config->getSecretAccessKey(),
             ],
         ]);
 
         // Remove initial forwardslash
-        $key = $this->config->key();
+        $key = $this->config->getKey();
         if (substr($key, 0, 1) == '/') {
             $key = substr($key, 1);
         }
 
         $saveAsSubfolder = '';
-        if (!empty($this->config->saveAs())) {
-            $saveAsSubfolder = $this->config->saveAs(). '/';
+        if (!empty($this->config->getSaveAs())) {
+            $saveAsSubfolder = $this->config->getSaveAs(). '/';
         }
 
         $filesToDownload = [];
@@ -88,7 +88,7 @@ class Extractor
         // Detect wildcard at the end
         if (substr($key, -1) == '*') {
             $iterator = $client->getIterator('ListObjects', [
-                'Bucket' => $this->config->bucket(),
+                'Bucket' => $this->config->getBucket(),
                 'Prefix' => substr($key, 0, -1),
             ]);
             foreach ($iterator as $object) {
@@ -149,7 +149,7 @@ class Extractor
                 }
 
                 $parameters = [
-                    'Bucket' => $this->config->bucket(),
+                    'Bucket' => $this->config->getBucket(),
                     'Key' => $object['Key'],
                     'SaveAs' => $dst,
                 ];
@@ -164,7 +164,7 @@ class Extractor
             }
             $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);
             $parameters = [
-                'Bucket' => $this->config->bucket(),
+                'Bucket' => $this->config->getBucket(),
                 'Key' => $key,
                 'SaveAs' => $dst,
             ];
@@ -197,7 +197,7 @@ class Extractor
         }
 
         // Apply limit if set
-        if ($this->config->limit() > 0 && count($filesToDownload) > $this->config->limit()) {
+        if ($this->config->getLimit() > 0 && count($filesToDownload) > $this->config->getLimit()) {
             // Sort files to download using timestamp
             usort($filesToDownload, function ($a, $b) {
                 if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
@@ -205,8 +205,8 @@ class Extractor
                 }
                 return intval($a["timestamp"]) - intval($b["timestamp"]);
             });
-            $this->logger->info("Downloading only {$this->config->limit()} oldest file(s) out of " . count($filesToDownload));
-            $filesToDownload = array_slice($filesToDownload, 0, $this->config->limit());
+            $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($filesToDownload));
+            $filesToDownload = array_slice($filesToDownload, 0, $this->config->getLimit());
         }
 
         $fs = new Filesystem();
