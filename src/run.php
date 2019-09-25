@@ -6,10 +6,9 @@ use Keboola\Component\Logger;
 use Keboola\Component\UserException;
 use Keboola\S3Extractor\Application;
 
-$logger = new Logger();
+$logger = new Logger;
 try {
-    $app = new Application($logger);
-    $app->execute();
+    (new Application($logger))->execute();
     exit(0);
 } catch (UserException $e) {
     $logger->error($e->getMessage());
