@@ -2,6 +2,8 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\Component\JsonHelper;
+use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Process\Process;
 
 class FunctionalTestCase extends \PHPUnit\Framework\TestCase
@@ -32,5 +34,24 @@ class FunctionalTestCase extends \PHPUnit\Framework\TestCase
     public function tearDown()
     {
         passthru('rm -rf ' . $this->path);
+    }
+
+    protected function writeConfig(array $config): void
+    {
+        JsonHelper::writeFile($this->path . '/config.json', $config);
+    }
+
+    protected function getOutputSatet(): array
+    {
+        try {
+            return JsonHelper::readFile($this->path . '/out/state.json');
+        } catch (FileNotFoundException $exception) {
+            return [];
+        }
+    }
+
+    protected function syncInputSatet(): void
+    {
+        JsonHelper::writeFile($this->path . '/in/state.json', $this->getOutputSatet());
     }
 }
