@@ -2,6 +2,8 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\S3Extractor\Config;
+use Keboola\S3Extractor\ConfigDefinition;
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -12,15 +14,17 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
     {
         $key = "file1.csv";
         $testHandler = new TestHandler();
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key,
-            "includeSubfolders" => false,
-            "newFilesOnly" => true,
-            "limit" => 0
-        ], [], (new Logger('test'))->pushHandler($testHandler));
+        $extractor = new Extractor(new Config([
+            "parameters" => [
+                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                "key" => $key,
+                "includeSubfolders" => false,
+                "newFilesOnly" => true,
+                "limit" => 0,
+            ],
+        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
         $state = $extractor->extract($this->path);
 
         $expectedFile = $this->path . '/file1.csv';
@@ -37,15 +41,17 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
     {
         $key = "folder2/*";
         $testHandler = new TestHandler();
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key,
-            "includeSubfolders" => false,
-            "newFilesOnly" => true,
-            "limit" => 0
-        ], [], (new Logger('test'))->pushHandler($testHandler));
+        $extractor = new Extractor(new Config([
+            "parameters" => [
+                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                "key" => $key,
+                "includeSubfolders" => false,
+                "newFilesOnly" => true,
+                "limit" => 0,
+            ],
+        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
         $state1 = $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 3 file(s)"));
@@ -70,15 +76,17 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
         // download only the new file
         $testHandler = new TestHandler();
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key,
-            "includeSubfolders" => false,
-            "newFilesOnly" => true,
-            "limit" => 0
-        ], $state1, (new Logger('test'))->pushHandler($testHandler));
+        $extractor = new Extractor(new Config([
+            "parameters" => [
+                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                "key" => $key,
+                "includeSubfolders" => false,
+                "newFilesOnly" => true,
+                "limit" => 0,
+            ],
+        ], new ConfigDefinition), $state1, (new Logger('test'))->pushHandler($testHandler));
         $state2 = $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
@@ -89,15 +97,17 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
         // do not download anything
         $testHandler = new TestHandler();
-        $extractor = new Extractor([
-            "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-            "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-            "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-            "key" => $key,
-            "includeSubfolders" => false,
-            "newFilesOnly" => true,
-            "limit" => 0
-        ], $state2, (new Logger('test'))->pushHandler($testHandler));
+        $extractor = new Extractor(new Config([
+            "parameters" => [
+                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                "key" => $key,
+                "includeSubfolders" => false,
+                "newFilesOnly" => true,
+                "limit" => 0,
+            ],
+        ], new ConfigDefinition), $state2, (new Logger('test'))->pushHandler($testHandler));
         $state3 = $extractor->extract($this->path);
 
         $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
