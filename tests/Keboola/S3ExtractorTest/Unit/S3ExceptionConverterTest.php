@@ -2,9 +2,9 @@
 
 namespace Keboola\S3ExtractorTest\Unit;
 
+use Keboola\Component\UserException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Keboola\S3Extractor\Exception;
 use Keboola\S3Extractor\S3ExceptionConverter;
 use Aws\S3\Exception\S3Exception;
 
@@ -13,7 +13,7 @@ class S3ExceptionConverterTest extends TestCase
     public function testInvalidCredentials(): void
     {
         $exception = $this->mockS3Exception(403);
-        $this->expectException(Exception::class);
+        $this->expectException(UserException::class);
         $this->expectExceptionMessage('Invalid credentials or permissions.');
         /** @var S3Exception $exception */
         S3ExceptionConverter::resolve($exception, '/foo');
@@ -25,7 +25,7 @@ class S3ExceptionConverterTest extends TestCase
         $exception->method('getAwsErrorCode')
             ->willReturn(S3ExceptionConverter::ERROR_CODE_SLOW_DOWN);
 
-        $this->expectException(Exception::class);
+        $this->expectException(UserException::class);
         $this->expectExceptionMessage('Error 503 Slow Down: The number of requests to the S3 bucket is very high.');
         /** @var S3Exception $exception */
         S3ExceptionConverter::resolve($exception, 'foo');
@@ -37,7 +37,7 @@ class S3ExceptionConverterTest extends TestCase
     public function testBaseUserException(int $statusCode): void
     {
         $exception = $this->mockS3Exception($statusCode);
-        $this->expectException(Exception::class);
+        $this->expectException(UserException::class);
         /** @var S3Exception $exception */
         S3ExceptionConverter::resolve($exception, '/foo');
     }
@@ -56,7 +56,7 @@ class S3ExceptionConverterTest extends TestCase
         $exception->method('getAwsErrorCode')
             ->willReturn(S3ExceptionConverter::ERROR_CODE_NOT_FOUND_KEY);
 
-        $this->expectException(Exception::class);
+        $this->expectException(UserException::class);
         $this->expectExceptionMessage('Error 404: Key "foo.bar" not found.');
         /** @var S3Exception $exception */
         S3ExceptionConverter::resolve($exception, 'foo.bar');
