@@ -2,98 +2,86 @@
 
 namespace Keboola\S3ExtractorTest\Unit;
 
+use Keboola\S3Extractor\Config;
 use Keboola\S3Extractor\ConfigDefinition;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Symfony\Component\Config\Definition\Processor;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class ConfigDefinitionTest extends TestCase
 {
     public function testValidConfig()
     {
-        $json = <<<JSON
-{
-    "parameters": {
-        "accessKeyId": "a",
-        "#secretAccessKey": "b",
-        "bucket": "c",
-        "key": "d",
-        "includeSubfolders": false,
-        "newFilesOnly": false,
-        "saveAs": "myfile.csv",
-        "limit": 1
-    }
-}
-JSON;
+        $config = [
+            'parameters' => [
+                'accessKeyId' => 'a',
+                '#secretAccessKey' => 'b',
+                'bucket' => 'c',
+                'key' => 'd',
+                'includeSubfolders' => false,
+                'newFilesOnly' => false,
+                'saveAs' => 'myfile.csv',
+                'limit' => 1,
+            ],
+        ];
 
-        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
-        $processor = new Processor;
-        $processedConfig = $processor->processConfiguration(new ConfigDefinition(), [$config['parameters']]);
-
-        $this->assertInternalType('array', $processedConfig);
+        $this->assertSame(
+            $config,
+            (new Config($config, new ConfigDefinition))->getData()
+        );
     }
 
     public function testInvalidConfig()
     {
+        $config = [
+            'parameters' => [
+                'accessKeyId' => 'a',
+                '#secretAccessKey' => 'b',
+                'bucket' => 'c',
+            ],
+        ];
+
         $this->expectException(InvalidConfigurationException::class);
 
-        $json = <<<JSON
-{
-    "parameters": {
-        "accessKeyId": "a",
-        "#secretAccessKey": "b",
-        "bucket": "c"
-    }   
-}
-JSON;
-
-        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
-        (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
+        new Config($config, new ConfigDefinition);
     }
 
     public function testInvalidLimit()
     {
+        $config = [
+            'parameters' => [
+                'accessKeyId' => 'a',
+                '#secretAccessKey' => 'b',
+                'bucket' => 'c',
+                'key' => 'd',
+                'includeSubfolders' => false,
+                'newFilesOnly' => false,
+                'saveAs' => 'myfile.csv',
+                'limit' => -1,
+            ],
+        ];
+
         $this->expectException(InvalidConfigurationException::class);
 
-        $json = <<<JSON
-{
-    "parameters": {
-        "accessKeyId": "a",
-        "#secretAccessKey": "b",
-        "bucket": "c",
-        "key": "d",
-        "includeSubfolders": false,
-        "newFilesOnly": false,
-        "saveAs": "myfile.csv",
-        "limit": -1
-    }   
-}
-JSON;
-
-        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
-        (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
+        new Config($config, new ConfigDefinition);
     }
 
     public function testMissingLimit()
     {
-        $json = <<<JSON
-{
-    "parameters": {
-        "accessKeyId": "a",
-        "#secretAccessKey": "b",
-        "bucket": "c",
-        "key": "d",
-        "includeSubfolders": false,
-        "newFilesOnly": false,
-        "saveAs": "myfile.csv"
-    }   
-}
-JSON;
+        $config = [
+            'parameters' => [
+                'accessKeyId' => 'a',
+                '#secretAccessKey' => 'b',
+                'bucket' => 'c',
+                'key' => 'd',
+                'includeSubfolders' => false,
+                'newFilesOnly' => false,
+                'saveAs' => 'myfile.csv',
+            ],
+        ];
 
-        $config = (new JsonDecode(true))->decode($json, JsonEncoder::FORMAT);
-        $parameters = (new Processor())->processConfiguration(new ConfigDefinition, [$config['parameters']]);
-        $this->assertEquals(0, $parameters["limit"]);
+        $this->assertEquals(
+            0,
+            (new Config($config, new ConfigDefinition))->getLimit()
+        );
     }
 }
