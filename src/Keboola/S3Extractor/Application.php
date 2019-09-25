@@ -22,7 +22,9 @@ class Application extends BaseComponent
 
         $extractor = new Extractor($config, $this->getInputState(), $this->getLogger());
         try {
-            $extractor->extract($this->getOutputDirectory());
+            $this->writeOutputStateToFile(
+                $extractor->extract($this->getOutputDirectory())
+            );
         } catch (S3Exception $e) {
             S3ExceptionConverter::resolve($e, $config->getKey());
         }
