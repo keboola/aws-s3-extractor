@@ -51,8 +51,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
         $this->writeConfig($config);
 
         $handler = new TestHandler;
-        $app = new Application((new Logger('s3Test1'))->pushHandler($handler));
-        $app->execute();
+        (new Application((new Logger('s3Test1'))->pushHandler($handler)))->execute();
         $this->assertTrue($handler->hasInfo("Downloading file /file1.csv"));
         $this->assertCount(3, $handler->getRecords());
         $state = $this->getOutputSatet();
@@ -62,8 +61,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
         $this->syncInputSatet();
 
         $handler = new TestHandler;
-        $app = new Application((new Logger('s3Test2'))->pushHandler($handler));
-        $app->execute();
+        (new Application((new Logger('s3Test1'))->pushHandler($handler)))->execute();
         $this->assertTrue($handler->hasInfo("Downloaded 0 file(s)"));
         $this->assertCount(2, $handler->getRecords());
         $this->assertEquals($state, $this->getOutputSatet());
