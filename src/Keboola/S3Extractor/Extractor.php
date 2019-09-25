@@ -18,7 +18,7 @@ class Extractor
     private $config;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 

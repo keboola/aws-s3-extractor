@@ -20,9 +20,9 @@ class FunctionalTestCase extends \PHPUnit\Framework\TestCase
     public static function setUpBeforeClass()
     {
         parent::setUpBeforeClass();
-        (new Process('php ' . __DIR__ . '/../../../loadS3.php'))
-            ->setTimeout(1000)
-            ->mustRun();
+//        (new Process('php ' . __DIR__ . '/../../../loadS3.php'))
+//            ->setTimeout(1000)
+//            ->mustRun();
     }
 
     public function setUp()
