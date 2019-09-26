@@ -104,7 +104,7 @@ class Extractor
                 }
 
                 // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->config->isUncludeSubfolders()) {
+                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
                     continue;
                 }
 
@@ -129,7 +129,7 @@ class Extractor
                 $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
 
                 // complete path
-                if ($this->config->isUncludeSubfolders()) {
+                if ($this->config->isIncludeSubfolders()) {
                     if ($dstDir && $dstDir != '.') {
                         $flattened = str_replace(
                             '/',
@@ -159,7 +159,7 @@ class Extractor
                 ];
             }
         } else {
-            if ($this->config->isUncludeSubfolders() === true) {
+            if ($this->config->isIncludeSubfolders() === true) {
                 throw new UserException("Cannot include subfolders without wildcard.");
             }
             $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);

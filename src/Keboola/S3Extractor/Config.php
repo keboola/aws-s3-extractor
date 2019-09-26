@@ -49,7 +49,7 @@ class Config extends BaseConfig
     /**
      * @return bool
      */
-    public function isUncludeSubfolders(): bool
+    public function isIncludeSubfolders(): bool
     {
         return $this->getValue(['parameters', 'includeSubfolders']);
     }
