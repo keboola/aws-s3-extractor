@@ -107,7 +107,7 @@ class LimitFunctionalTest extends FunctionalTestCase
                 "newFilesOnly" => true,
                 "limit" => 1,
             ],
-        ],new ConfigDefinition), $state, (new Logger('test'))->pushHandler($testHandler));
+        ], new ConfigDefinition), $state, (new Logger('test'))->pushHandler($testHandler));
         $extractor->extract($this->path);
 
         $this->assertFileDownloadedFromS3('/folder1/file1.csv', $testHandler);

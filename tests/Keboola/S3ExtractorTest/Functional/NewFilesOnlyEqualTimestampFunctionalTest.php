@@ -33,21 +33,17 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     private function runExtraction(TestHandler $testHandler, $state = [])
     {
         $key = "no-unique-timestamps/*";
-        $extractor = new Extractor(new Config(
-            [
-                "parameters" => [
-                    "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                    "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                    "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                    "key" => $key,
-                    "includeSubfolders" => true,
-                    "newFilesOnly" => true,
-                    "limit" => 1,
-                ],
-            ], new ConfigDefinition),
-            $state,
-            (new Logger('test'))->pushHandler($testHandler)
-        );
+        $extractor = new Extractor(new Config([
+            "parameters" => [
+                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
+                "key" => $key,
+                "includeSubfolders" => true,
+                "newFilesOnly" => true,
+                "limit" => 1,
+            ],
+        ], new ConfigDefinition), $state, (new Logger('test'))->pushHandler($testHandler));
         return $extractor->extract($this->path);
     }
 
