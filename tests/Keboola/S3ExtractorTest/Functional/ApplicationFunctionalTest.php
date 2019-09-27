@@ -33,7 +33,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
         $this->assertTrue($handler->hasInfo("Downloading file /file1.csv"));
     }
 
-    public function testApplicationStateFilenewFilesOnly()
+    public function testApplicationStateFileNewFilesOnly()
     {
         putenv(sprintf('KBC_DATADIR=%s', $this->path));
 
