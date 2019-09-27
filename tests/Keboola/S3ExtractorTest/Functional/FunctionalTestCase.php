@@ -41,7 +41,7 @@ class FunctionalTestCase extends \PHPUnit\Framework\TestCase
         JsonHelper::writeFile($this->path . '/config.json', $config);
     }
 
-    protected function getOutputSatet(): array
+    protected function getOutputState(): array
     {
         try {
             return JsonHelper::readFile($this->path . '/out/state.json');
@@ -50,8 +50,8 @@ class FunctionalTestCase extends \PHPUnit\Framework\TestCase
         }
     }
 
-    protected function syncInputSatet(): void
+    protected function syncInputState(): void
     {
-        JsonHelper::writeFile($this->path . '/in/state.json', $this->getOutputSatet());
+        JsonHelper::writeFile($this->path . '/in/state.json', $this->getOutputState());
     }
 }
