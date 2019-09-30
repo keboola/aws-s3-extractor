@@ -38,7 +38,7 @@
   "autoload": {
     "psr-4": {
       "Keboola\\": "src/Keboola/",
-      "Keboola\\S3ExtractorTest\\": "tests/Keboola/S3ExtractorTest"
+      "Keboola\\S3ExtractorTest\\": "tests/"
     }
   }
 }

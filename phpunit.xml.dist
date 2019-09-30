@@ -10,7 +10,7 @@
          bootstrap="tests/bootstrap.php">
 
     <testsuite name="Main Test">
-        <directory>tests/Keboola/S3ExtractorTest</directory>
+        <directory>tests</directory>
     </testsuite>
 
     <filter>
