@@ -35,10 +35,10 @@ class RetryDownloadFileTest extends FunctionalTestCase
         DownloadFile::process($client, (new Logger('s3ClientTest'))->pushHandler($handler), [
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
             'Key' => 'file1.csv',
-            'SaveAs' => $this->path . '/file1.csv',
+            'SaveAs' => '/file1.csv',
         ]);
 
-        $expectedFile = $this->path . '/file1.csv';
+        $expectedFile = '/file1.csv';
         self::assertFileExists($expectedFile);
         self::assertEquals('dummy content', (string) file_get_contents($expectedFile));
         self::assertTrue($handler->hasInfoThatContains('resulted in a `503 Slow Down` response'));
@@ -64,7 +64,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
         DownloadFile::process($client, (new Logger('s3ClientTest'))->pushHandler(new TestHandler), [
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
             'Key' => 'file1.csv',
-            'SaveAs' => $this->path . '/file1.csv',
+            'SaveAs' => '/file1.csv',
         ]);
     }
 
