@@ -2,6 +2,7 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\DatadirTests\DatadirTestSpecification;
 use Keboola\S3Extractor\Application;
 use Keboola\Component\UserException;
 use Monolog\Handler\TestHandler;
@@ -11,8 +12,6 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
 {
     public function testInvalidBucket()
     {
-        putenv(sprintf('KBC_DATADIR=%s', $this->path));
-
         $this->writeConfig([
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -37,8 +36,6 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
 
     public function testInvalidCredentials()
     {
-        putenv(sprintf('KBC_DATADIR=%s', $this->path));
-
         $this->writeConfig([
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -61,8 +58,6 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
 
     public function testInvalidKey()
     {
-        putenv(sprintf('KBC_DATADIR=%s', $this->path));
-
         $this->writeConfig([
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -88,8 +83,6 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
      */
     public function testMissingWildcardOrPathFile(string $key): void
     {
-        putenv(sprintf('KBC_DATADIR=%s', $this->path));
-
         $this->writeConfig([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -123,8 +116,6 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
 
     public function testIncludeSubfoldersWithoutWildcard()
     {
-        putenv(sprintf('KBC_DATADIR=%s', $this->path));
-
         $this->writeConfig([
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -143,5 +134,23 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         (new Application(
             (new Logger('s3Test'))->pushHandler(new TestHandler)
         ))->execute();
+    }
+
+    private function writeConfig(array $config): void
+    {
+        $temp = $this->getTempDatadir(new DatadirTestSpecification(
+            __DIR__ . '/exceptions/source/data',
+            0,
+            null,
+            null,
+            __DIR__ . '/exceptions/expected/data/out'
+        ));
+
+        putenv(sprintf('KBC_DATADIR=%s', $temp->getTmpFolder()));
+
+        file_put_contents(
+            $temp->getTmpFolder() . '/config.json',
+            json_encode($config, JSON_PRETTY_PRINT)
+        );
     }
 }
