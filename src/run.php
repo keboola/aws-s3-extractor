@@ -1,60 +1,28 @@
 <?php
 
-// Catch all warnings and notices
-set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-});
-
 require __DIR__ . '/../vendor/autoload.php';
 
+use Keboola\Component\Logger;
+use Keboola\Component\UserException;
 use Keboola\S3Extractor\Application;
-use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
-$dataDir = getenv('KBC_DATADIR') === false ? '/data/' : getenv('KBC_DATADIR');
-
-$configFile = $dataDir . '/config.json';
-if (!file_exists($configFile)) {
-    echo 'Config file not found' . "\n";
-    exit(2);
-}
-
-define('ROOT_PATH', __DIR__ . '/..');
-
+$logger = new Logger;
 try {
-    $jsonDecode = new JsonDecode(true);
-    $config = $jsonDecode->decode(
-        file_get_contents($dataDir . '/config.json'),
-        JsonEncoder::FORMAT
-    );
-    $outputPath = $dataDir . '/out/files';
-
-    $streamHandler = new \Monolog\Handler\StreamHandler('php://stdout');
-    $streamHandler->setFormatter(new \Monolog\Formatter\LineFormatter("%message%\n"));
-
-    // read state
-    $inputState = [];
-    $inputStateFile = $dataDir . '/in/state.json';
-    if (file_exists($inputStateFile)) {
-        $inputState = $jsonDecode->decode(
-            file_get_contents($inputStateFile),
-            JsonEncoder::FORMAT
-        );
-    }
-
-    $application = new Application($config, $inputState, $streamHandler);
-    $outputState = $application->actionRun($outputPath);
-
-    // write state
-    $outputStateFile = $dataDir . '/out/state.json';
-    $jsonEncode = new \Symfony\Component\Serializer\Encoder\JsonEncode();
-    file_put_contents($outputStateFile, $jsonEncode->encode($outputState, JsonEncoder::FORMAT));
-
+    (new Application($logger))->execute();
     exit(0);
-} catch (\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException $e) {
-    echo "Invalid configuration: " . $e->getMessage();
+} catch (UserException $e) {
+    $logger->error($e->getMessage());
     exit(1);
-} catch (\Keboola\S3Extractor\Exception $e) {
-    echo $e->getMessage();
-    exit(1);
+} catch (\Throwable $e) {
+    $logger->critical(
+        get_class($e) . ':' . $e->getMessage(),
+        [
+            'errFile' => $e->getFile(),
+            'errLine' => $e->getLine(),
+            'errCode' => $e->getCode(),
+            'errTrace' => $e->getTraceAsString(),
+            'errPrevious' => $e->getPrevious() ? get_class($e->getPrevious()) : '',
+        ]
+    );
+    exit(2);
 }

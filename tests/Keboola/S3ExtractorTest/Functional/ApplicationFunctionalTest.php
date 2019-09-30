@@ -4,11 +4,14 @@ namespace Keboola\S3ExtractorTest\Functional;
 
 use Keboola\S3Extractor\Application;
 use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 
 class ApplicationFunctionalTest extends FunctionalTestCase
 {
     public function testApplication()
     {
+        putenv(sprintf('KBC_DATADIR=%s', $this->path));
+
         $config = [
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -19,14 +22,21 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                 "limit" => 0
             ]
         ];
-        $testHandler = new TestHandler();
-        $application = new Application($config, [], $testHandler);
-        $application->actionRun($this->path);
-        $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
+
+        $this->writeConfig($config);
+
+        $handler = new TestHandler;
+        (new Application(
+            (new Logger('s3Test'))->pushHandler($handler)
+        ))->execute();
+
+        $this->assertTrue($handler->hasInfo("Downloading file /file1.csv"));
     }
 
-    public function testApplicationStateFilenewFilesOnly()
+    public function testApplicationStateFileNewFilesOnly()
     {
+        putenv(sprintf('KBC_DATADIR=%s', $this->path));
+
         $config = [
             "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -37,19 +47,23 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                 "limit" => 0
             ]
         ];
-        $testHandler = new TestHandler();
-        $application = new Application($config, [], $testHandler);
-        $state = $application->actionRun($this->path);
-        $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
-        $this->assertCount(2, $testHandler->getRecords());
+
+        $this->writeConfig($config);
+
+        $handler = new TestHandler;
+        (new Application((new Logger('s3Test1'))->pushHandler($handler)))->execute();
+        $this->assertTrue($handler->hasInfo("Downloading file /file1.csv"));
+        $this->assertCount(3, $handler->getRecords());
+        $state = $this->getOutputState();
         $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state);
         $this->assertGreaterThan(0, $state['lastDownloadedFileTimestamp']);
 
-        $testHandler = new TestHandler();
-        $application = new Application($config, $state, $testHandler);
-        $newState = $application->actionRun($this->path);
-        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
-        $this->assertCount(1, $testHandler->getRecords());
-        $this->assertEquals($state, $newState);
+        $this->syncInputState();
+
+        $handler = new TestHandler;
+        (new Application((new Logger('s3Test1'))->pushHandler($handler)))->execute();
+        $this->assertTrue($handler->hasInfo("Downloaded 0 file(s)"));
+        $this->assertCount(2, $handler->getRecords());
+        $this->assertEquals($state, $this->getOutputState());
     }
 }

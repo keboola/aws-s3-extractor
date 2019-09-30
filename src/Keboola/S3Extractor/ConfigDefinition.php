@@ -2,17 +2,20 @@
 
 namespace Keboola\S3Extractor;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Keboola\Component\Config\BaseConfigDefinition;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 
-class ConfigDefinition implements ConfigurationInterface
+class ConfigDefinition extends BaseConfigDefinition
 {
-    public function getConfigTreeBuilder()
+    /**
+     * @return ArrayNodeDefinition
+     */
+    protected function getParametersDefinition(): ArrayNodeDefinition
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('parameters');
-
-        $rootNode
+        $parametersNode = parent::getParametersDefinition();
+        // @formatter:off
+        /** @noinspection NullPointerExceptionInspection */
+        $parametersNode
             ->children()
                 ->scalarNode('accessKeyId')
                     ->isRequired()
@@ -46,7 +49,7 @@ class ConfigDefinition implements ConfigurationInterface
 
             ->end()
         ;
-
-        return $treeBuilder;
+       // @formatter:on
+        return $parametersNode;
     }
 }

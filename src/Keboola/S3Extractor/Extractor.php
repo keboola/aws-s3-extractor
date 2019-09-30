@@ -6,17 +6,19 @@ use Aws\S3\S3Client;
 use Aws\S3\S3MultiRegionClient;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Keboola\Component\UserException;
 
 class Extractor
 {
     /**
-     * @var array
+     * @var Config
      */
-    private $parameters;
+    private $config;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -28,13 +30,13 @@ class Extractor
     /**
      * Extractor constructor.
      *
-     * @param array $parameters
+     * @param Config $config
      * @param array $state
-     * @param Logger|null $logger
+     * @param LoggerInterface|null $logger
      */
-    public function __construct(array $parameters, array $state = [], Logger $logger = null)
+    public function __construct(Config $config, array $state = [], LoggerInterface $logger = null)
     {
-        $this->parameters = $parameters;
+        $this->config = $config;
         $this->state = $state;
         if ($logger) {
             $this->logger = $logger;
@@ -46,38 +48,39 @@ class Extractor
 
     /**
      * Creates exports and runs extraction
+     *
      * @param string $outputPath
      * @return array
-     * @throws \Exception
+     * @throws UserException
      */
     public function extract($outputPath)
     {
         $client = new S3MultiRegionClient([
             'version' => '2006-03-01',
             'credentials' => [
-                'key' => $this->parameters['accessKeyId'],
-                'secret' => $this->parameters['#secretAccessKey'],
-            ]
+                'key' => $this->config->getAccessKeyId(),
+                'secret' => $this->config->getSecretAccessKey(),
+            ],
         ]);
-        $region = $client->getBucketLocation(["Bucket" => $this->parameters["bucket"]])->get('LocationConstraint');
+        $region = $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
         $client = new S3Client([
             'region' => $region,
             'version' => '2006-03-01',
             'credentials' => [
-                'key' => $this->parameters['accessKeyId'],
-                'secret' => $this->parameters['#secretAccessKey'],
-            ]
+                'key' => $this->config->getAccessKeyId(),
+                'secret' => $this->config->getSecretAccessKey(),
+            ],
         ]);
 
         // Remove initial forwardslash
-        $key = $this->parameters['key'];
+        $key = $this->config->getKey();
         if (substr($key, 0, 1) == '/') {
             $key = substr($key, 1);
         }
 
         $saveAsSubfolder = '';
-        if (!empty($this->parameters['saveAs'])) {
-            $saveAsSubfolder = $this->parameters['saveAs'] . '/';
+        if (!empty($this->config->getSaveAs())) {
+            $saveAsSubfolder = $this->config->getSaveAs(). '/';
         }
 
         $filesToDownload = [];
@@ -85,8 +88,8 @@ class Extractor
         // Detect wildcard at the end
         if (substr($key, -1) == '*') {
             $iterator = $client->getIterator('ListObjects', [
-                'Bucket' => $this->parameters['bucket'],
-                'Prefix' => substr($key, 0, -1)
+                'Bucket' => $this->config->getBucket(),
+                'Prefix' => substr($key, 0, -1),
             ]);
             foreach ($iterator as $object) {
                 // Skip objects in Glacier
@@ -101,7 +104,7 @@ class Extractor
                 }
 
                 // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->parameters['includeSubfolders']) {
+                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
                     continue;
                 }
 
@@ -126,7 +129,7 @@ class Extractor
                 $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
 
                 // complete path
-                if ($this->parameters['includeSubfolders']) {
+                if ($this->config->isIncludeSubfolders()) {
                     if ($dstDir && $dstDir != '.') {
                         $flattened = str_replace(
                             '/',
@@ -146,29 +149,29 @@ class Extractor
                 }
 
                 $parameters = [
-                    'Bucket' => $this->parameters['bucket'],
+                    'Bucket' => $this->config->getBucket(),
                     'Key' => $object['Key'],
-                    'SaveAs' => $dst
+                    'SaveAs' => $dst,
                 ];
                 $filesToDownload[] = [
                     "timestamp" => $object['LastModified']->format("U"),
-                    "parameters" => $parameters
+                    "parameters" => $parameters,
                 ];
             }
         } else {
-            if ($this->parameters['includeSubfolders'] === true) {
-                throw new Exception("Cannot include subfolders without wildcard.");
+            if ($this->config->isIncludeSubfolders() === true) {
+                throw new UserException("Cannot include subfolders without wildcard.");
             }
             $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);
             $parameters = [
-                'Bucket' => $this->parameters['bucket'],
+                'Bucket' => $this->config->getBucket(),
                 'Key' => $key,
-                'SaveAs' => $dst
+                'SaveAs' => $dst,
             ];
             $head = $client->headObject($parameters);
             $filesToDownload[] = [
                 "timestamp" => $head["LastModified"]->format("U"),
-                "parameters" => $parameters
+                "parameters" => $parameters,
             ];
         }
 
@@ -177,8 +180,11 @@ class Extractor
         $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
 
         // Filter out old files with newFilesOnly flag
-        if ($this->parameters['newFilesOnly'] === true) {
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use ($lastDownloadedFileTimestamp, $processedFilesInLastTimestampSecond) {
+        if ($this->config->isNewFilesOnly() === true) {
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use (
+                $lastDownloadedFileTimestamp,
+                $processedFilesInLastTimestampSecond
+            ) {
                 /** @var DateTimeResult $lastModified */
                 if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
                     return false;
@@ -191,7 +197,7 @@ class Extractor
         }
 
         // Apply limit if set
-        if ($this->parameters["limit"] > 0 && count($filesToDownload) > $this->parameters["limit"]) {
+        if ($this->config->getLimit() > 0 && count($filesToDownload) > $this->config->getLimit()) {
             // Sort files to download using timestamp
             usort($filesToDownload, function ($a, $b) {
                 if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
@@ -199,8 +205,8 @@ class Extractor
                 }
                 return intval($a["timestamp"]) - intval($b["timestamp"]);
             });
-            $this->logger->info("Downloading only {$this->parameters["limit"]} oldest file(s) out of " . count($filesToDownload));
-            $filesToDownload = array_slice($filesToDownload, 0, $this->parameters["limit"]);
+            $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($filesToDownload));
+            $filesToDownload = array_slice($filesToDownload, 0, $this->config->getLimit());
         }
 
         $fs = new Filesystem();
@@ -225,10 +231,10 @@ class Extractor
         }
         $this->logger->info("Downloaded {$downloadedFiles} file(s)");
 
-        if ($this->parameters['newFilesOnly'] === true) {
+        if ($this->config->isNewFilesOnly() === true) {
             return [
                 'lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp,
-                'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond
+                'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond,
             ];
         } else {
             return [];

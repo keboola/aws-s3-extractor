@@ -3,71 +3,54 @@
 namespace Keboola\S3Extractor;
 
 use Aws\S3\Exception\S3Exception;
-use Monolog\Handler\HandlerInterface;
-use Monolog\Logger;
-use Symfony\Component\Config\Definition\Processor;
+use Keboola\Component\BaseComponent;
+use Keboola\Component\UserException;
 
-class Application
+class Application extends BaseComponent
 {
     /**
-     * @var array
+     * @throws UserException
      */
-    private $config;
-
-    /**
-     * @var array
-     */
-    private $parameters;
-
-    /**
-     * @var Logger
-     */
-    private $logger;
-    /**
-     * @var array
-     */
-    private $state;
-
-    /**
-     * Application constructor.
-     *
-     * @param array $config
-     * @param array $state
-     * @param HandlerInterface|null $handler
-     */
-    public function __construct($config, array $state = [], HandlerInterface $handler = null)
+    protected function run(): void
     {
-        $this->config = $config;
-        $this->state = $state;
-        $parameters = (new Processor)->processConfiguration(
-            new ConfigDefinition,
-            [$this->config['parameters']]
-        );
-        $this->parameters = $parameters;
-        $logger = new Logger('Log');
-        if ($handler) {
-            $logger->pushHandler($handler);
+        /** @var Config $config */
+        $config = $this->getConfig();
+
+        if (substr($config->getKey(), -1) === '/') {
+            throw new UserException('Use the wildcard flag or enter a full path to the file.');
         }
-        $this->logger = $logger;
+
+        $extractor = new Extractor($config, $this->getInputState(), $this->getLogger());
+        try {
+            $this->writeOutputStateToFile(
+                $extractor->extract($this->getOutputDirectory())
+            );
+        } catch (S3Exception $e) {
+            S3ExceptionConverter::resolve($e, $config->getKey());
+        }
     }
 
     /**
-     * Runs data extraction
-     * @param string $outputPath
-     * @return array
-     * @throws Exception
+     * @return string
      */
-    public function actionRun($outputPath)
+    private function getOutputDirectory(): string
     {
-        if (substr($this->parameters['key'], -1) === '/') {
-            throw new Exception('Use the wildcard flag or enter a full path to the file.');
-        }
+        return $this->getDataDir() . '/out/files/';
+    }
 
-        $extractor = new Extractor($this->parameters, $this->state, $this->logger);
-        try {
-            return $extractor->extract($outputPath);
-        } catch (S3Exception $e) {
-            S3ExceptionConverter::resolve($e, $this->parameters['key']);
-        }
+    /**
+     * @return string
+     */
+    protected function getConfigClass(): string
+    {
+        return Config::class;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getConfigDefinitionClass(): string
+    {
+        return ConfigDefinition::class;
     }
 }

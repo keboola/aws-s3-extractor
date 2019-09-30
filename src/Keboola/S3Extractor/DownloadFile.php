@@ -3,7 +3,7 @@
 namespace Keboola\S3Extractor;
 
 use Aws\S3\S3Client;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Retry\RetryProxy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\BackOff\ExponentialBackOffPolicy;
@@ -15,10 +15,10 @@ class DownloadFile
 
     /**
      * @param S3Client $client
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @param array $fileParameters
      */
-    public static function process(S3Client $client, Logger $logger, array $fileParameters): void
+    public static function process(S3Client $client, LoggerInterface $logger, array $fileParameters): void
     {
         (new RetryProxy(
             new SimpleRetryPolicy(self::MAX_ATTEMPTS),

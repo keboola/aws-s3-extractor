@@ -2,6 +2,8 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\S3Extractor\Config;
+use Keboola\S3Extractor\ConfigDefinition;
 use Keboola\S3Extractor\Extractor;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -31,8 +33,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     private function runExtraction(TestHandler $testHandler, $state = [])
     {
         $key = "no-unique-timestamps/*";
-        $extractor = new Extractor(
-            [
+        $extractor = new Extractor(new Config([
+            "parameters" => [
                 "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
@@ -41,9 +43,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
                 "newFilesOnly" => true,
                 "limit" => 1,
             ],
-            $state,
-            (new Logger('test'))->pushHandler($testHandler)
-        );
+        ], new ConfigDefinition), $state, (new Logger('test'))->pushHandler($testHandler));
         return $extractor->extract($this->path);
     }
 
