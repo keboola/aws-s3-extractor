@@ -20,8 +20,8 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-//        (new Process('php ' . __DIR__ . '/../loadS3.php'))
-//            ->setTimeout(1000)
-//            ->mustRun();
+        (new Process('php ' . __DIR__ . '/../loadS3.php'))
+            ->setTimeout(1000)
+            ->mustRun();
     }
 }
