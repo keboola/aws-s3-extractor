@@ -32,6 +32,12 @@ class ConfigDefinition extends BaseConfigDefinition
                 ->scalarNode('key')
                     ->isRequired()
                     ->cannotBeEmpty()
+                    ->validate()
+                        ->ifTrue(static function ($key) {
+                            return substr($key, -1) === '/';
+                        })
+                        ->thenInvalid('Use the wildcard flag or enter a full path to the file.')
+                    ->end()
                 ->end()
                 ->booleanNode('includeSubfolders')
                     ->defaultFalse()
@@ -46,7 +52,6 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->defaultValue(0)
                     ->min(0)
                 ->end()
-
             ->end()
         ;
        // @formatter:on

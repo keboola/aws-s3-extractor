@@ -84,4 +84,36 @@ class ConfigDefinitionTest extends TestCase
             (new Config($config, new ConfigDefinition))->getLimit()
         );
     }
+
+    /**
+     * @dataProvider invalidKeyProvider
+     */
+    public function testInvalidKey(string $key): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Use the wildcard flag or enter a full path to the file.');
+
+        new Config([
+            'parameters' => [
+                'accessKeyId' => 'a',
+                '#secretAccessKey' => 'b',
+                'bucket' => 'c',
+                'key' => $key,
+            ],
+        ], new ConfigDefinition);
+    }
+
+    /**
+     * @return array
+     */
+    public function invalidKeyProvider(): array
+    {
+        return [
+            ['foo/bar/'],
+            ['FooBar/'],
+            ['*/'],
+            ['//'],
+            ['/'],
+        ];
+    }
 }

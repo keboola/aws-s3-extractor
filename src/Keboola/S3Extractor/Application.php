@@ -16,10 +16,6 @@ class Application extends BaseComponent
         /** @var Config $config */
         $config = $this->getConfig();
 
-        if (substr($config->getKey(), -1) === '/') {
-            throw new UserException('Use the wildcard flag or enter a full path to the file.');
-        }
-
         $extractor = new Extractor($config, $this->getInputState(), $this->getLogger());
         try {
             $this->writeOutputStateToFile(
