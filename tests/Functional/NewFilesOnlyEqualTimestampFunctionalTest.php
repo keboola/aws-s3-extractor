@@ -8,7 +8,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-continuously/step-1',
-            $this->config(),
+            self::config(),
             0
         );
     }
@@ -17,7 +17,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-continuously/step-2',
-            $this->config(),
+            self::config(),
             0
         );
     }
@@ -26,7 +26,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-continuously/step-3',
-            $this->config(),
+            self::config(),
             0
         );
     }
@@ -35,7 +35,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-continuously/step-4',
-            $this->config(),
+            self::config(),
             0
         );
     }
@@ -44,7 +44,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-continuously/step-5',
-            $this->config(),
+            self::config(),
             0
         );
     }
@@ -52,7 +52,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     /**
      * @return array
      */
-    private function config(): array
+    private static function config(): array
     {
         return [
             'parameters' => [
