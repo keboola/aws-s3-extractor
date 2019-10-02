@@ -14,6 +14,12 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 {
     public function testSuccessfulDownloadFromRoot(): void
     {
+        $key = 'file1.csv';
+        JsonHelper::writeFile(__DIR__ . '/download-from-root/expected/data/out/state.json', [
+            'lastDownloadedFileTimestamp' =>  self::s3FileLastModified($key),
+            'processedFilesInLastTimestampSecond' => [$key],
+        ]);
+
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-from-root',
             [
@@ -21,7 +27,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                     '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
                     'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                    'key' => 'file1.csv',
+                    'key' => $key,
                     'includeSubfolders' => false,
                     'newFilesOnly' => true,
                     'limit' => 0,
