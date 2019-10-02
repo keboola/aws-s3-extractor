@@ -6,3 +6,6 @@
 /ssh.*
 .env
 codeclimate.json
+
+#states for tests
+/tests/Functional/application-state-new-files-only/expected/data/out/state.json
