@@ -24,16 +24,18 @@ class ApplicationFunctionalTest extends FunctionalTestCase
 
     public function testApplicationStateNewFilesOnly()
     {
-        $this->runTestWithCustomConfiguration(__DIR__ . '/application-state-new-files-only', [
-            'parameters' => [
-                'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                'key' => '/file1.csv',
-                'newFilesOnly' => true,
-                'limit' => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/application-state-new-files-only',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => '/file1.csv',
+                    'newFilesOnly' => true,
+                    'limit' => 0,
+                ],
             ],
-        ],
             0
         );
     }
@@ -41,16 +43,17 @@ class ApplicationFunctionalTest extends FunctionalTestCase
     public function testApplicationStateFileNewFilesOnly()
     {
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/application-state-file-new-files-only', [
-            'parameters' => [
-                'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                'key' => '/file1.csv',
-                'newFilesOnly' => true,
-                'limit' => 0,
+            __DIR__ . '/application-state-file-new-files-only',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => '/file1.csv',
+                    'newFilesOnly' => true,
+                    'limit' => 0,
+                ],
             ],
-        ],
             0
         );
     }
