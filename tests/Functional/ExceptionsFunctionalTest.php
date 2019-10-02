@@ -10,9 +10,9 @@ use Monolog\Logger;
 
 class ExceptionsFunctionalTest extends FunctionalTestCase
 {
-    public function testInvalidBucket()
+    public function testInvalidBucket(): void
     {
-        $this->writeConfig([
+        $this->createTempDatadir([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
@@ -34,9 +34,9 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         ))->execute();
     }
 
-    public function testInvalidCredentials()
+    public function testInvalidCredentials(): void
     {
-        $this->writeConfig([
+        $this->createTempDatadir([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV) . '_invalid',
@@ -56,9 +56,9 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         ))->execute();
     }
 
-    public function testInvalidKey()
+    public function testInvalidKey(): void
     {
-        $this->writeConfig([
+        $this->createTempDatadir([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
@@ -83,7 +83,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
      */
     public function testMissingWildcardOrPathFile(string $key): void
     {
-        $this->writeConfig([
+        $this->createTempDatadir([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
@@ -114,9 +114,9 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         ];
     }
 
-    public function testIncludeSubfoldersWithoutWildcard()
+    public function testIncludeSubfoldersWithoutWildcard(): void
     {
-        $this->writeConfig([
+        $this->createTempDatadir([
             'parameters' => [
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
@@ -136,7 +136,10 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         ))->execute();
     }
 
-    private function writeConfig(array $config): void
+    /**
+     * @param array $config
+     */
+    private function createTempDatadir(array $config): void
     {
         $temp = $this->getTempDatadir(new DatadirTestSpecification(
             __DIR__ . '/exceptions/source/data',
