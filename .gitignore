@@ -10,3 +10,12 @@ codeclimate.json
 #states for tests
 /tests/Functional/application-state-new-files-only/expected/data/out/state.json
 /tests/Functional/limit-new-files-only/expected/data/out/state.json
+/tests/Functional/download-continuously/step-1/expected/data/out/state.json
+/tests/Functional/download-continuously/step-2/expected/data/out/state.json
+/tests/Functional/download-continuously/step-2/source/data/in/state.json
+/tests/Functional/download-continuously/step-3/expected/data/out/state.json
+/tests/Functional/download-continuously/step-3/source/data/in/state.json
+/tests/Functional/download-continuously/step-4/expected/data/out/state.json
+/tests/Functional/download-continuously/step-4/source/data/in/state.json
+/tests/Functional/download-continuously/step-5/expected/data/out/state.json
+/tests/Functional/download-continuously/step-5/source/data/in/state.json
