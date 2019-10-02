@@ -19,3 +19,4 @@ codeclimate.json
 /tests/Functional/download-continuously/step-4/source/data/in/state.json
 /tests/Functional/download-continuously/step-5/expected/data/out/state.json
 /tests/Functional/download-continuously/step-5/source/data/in/state.json
+/tests/Functional/download-from-root/expected/data/out/state.json
