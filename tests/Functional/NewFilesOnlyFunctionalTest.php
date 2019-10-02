@@ -87,7 +87,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
         );
     }
 
-    public function SuccessfulDownloadFromFolderUpdated(): void
+    public function testSuccessfulDownloadFromFolderUpdated(): void
     {
         $key = "folder2/*";
         $testHandler = new TestHandler();
