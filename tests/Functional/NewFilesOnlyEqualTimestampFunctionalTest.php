@@ -2,10 +2,9 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Keboola\Component\JsonHelper;
-
 class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
 {
+    use RunTestByStep;
     private const TEST_DIRECTORY = 'download-continuously';
 
     public function testSuccessfulDownloadFromFolderContinuouslyStep1(): void
@@ -64,34 +63,17 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     }
 
     /**
-     * @param int $step
-     * @param array $processedFilesOut
-     * @param array|null $processedFilesIn
-     * @throws JsonHelper\JsonHelperException
+     * @return string
      */
-    private function runTestByStep(int $step, array $processedFilesOut, array $processedFilesIn = null): void
+    protected static function baseTestDirectory(): string
     {
-        $testDirectory = sprintf('%s/%s/step-%s', __DIR__, self::TEST_DIRECTORY, $step);
-
-        JsonHelper::writeFile(sprintf('/%s/expected/data/out/state.json', $testDirectory), [
-            'lastDownloadedFileTimestamp' => self::s3FileLastModified($processedFilesOut[0]),
-            'processedFilesInLastTimestampSecond' => $processedFilesOut,
-        ]);
-
-        if ($processedFilesIn) {
-            JsonHelper::writeFile(sprintf('/%s/source/data/in/state.json', $testDirectory), [
-                'lastDownloadedFileTimestamp' => self::s3FileLastModified($processedFilesIn[0]),
-                'processedFilesInLastTimestampSecond' => $processedFilesIn,
-            ]);
-        }
-
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        return self::TEST_DIRECTORY;
     }
 
     /**
      * @return array
      */
-    private static function config(): array
+    protected static function baseConfig(): array
     {
         return [
             'parameters' => [
