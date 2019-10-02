@@ -40,5 +40,22 @@
       "Keboola\\": "src/Keboola/",
       "Keboola\\S3ExtractorTest\\": "tests/"
     }
+  },
+  "scripts": {
+    "tests-phpunit": "phpunit tests/Unit",
+    "tests-datadir": "phpunit tests/Functional",
+    "tests": [
+      "@tests-phpunit",
+      "@tests-datadir"
+    ],
+
+    "phpstan": "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
+    "phpcs": "phpcs --standard=psr2 -n --ignore=vendor --extensions=php .",
+    "phpcbf": "phpcbf --standard=psr2 -n --ignore=vendor --extensions=php .",
+    "build": [
+      "@phpcs",
+      "@phpstan",
+      "@tests"
+    ]
   }
 }
