@@ -7,7 +7,7 @@
 .env
 codeclimate.json
 
-#states for tests
+# states for tests
 /tests/Functional/application-state-new-files-only/expected/data/out/state.json
 /tests/Functional/limit-new-files-only/expected/data/out/state.json
 /tests/Functional/download-continuously/step-1/expected/data/out/state.json
@@ -20,3 +20,8 @@ codeclimate.json
 /tests/Functional/download-continuously/step-5/expected/data/out/state.json
 /tests/Functional/download-continuously/step-5/source/data/in/state.json
 /tests/Functional/download-from-root/expected/data/out/state.json
+/tests/Functional/download-from-updated/step-1/expected/data/out/state.json
+/tests/Functional/download-from-updated/step-2/expected/data/out/state.json
+/tests/Functional/download-from-updated/step-2/source/data/in/state.json
+/tests/Functional/download-from-updated/step-3/expected/data/out/state.json
+/tests/Functional/download-from-updated/step-3/source/data/in/state.json
