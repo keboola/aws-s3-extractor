@@ -2,21 +2,18 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Aws\S3\S3Client;
 use Keboola\Component\JsonHelper;
-use Keboola\S3Extractor\Config;
-use Keboola\S3Extractor\ConfigDefinition;
-use Keboola\S3Extractor\Extractor;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
 
 class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 {
+    use RunTestByStep;
+    private const TEST_UPDATED_DIRECTORY = 'download-from-updated';
+
     public function testSuccessfulDownloadFromRoot(): void
     {
         $key = 'file1.csv';
         JsonHelper::writeFile(__DIR__ . '/download-from-root/expected/data/out/state.json', [
-            'lastDownloadedFileTimestamp' =>  self::s3FileLastModified($key),
+            'lastDownloadedFileTimestamp' => self::s3FileLastModified($key),
             'processedFilesInLastTimestampSecond' => [$key],
         ]);
 
@@ -39,157 +36,56 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
     public function testSuccessfulDownloadFromFolderUpdatedStep1(): void
     {
-        $s3Client = new S3Client([
-            'region' => getenv(self::UPDATE_AWS_REGION),
-            'version' => '2006-03-01',
-            'credentials' => [
-                'key' => getenv(self::UPDATE_AWS_S3_ACCESS_KEY_ENV),
-                'secret' => getenv(self::UPDATE_AWS_S3_SECRET_KEY_ENV),
-            ],
+        $this->runTestByStep(1, [
+            'folder2/file2.csv',
         ]);
-        $headObject = $s3Client->headObject([
-            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'folder2/file2.csv',
-        ]);
-
-        // update state stored in repo to reflect real timestamps
-        $stateFileName = __DIR__ . '/download-from-updated/setp-1/expected/data/out/state.json';
-        $state = json_decode(file_get_contents($stateFileName), true);
-        $state['lastDownloadedFileTimestamp'] = $headObject["LastModified"]->format("U");
-        file_put_contents($stateFileName, json_encode($state));
-
-        $this->runTestWithCustomConfiguration(
-            __DIR__ . '/download-from-updated/setp-1',
-            [
-                'parameters' => [
-                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                    'key' => 'folder2/*',
-                    'includeSubfolders' => false,
-                    'newFilesOnly' => true,
-                    'limit' => 0,
-                ],
-            ],
-            0,
-            null,
-            null
-        );
     }
 
     public function testSuccessfulDownloadFromFolderUpdatedStep2(): void
     {
-        $updateFile = (new S3Client([
-            'region' => getenv(self::UPDATE_AWS_REGION),
-            'version' => '2006-03-01',
-            'credentials' => [
-                'key' => getenv(self::UPDATE_AWS_S3_ACCESS_KEY_ENV),
-                'secret' => getenv(self::UPDATE_AWS_S3_SECRET_KEY_ENV),
-            ],
-        ]))->putObject([
+        self::s3Client()->putObject([
             'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
             'Key' => 'folder2/file1.csv',
             'Body' => fopen(__DIR__ . '/../_S3InitData/folder2/file1.csv', 'rb+'),
         ]);
 
-        JsonHelper::writeFile(__DIR__ . '/normal-download/expected/data/out/state.json', [
-            'lastDownloadedFileTimestamp' => strtotime($updateFile->toArray()['@metadata']['headers']['date']),
-            'processedFilesInLastTimestampSecond' => 'folder2/file1.csv',
-        ]);
-
-        $this->runTestWithCustomConfiguration(
-            __DIR__ . '/download-from-updated/setp-2',
-            [
-                'parameters' => [
-                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                    'key' => 'folder2/*',
-                    'includeSubfolders' => false,
-                    'newFilesOnly' => true,
-                    'limit' => 0,
-                ],
-            ],
-            0
-        );
+        $this->runTestByStep(2, ['folder2/file1.csv'], ['folder2/file2.csv']);
     }
 
-    public function testSuccessfulDownloadFromFolderUpdated(): void
+    public function testSuccessfulDownloadFromFolderUpdatedStep3(): void
     {
-        $key = "folder2/*";
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => true,
-                "limit" => 0,
-            ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $state1 = $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 3 file(s)"));
-        $this->assertCount(4, $testHandler->getRecords());
-        $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state1);
-        $this->assertGreaterThan(0, $state1['lastDownloadedFileTimestamp']);
-
-        // update file
-        $client = new S3Client([
-            'region' => getenv(self::UPDATE_AWS_REGION),
-            'version' => '2006-03-01',
-            'credentials' => [
-                'key' => getenv(self::UPDATE_AWS_S3_ACCESS_KEY_ENV),
-                'secret' => getenv(self::UPDATE_AWS_S3_SECRET_KEY_ENV),
-            ],
+        $this->runTestByStep(3, [
+            'folder2/file2.csv',
+            'folder2/file1.csv',
+        ], [
+            'folder2/file2.csv',
+            'folder2/file1.csv',
         ]);
-        $client->putObject([
-            'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
-            'Key' => 'folder2/file1.csv',
-            'Body' => fopen(__DIR__ . '/../../../_data/folder2/file1.csv', 'r+'),
-        ]);
+    }
 
-        // download only the new file
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => true,
-                "limit" => 0,
+    /**
+     * @return string
+     */
+    protected static function baseTestDirectory(): string
+    {
+        return self::TEST_UPDATED_DIRECTORY;
+    }
+
+    /**
+     * @return array
+     */
+    protected static function baseConfig(): array
+    {
+        return [
+            'parameters' => [
+                'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                'key' => 'folder2/*',
+                'includeSubfolders' => false,
+                'newFilesOnly' => true,
+                'limit' => 0,
             ],
-        ], new ConfigDefinition), $state1, (new Logger('test'))->pushHandler($testHandler));
-        $state2 = $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertTrue($testHandler->hasInfo("Downloading file /folder2/file1.csv"));
-        $this->assertCount(2, $testHandler->getRecords());
-        $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state2);
-        $this->assertGreaterThan($state1['lastDownloadedFileTimestamp'], $state2['lastDownloadedFileTimestamp']);
-
-        // do not download anything
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => true,
-                "limit" => 0,
-            ],
-        ], new ConfigDefinition), $state2, (new Logger('test'))->pushHandler($testHandler));
-        $state3 = $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
-        $this->assertCount(1, $testHandler->getRecords());
-        $this->assertArrayHasKey('lastDownloadedFileTimestamp', $state3);
-        $this->assertEquals($state3, $state2);
+        ];
     }
 }
