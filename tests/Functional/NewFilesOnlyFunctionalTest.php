@@ -33,6 +33,25 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
     public function testSuccessfulDownloadFromFolderUpdatedStep1(): void
     {
+        $s3Client = new S3Client([
+            'region' => getenv(self::UPDATE_AWS_REGION),
+            'version' => '2006-03-01',
+            'credentials' => [
+                'key' => getenv(self::UPDATE_AWS_S3_ACCESS_KEY_ENV),
+                'secret' => getenv(self::UPDATE_AWS_S3_SECRET_KEY_ENV),
+            ],
+        ]);
+        $headObject = $s3Client->headObject([
+            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+            'Key' => 'folder2/file2.csv',
+        ]);
+
+        // update state stored in repo to reflect real timestamps
+        $stateFileName = __DIR__ . '/download-from-updated/setp-1/expected/data/out/state.json';
+        $state = json_decode(file_get_contents($stateFileName), true);
+        $state['lastDownloadedFileTimestamp'] = $headObject["LastModified"]->format("U");
+        file_put_contents($stateFileName, json_encode($state));
+
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/download-from-updated/setp-1',
             [
@@ -46,7 +65,9 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
