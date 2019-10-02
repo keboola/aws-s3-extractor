@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Aws\S3\S3Client;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Symfony\Component\Process\Process;
 
@@ -23,5 +24,34 @@ class FunctionalTestCase extends AbstractDatadirTestCase
         (new Process('php ' . __DIR__ . '/../loadS3.php'))
             ->setTimeout(1000)
             ->mustRun();
+    }
+
+    /**
+     * @return S3Client
+     */
+    protected static function s3Client(): S3Client
+    {
+        return new S3Client([
+            'region' => getenv(self::UPDATE_AWS_REGION),
+            'version' => '2006-03-01',
+            'credentials' => [
+                'key' => getenv(self::UPDATE_AWS_S3_ACCESS_KEY_ENV),
+                'secret' => getenv(self::UPDATE_AWS_S3_SECRET_KEY_ENV),
+            ],
+        ]);
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    protected static function s3FileLastModified(string $key): string
+    {
+        $headObject = self::s3Client()->headObject([
+            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+            'Key' => $key,
+        ]);
+
+        return $headObject['LastModified']->format('U');
     }
 }
