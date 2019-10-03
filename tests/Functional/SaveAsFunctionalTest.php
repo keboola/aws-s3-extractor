@@ -24,7 +24,9 @@ class SaveAsFunctionalTest extends FunctionalTestCase
                     'saveAs' => 'folder',
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -48,7 +50,9 @@ class SaveAsFunctionalTest extends FunctionalTestCase
                     'saveAs' => 'folder',
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -72,7 +76,9 @@ class SaveAsFunctionalTest extends FunctionalTestCase
                     'saveAs' => 'folder',
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 

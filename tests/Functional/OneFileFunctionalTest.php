@@ -23,7 +23,9 @@ class OneFileFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -46,7 +48,9 @@ class OneFileFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 

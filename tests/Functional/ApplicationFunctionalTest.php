@@ -18,7 +18,9 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -40,7 +42,9 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -58,7 +62,9 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 }

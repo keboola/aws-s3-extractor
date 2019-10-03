@@ -8,7 +8,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-1';
         self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuously2(): void
@@ -19,7 +19,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
         ]);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuously3(): void
@@ -34,7 +34,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
         ]);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuously4(): void
@@ -51,7 +51,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             'no-unique-timestamps/folder2/file1.csv',
             'no-unique-timestamps/folder2/file2.csv',
         ]);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuousl5(): void
@@ -64,7 +64,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             'no-unique-timestamps/folder2/file2.csv',
         ]);
         self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuousl6(): void
@@ -72,7 +72,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-6';
         self::writeStateIn($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
         self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
-        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     /**

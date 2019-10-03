@@ -19,7 +19,9 @@ class LimitFunctionalTest extends FunctionalTestCase
                     'limit' => 1,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -38,7 +40,9 @@ class LimitFunctionalTest extends FunctionalTestCase
                     'limit' => 10,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -60,7 +64,9 @@ class LimitFunctionalTest extends FunctionalTestCase
                     'limit' => 1,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 }

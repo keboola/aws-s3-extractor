@@ -23,7 +23,9 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -53,7 +55,9 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 }

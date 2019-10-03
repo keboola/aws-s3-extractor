@@ -19,7 +19,9 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -38,7 +40,9 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 }

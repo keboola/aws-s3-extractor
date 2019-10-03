@@ -23,7 +23,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -46,7 +48,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -69,7 +73,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -92,7 +98,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -115,7 +123,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -138,7 +148,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
@@ -161,7 +173,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                     'limit' => 0,
                 ],
             ],
-            0
+            0,
+            null,
+            null
         );
     }
 
