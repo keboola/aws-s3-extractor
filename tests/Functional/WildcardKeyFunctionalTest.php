@@ -2,234 +2,173 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Keboola\S3Extractor\Config;
-use Keboola\S3Extractor\ConfigDefinition;
-use Keboola\S3Extractor\Extractor;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-
 class WildcardKeyFunctionalTest extends FunctionalTestCase
 {
     /**
-     * @param $testFile
-     * @param TestHandler $testHandler
-     * @param string $prefix
+     * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix = "")
+    public function testSuccessfulDownloadFromRoot($initialForwardSlash): void
     {
-        $this->assertFileExists($this->path . '/' . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data" . $prefix .  $testFile, $this->path . '/' . $testFile);
-        $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/download-from-root',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/f*' : 'f*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
+            ],
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromRoot($initialForwardSlash)
+    public function testSuccessfulCollisionDownloadFromRoot($initialForwardSlash): void
     {
-        $key = "f*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/collision-download-from-root',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/c*' : 'c*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertCount(2, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulCollisionDownloadFromRoot($initialForwardSlash)
+    public function testSuccessfulDownloadFromFolder(bool $initialForwardSlash): void
     {
-        $key = "c*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/download-from-folder',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/folder2/*' : 'folder2/*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler);
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertCount(2, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromFolder($initialForwardSlash)
+    public function testSuccessfulDownloadFromNestedFolder(bool $initialForwardSlash): void
     {
-        $key = "folder2/*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/download-from-nested-folder',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/folder2/file3/*' : 'folder2/file3/*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2");
-        $this->assertFileDownloadedFromS3('/file2.csv', $testHandler, "/folder2");
-        $this->assertFileDownloadedFromS3('/collision-file1.csv', $testHandler, "/folder2");
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 3 file(s)"));
-        $this->assertCount(4, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromNestedFolder($initialForwardSlash)
+    public function testSuccessfulDownloadEmptyFolderWithoutTrailingForwardslash($initialForwardSlash): void
     {
-        $key = "folder2/file3/*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/download-empty-folder-without-slash',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/emptyfolder*' : 'emptyfolder*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2/file3");
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertCount(2, $testHandler->getRecords());
-    }
-
-
-    /**
-     * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
-     */
-    public function testSuccessfulDownloadEmptyFolderWithoutTrailingForwardslash($initialForwardSlash)
-    {
-        $key = "emptyfolder*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => true,
-                "newFilesOnly" => false,
-                "limit" => 0,
-            ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
-        $this->assertCount(1, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromEmptyFolder($initialForwardSlash)
+    public function testSuccessfulDownloadFromEmptyFolder(bool $initialForwardSlash): void
     {
-        $key = "emptyfolder/*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/download-from-empty-folder',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/emptyfolder/*' : 'emptyfolder/*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
-        $this->assertCount(1, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
+     * @param bool $initialForwardSlash
      */
-    public function testNoFilesDownloaded($initialForwardSlash)
+    public function testNoFilesDownloaded(bool $initialForwardSlash): void
     {
-        $key = "nonexiting*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/wildcard-key/no-files-downloaded',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/nonexiting*' : 'nonexiting*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertTrue($testHandler->hasInfo("Downloaded 0 file(s)"));
-        $this->assertCount(1, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @return array
      */
-    public function initialForwardSlashProvider()
+    public function initialForwardSlashProvider(): array
     {
         return [[true], [false]];
     }

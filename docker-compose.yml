@@ -7,7 +7,6 @@ services:
     stdin_open: true
     volumes:
       - ./:/code
-      - ./data:/data
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
@@ -27,7 +26,6 @@ services:
              '
     volumes:
       - ./:/code
-      - ./data:/data
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
