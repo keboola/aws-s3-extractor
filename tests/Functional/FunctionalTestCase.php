@@ -63,7 +63,33 @@ class FunctionalTestCase extends AbstractDatadirTestCase
      */
     protected static function writeStateOut(string $testDirectory, array $processedFiles): void
     {
-        JsonHelper::writeFile(sprintf('%s/expected/data/out/state.json', $testDirectory), [
+        self::writeState(
+            sprintf('%s/expected/data/out/state.json', $testDirectory),
+            $processedFiles
+        );
+    }
+
+    /**
+     * @param string $testDirectory
+     * @param array $processedFiles
+     * @throws JsonHelper\JsonHelperException
+     */
+    protected static function writeStateIn(string $testDirectory, array $processedFiles): void
+    {
+        self::writeState(
+            sprintf('%s/source/data/in/state.json', $testDirectory),
+            $processedFiles
+        );
+    }
+
+    /**
+     * @param string $fullPathFile
+     * @param array $processedFiles
+     * @throws JsonHelper\JsonHelperException
+     */
+    private static function writeState(string $fullPathFile, array $processedFiles): void
+    {
+        JsonHelper::writeFile($fullPathFile, [
             'lastDownloadedFileTimestamp' => self::s3FileLastModified($processedFiles[0]),
             'processedFilesInLastTimestampSecond' => $processedFiles,
         ]);
