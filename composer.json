@@ -49,7 +49,7 @@
       "@tests-datadir"
     ],
 
-    "phpstan": "phpstan analyse ./src ./tests --level=max --no-progress -c phpstan.neon",
+    "phpstan": "phpstan analyse ./src --level=max --no-progress -c phpstan.neon",
     "phpcs": "phpcs --standard=psr2 -n --ignore=vendor --extensions=php .",
     "phpcbf": "phpcbf --standard=psr2 -n --ignore=vendor --extensions=php .",
     "build": [
