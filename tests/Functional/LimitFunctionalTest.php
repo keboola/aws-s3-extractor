@@ -7,7 +7,7 @@ class LimitFunctionalTest extends FunctionalTestCase
     public function testLimitReached(): void
     {
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/limit-reached',
+            __DIR__ . '/limit/reached',
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -26,7 +26,7 @@ class LimitFunctionalTest extends FunctionalTestCase
     public function testLimitNotExceeded(): void
     {
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/limit-not-exceeded',
+            __DIR__ . '/limit/not-exceeded',
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -44,7 +44,7 @@ class LimitFunctionalTest extends FunctionalTestCase
 
     public function testLimitNewFilesOnly(): void
     {
-        $testDirectory = __DIR__ . '/limit-new-files-only';
+        $testDirectory = __DIR__ . '/limit/new-files-only';
         self::writeStateOut($testDirectory, ['folder1/file1.csv']);
 
         $this->runTestWithCustomConfiguration(

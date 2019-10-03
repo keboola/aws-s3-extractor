@@ -7,7 +7,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
     public function testApplication(): void
     {
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/application-run',
+            __DIR__ . '/application/base',
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
@@ -24,7 +24,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
 
     public function testApplicationStateNewFilesOnly(): void
     {
-        $testDirectory = __DIR__ . '/application-state-new-files-only';
+        $testDirectory = __DIR__ . '/application/state-new-files-only';
         $file = 'file1.csv';
         self::writeStateOut($testDirectory, [$file]);
 
@@ -47,7 +47,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
     public function testApplicationStateFileNewFilesOnly(): void
     {
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/application-state-file-new-files-only',
+            __DIR__ . '/application/state-file-new-files-only',
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
