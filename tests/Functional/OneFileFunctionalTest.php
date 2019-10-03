@@ -29,7 +29,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
     /**
      * @dataProvider initialForwardSlashProvider
      */
-    public function testSuccessfulDownloadFromFolder($initialForwardSlash): void
+    public function testSuccessfulDownloadFromFolder(bool $initialForwardSlash): void
     {
         $this->runTestWithCustomConfiguration(
             __DIR__ . '/one-file/download-from-folder',
