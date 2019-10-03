@@ -6,10 +6,3 @@
 /ssh.*
 .env
 codeclimate.json
-
-# states for tests
-/tests/Functional/download-from-updated/step-1/expected/data/out/state.json
-/tests/Functional/download-from-updated/step-2/expected/data/out/state.json
-/tests/Functional/download-from-updated/step-2/source/data/in/state.json
-/tests/Functional/download-from-updated/step-3/expected/data/out/state.json
-/tests/Functional/download-from-updated/step-3/source/data/in/state.json

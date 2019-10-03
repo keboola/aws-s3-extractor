@@ -59,38 +59,52 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     /**
      * @param string $testDirectory
      * @param array $processedFiles
+     * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    protected static function writeStateOut(string $testDirectory, array $processedFiles): void
-    {
+    protected static function writeStateOut(
+        string $testDirectory,
+        array $processedFiles,
+        string $forceTimestamp = null
+    ): void {
         self::writeState(
             sprintf('%s/expected/data/out/state.json', $testDirectory),
-            $processedFiles
+            $processedFiles,
+            $forceTimestamp
         );
     }
 
     /**
      * @param string $testDirectory
      * @param array $processedFiles
+     * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    protected static function writeStateIn(string $testDirectory, array $processedFiles): void
-    {
+    protected static function writeStateIn(
+        string $testDirectory,
+        array $processedFiles,
+        string $forceTimestamp = null
+    ): void {
         self::writeState(
             sprintf('%s/source/data/in/state.json', $testDirectory),
-            $processedFiles
+            $processedFiles,
+            $forceTimestamp
         );
     }
 
     /**
      * @param string $fullPathFile
      * @param array $processedFiles
+     * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    private static function writeState(string $fullPathFile, array $processedFiles): void
-    {
+    private static function writeState(
+        string $fullPathFile,
+        array $processedFiles,
+        string $forceTimestamp = null
+    ): void {
         JsonHelper::writeFile($fullPathFile, [
-            'lastDownloadedFileTimestamp' => self::s3FileLastModified($processedFiles[0]),
+            'lastDownloadedFileTimestamp' => $forceTimestamp ?: self::s3FileLastModified($processedFiles[0]),
             'processedFilesInLastTimestampSecond' => $processedFiles,
         ]);
     }
