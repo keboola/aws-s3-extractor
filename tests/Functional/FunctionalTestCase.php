@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\S3ExtractorTest\Functional;
 
 use Aws\S3\S3Client;
+use Keboola\Component\JsonHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
 use Symfony\Component\Process\Process;
 
@@ -53,5 +54,18 @@ class FunctionalTestCase extends AbstractDatadirTestCase
         ]);
 
         return $headObject['LastModified']->format('U');
+    }
+
+    /**
+     * @param string $testDirectory
+     * @param array $processedFiles
+     * @throws JsonHelper\JsonHelperException
+     */
+    protected static function writeStateOut(string $testDirectory, array $processedFiles): void
+    {
+        JsonHelper::writeFile(sprintf('%s/expected/data/out/state.json', $testDirectory), [
+            'lastDownloadedFileTimestamp' => self::s3FileLastModified($processedFiles[0]),
+            'processedFilesInLastTimestampSecond' => $processedFiles,
+        ]);
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Keboola\Component\JsonHelper;
-
 class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 {
     use RunTestByStep;
@@ -11,20 +9,18 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
     public function testSuccessfulDownloadFromRoot(): void
     {
-        $key = 'file1.csv';
-        JsonHelper::writeFile(__DIR__ . '/download-from-root/expected/data/out/state.json', [
-            'lastDownloadedFileTimestamp' => self::s3FileLastModified($key),
-            'processedFilesInLastTimestampSecond' => [$key],
-        ]);
+        $testDirectory = __DIR__ . '/download-from-root';
+        $file = 'file1.csv';
+        self::writeStateOut($testDirectory, [$file]);
 
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/download-from-root',
+            $testDirectory,
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                     '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
                     'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                    'key' => $key,
+                    'key' => $file,
                     'includeSubfolders' => false,
                     'newFilesOnly' => true,
                     'limit' => 0,

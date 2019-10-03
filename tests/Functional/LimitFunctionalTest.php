@@ -2,8 +2,6 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Keboola\Component\JsonHelper;
-
 class LimitFunctionalTest extends FunctionalTestCase
 {
     public function testLimitReached(): void
@@ -46,13 +44,11 @@ class LimitFunctionalTest extends FunctionalTestCase
 
     public function testLimitNewFilesOnly(): void
     {
-        JsonHelper::writeFile(__DIR__ . '/limit-new-files-only/expected/data/out/state.json', [
-            'lastDownloadedFileTimestamp' => self::s3FileLastModified('folder1/file1.csv'),
-            'processedFilesInLastTimestampSecond' => ['folder1/file1.csv'],
-        ]);
+        $testDirectory = __DIR__ . '/limit-new-files-only';
+        self::writeStateOut($testDirectory, ['folder1/file1.csv']);
 
         $this->runTestWithCustomConfiguration(
-            __DIR__ . '/limit-new-files-only',
+            $testDirectory,
             [
                 'parameters' => [
                     'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
