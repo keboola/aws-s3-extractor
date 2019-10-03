@@ -4,76 +4,81 @@ namespace Keboola\S3ExtractorTest\Functional;
 
 class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
 {
-    use RunTestByStep;
-    private const TEST_DIRECTORY = 'download-continuously';
-
-    public function testSuccessfulDownloadFromFolderContinuouslyStep1(): void
+    public function testSuccessfulDownloadFromFolderContinuously1(): void
     {
-        $this->runTestByStep(1, [
-            'no-unique-timestamps/folder2/collision-file1.csv',
-        ]);
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-1';
+        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
     }
 
-    public function testSuccessfulDownloadFromFolderContinuouslyStep2(): void
+    public function testSuccessfulDownloadFromFolderContinuously2(): void
     {
-        $this->runTestByStep(2, [
-            'no-unique-timestamps/folder2/collision-file1.csv',
-            'no-unique-timestamps/folder2/collision/file1.csv',
-        ], [
-            'no-unique-timestamps/folder2/collision-file1.csv',
-        ]);
-    }
-
-    public function testSuccessfulDownloadFromFolderContinuouslyStep3(): void
-    {
-        $this->runTestByStep(3, [
-            'no-unique-timestamps/folder2/collision-file1.csv',
-            'no-unique-timestamps/folder2/collision/file1.csv',
-            'no-unique-timestamps/folder2/file1.csv',
-        ], [
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-2';
+        self::writeStateIn($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
+        self::writeStateOut($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
         ]);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
     }
 
-    public function testSuccessfulDownloadFromFolderContinuouslyStep4(): void
+    public function testSuccessfulDownloadFromFolderContinuously3(): void
     {
-        $this->runTestByStep(4, [
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-3';
+        self::writeStateIn($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
-            'no-unique-timestamps/folder2/file1.csv',
-            'no-unique-timestamps/folder2/file2.csv',
-        ], [
+        ]);
+        self::writeStateOut($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
         ]);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
     }
 
-    public function testSuccessfulDownloadFromFolderContinuouslyStep5(): void
+    public function testSuccessfulDownloadFromFolderContinuously4(): void
     {
-        $this->runTestByStep(5, [
-            'no-unique-timestamps/folder2/file3/file1.csv',
-        ], [
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-4';
+        self::writeStateIn($testDirectory, [
+            'no-unique-timestamps/folder2/collision-file1.csv',
+            'no-unique-timestamps/folder2/collision/file1.csv',
+            'no-unique-timestamps/folder2/file1.csv',
+        ]);
+        self::writeStateOut($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
             'no-unique-timestamps/folder2/file2.csv',
         ]);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
     }
 
-    /**
-     * @return string
-     */
-    protected static function baseTestDirectory(): string
+    public function testSuccessfulDownloadFromFolderContinuousl5(): void
     {
-        return self::TEST_DIRECTORY;
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-5';
+        self::writeStateIn($testDirectory, [
+            'no-unique-timestamps/folder2/collision-file1.csv',
+            'no-unique-timestamps/folder2/collision/file1.csv',
+            'no-unique-timestamps/folder2/file1.csv',
+            'no-unique-timestamps/folder2/file2.csv',
+        ]);
+        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
+    }
+
+    public function testSuccessfulDownloadFromFolderContinuousl6(): void
+    {
+        $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-6';
+        self::writeStateIn($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0);
     }
 
     /**
      * @return array
      */
-    protected static function baseConfig(): array
+    private static function config(): array
     {
         return [
             'parameters' => [
