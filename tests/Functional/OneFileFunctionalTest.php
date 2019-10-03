@@ -6,6 +6,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
 {
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
     public function testSuccessfulDownloadFromRoot(bool $initialForwardSlash): void
     {
@@ -28,6 +29,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
     public function testSuccessfulDownloadFromFolder(bool $initialForwardSlash): void
     {
