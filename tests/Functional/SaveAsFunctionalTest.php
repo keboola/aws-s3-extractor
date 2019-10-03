@@ -2,126 +2,84 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Keboola\S3Extractor\Config;
-use Keboola\S3Extractor\ConfigDefinition;
-use Keboola\S3Extractor\Extractor;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-
 class SaveAsFunctionalTest extends FunctionalTestCase
 {
     /**
-     * @param $testFile
-     * @param TestHandler $testHandler
-     * @param $prefix
-     * @param $saveAs
+     * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
-    private function assertFileDownloadedFromS3($testFile, TestHandler $testHandler, $prefix, $saveAs)
+    public function testSuccessfulDownloadFromRoot(bool $initialForwardSlash): void
     {
-        $this->assertFileExists($this->path . '/' . $saveAs . '/' . $testFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data" .  $prefix . '/' . $testFile, $this->path . '/' . $saveAs . '/' . $testFile);
-        $this->assertTrue($testHandler->hasInfo("Downloading file {$prefix}{$testFile}"));
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/save-as/download-from-root',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/file1.csv' : 'file1.csv',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                    'saveAs' => 'folder',
+                ],
+            ],
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromRoot($initialForwardSlash)
+    public function testSuccessfulDownloadFromFolder(bool $initialForwardSlash): void
     {
-        $key = "file1.csv";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
-                "saveAs" => "folder",
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/save-as/download-from-folder',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/folder1/file1.csv' : 'folder1/file1.csv',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                    'saveAs' => 'folder',
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $expectedFile = $this->path . '/folder/file1.csv';
-        $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data/file1.csv", $expectedFile);
-        $this->assertTrue($testHandler->hasInfo("Downloading file /file1.csv"));
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertCount(2, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @dataProvider initialForwardSlashProvider
+     * @param bool $initialForwardSlash
      */
-    public function testSuccessfulDownloadFromFolder($initialForwardSlash)
+    public function testSuccessfulDownloadFromNestedFolder(bool $initialForwardSlash): void
     {
-        $key = "folder1/file1.csv";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
-                "saveAs" => "folder",
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/save-as/download-from-nested-folder',
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $initialForwardSlash ? '/folder2/f*' : 'folder2/f*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                    'saveAs' => 'folder',
+                ],
             ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $expectedFile = $this->path . '/folder/file1.csv';
-        $this->assertFileExists($expectedFile);
-        $this->assertFileEquals(__DIR__ . "/../../../_data/folder1/file1.csv", $expectedFile);
-        $this->assertTrue($testHandler->hasInfo("Downloading file /folder1/file1.csv"));
-        $this->assertTrue($testHandler->hasInfo("Downloaded 1 file(s)"));
-        $this->assertCount(2, $testHandler->getRecords());
-    }
-
-    /**
-     * @dataProvider initialForwardSlashProvider
-     * @param $initialForwardSlash
-     */
-    public function testSuccessfulDownloadFromNestedFolder($initialForwardSlash)
-    {
-        $key = "folder2/f*";
-        if ($initialForwardSlash) {
-            $key = "/" . $key;
-        }
-        $testHandler = new TestHandler();
-        $extractor = new Extractor(new Config([
-            "parameters" => [
-                "accessKeyId" => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                "#secretAccessKey" => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                "bucket" => getenv(self::AWS_S3_BUCKET_ENV),
-                "key" => $key,
-                "includeSubfolders" => false,
-                "newFilesOnly" => false,
-                "limit" => 0,
-                "saveAs" => "folder",
-            ],
-        ], new ConfigDefinition), [], (new Logger('test'))->pushHandler($testHandler));
-        $extractor->extract($this->path);
-
-        $this->assertFileDownloadedFromS3('/file1.csv', $testHandler, "/folder2", "folder");
-        $this->assertFileDownloadedFromS3('/file2.csv', $testHandler, "/folder2", "folder");
-        $this->assertTrue($testHandler->hasInfo("Downloaded 2 file(s)"));
-        $this->assertCount(3, $testHandler->getRecords());
+            0
+        );
     }
 
     /**
      * @return array
      */
-    public function initialForwardSlashProvider()
+    public function initialForwardSlashProvider(): array
     {
         return [[true], [false]];
     }
