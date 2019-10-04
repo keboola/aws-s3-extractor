@@ -20,7 +20,10 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /collision-file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -41,7 +44,10 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/collision-file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }

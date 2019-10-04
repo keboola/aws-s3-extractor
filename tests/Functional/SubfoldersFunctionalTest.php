@@ -24,7 +24,16 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /file1.csv',
+                'Downloading file /folder1/file1.csv',
+                'Downloading file /folder2/collision-file1.csv',
+                'Downloading file /folder2/collision/file1.csv',
+                'Downloading file /folder2/file1.csv',
+                'Downloading file /folder2/file2.csv',
+                'Downloading file /folder2/file3/file1.csv',
+                'Downloaded 7 file(s)',
+            ]),
             null
         );
     }
@@ -49,7 +58,11 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /collision-file1.csv',
+                'Downloading file /collision/file1.csv',
+                'Downloaded 2 file(s)',
+            ]),
             null
         );
     }
@@ -74,7 +87,14 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/collision-file1.csv',
+                'Downloading file /folder2/collision/file1.csv',
+                'Downloading file /folder2/file1.csv',
+                'Downloading file /folder2/file2.csv',
+                'Downloading file /folder2/file3/file1.csv',
+                'Downloaded 5 file(s)',
+            ]),
             null
         );
     }
@@ -99,7 +119,11 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/collision-file1.csv',
+                'Downloading file /folder2/collision/file1.csv',
+                'Downloaded 2 file(s)',
+            ]),
             null
         );
     }
@@ -124,7 +148,10 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/file3/file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -149,7 +176,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout(['Downloaded 0 file(s)']),
             null
         );
     }
@@ -174,7 +201,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout(['Downloaded 0 file(s)']),
             null
         );
     }

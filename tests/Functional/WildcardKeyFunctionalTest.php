@@ -24,7 +24,10 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -49,7 +52,10 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /collision-file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -74,7 +80,12 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/collision-file1.csv',
+                'Downloading file /folder2/file1.csv',
+                'Downloading file /folder2/file2.csv',
+                'Downloaded 3 file(s)',
+            ]),
             null
         );
     }
@@ -99,7 +110,10 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder2/file3/file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -124,7 +138,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout(['Downloaded 0 file(s)']),
             null
         );
     }
@@ -149,7 +163,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout(['Downloaded 0 file(s)']),
             null
         );
     }
@@ -174,7 +188,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout(['Downloaded 0 file(s)']),
             null
         );
     }

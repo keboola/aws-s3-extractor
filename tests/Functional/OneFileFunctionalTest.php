@@ -24,7 +24,10 @@ class OneFileFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }
@@ -49,7 +52,10 @@ class OneFileFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            null,
+            self::convertToStdout([
+                'Downloading file /folder1/file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
             null
         );
     }

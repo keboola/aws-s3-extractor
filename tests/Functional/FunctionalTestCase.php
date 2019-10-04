@@ -108,4 +108,13 @@ class FunctionalTestCase extends AbstractDatadirTestCase
             'processedFilesInLastTimestampSecond' => $processedFiles,
         ]);
     }
+
+    /**
+     * @param array $messages
+     * @return string
+     */
+    protected static function convertToStdout(array $messages): string
+    {
+        return implode(PHP_EOL, $messages) . PHP_EOL;
+    }
 }
