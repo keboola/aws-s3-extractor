@@ -49,8 +49,8 @@ class LimitFunctionalTest extends FunctionalTestCase
     public function testLimitNewFilesOnly(): void
     {
         $testDirectory = __DIR__ . '/limit/new-files-only';
-        self::writeStateIn($testDirectory, ['file1.csv']);
-        self::writeStateOut($testDirectory, ['folder1/file1.csv']);
+        self::writeInStateFile($testDirectory, ['file1.csv']);
+        self::writeOutStateFile($testDirectory, ['folder1/file1.csv']);
 
         $this->runTestWithCustomConfiguration(
             $testDirectory,

@@ -8,7 +8,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
     {
         $testDirectory = __DIR__ . '/new-files-only/download-from-root';
         $file = 'file1.csv';
-        self::writeStateOut($testDirectory, [$file]);
+        self::writeOutStateFile($testDirectory, [$file]);
 
         $this->runTestWithCustomConfiguration(
             $testDirectory,
@@ -31,7 +31,7 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
 
     public function testSuccessfulDownloadFromFolderUpdated(): void
     {
-        $lastModified = self::s3FileLastModified('folder2/file1.csv');
+        $lastModified = self::getS3FileLastModified('folder2/file1.csv');
         self::s3Client()->putObject([
             'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
             'Key' => 'folder2/file1.csv',
@@ -39,8 +39,8 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
         ]);
 
         $testDirectory = __DIR__ . '/new-files-only/download-from-updated';
-        self::writeStateIn($testDirectory, ['folder2/file2.csv'], $lastModified);
-        self::writeStateOut($testDirectory, ['folder2/file1.csv']);
+        self::writeInStateFile($testDirectory, ['folder2/file2.csv'], $lastModified);
+        self::writeOutStateFile($testDirectory, ['folder2/file1.csv']);
 
         $this->runTestWithCustomConfiguration(
             $testDirectory,

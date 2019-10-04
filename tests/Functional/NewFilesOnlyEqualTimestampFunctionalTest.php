@@ -7,15 +7,15 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     public function testSuccessfulDownloadFromFolderContinuously1(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-1';
-        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
+        self::writeOutStateFile($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
         $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuously2(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-2';
-        self::writeStateIn($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
-        self::writeStateOut($testDirectory, [
+        self::writeInStateFile($testDirectory, ['no-unique-timestamps/folder2/collision-file1.csv']);
+        self::writeOutStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
         ]);
@@ -25,11 +25,11 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     public function testSuccessfulDownloadFromFolderContinuously3(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-3';
-        self::writeStateIn($testDirectory, [
+        self::writeInStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
         ]);
-        self::writeStateOut($testDirectory, [
+        self::writeOutStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
@@ -40,12 +40,12 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     public function testSuccessfulDownloadFromFolderContinuously4(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-4';
-        self::writeStateIn($testDirectory, [
+        self::writeInStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
         ]);
-        self::writeStateOut($testDirectory, [
+        self::writeOutStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
@@ -57,21 +57,21 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
     public function testSuccessfulDownloadFromFolderContinuousl5(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-5';
-        self::writeStateIn($testDirectory, [
+        self::writeInStateFile($testDirectory, [
             'no-unique-timestamps/folder2/collision-file1.csv',
             'no-unique-timestamps/folder2/collision/file1.csv',
             'no-unique-timestamps/folder2/file1.csv',
             'no-unique-timestamps/folder2/file2.csv',
         ]);
-        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        self::writeOutStateFile($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
         $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 
     public function testSuccessfulDownloadFromFolderContinuousl6(): void
     {
         $testDirectory = __DIR__ . '/new-files-only-equal-timestamp/download-continuously-6';
-        self::writeStateIn($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
-        self::writeStateOut($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        self::writeInStateFile($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
+        self::writeOutStateFile($testDirectory, ['no-unique-timestamps/folder2/file3/file1.csv']);
         $this->runTestWithCustomConfiguration($testDirectory, self::config(), 0, null, null);
     }
 

@@ -46,7 +46,7 @@ class FunctionalTestCase extends AbstractDatadirTestCase
      * @param string $key
      * @return string
      */
-    protected static function s3FileLastModified(string $key): string
+    protected static function getS3FileLastModified(string $key): string
     {
         $headObject = self::s3Client()->headObject([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
@@ -62,12 +62,12 @@ class FunctionalTestCase extends AbstractDatadirTestCase
      * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    protected static function writeStateOut(
+    protected static function writeOutStateFile(
         string $testDirectory,
         array $processedFiles,
         string $forceTimestamp = null
     ): void {
-        self::writeState(
+        self::writeStateFile(
             sprintf('%s/expected/data/out/state.json', $testDirectory),
             $processedFiles,
             $forceTimestamp
@@ -80,12 +80,12 @@ class FunctionalTestCase extends AbstractDatadirTestCase
      * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    protected static function writeStateIn(
+    protected static function writeInStateFile(
         string $testDirectory,
         array $processedFiles,
         string $forceTimestamp = null
     ): void {
-        self::writeState(
+        self::writeStateFile(
             sprintf('%s/source/data/in/state.json', $testDirectory),
             $processedFiles,
             $forceTimestamp
@@ -93,18 +93,18 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     }
 
     /**
-     * @param string $fullPathFile
+     * @param string $fileName
      * @param array $processedFiles
      * @param string|null $forceTimestamp
      * @throws JsonHelper\JsonHelperException
      */
-    private static function writeState(
-        string $fullPathFile,
+    private static function writeStateFile(
+        string $fileName,
         array $processedFiles,
         string $forceTimestamp = null
     ): void {
-        JsonHelper::writeFile($fullPathFile, [
-            'lastDownloadedFileTimestamp' => $forceTimestamp ?: self::s3FileLastModified($processedFiles[0]),
+        JsonHelper::writeFile($fileName, [
+            'lastDownloadedFileTimestamp' => $forceTimestamp ?: self::getS3FileLastModified($processedFiles[0]),
             'processedFilesInLastTimestampSecond' => $processedFiles,
         ]);
     }

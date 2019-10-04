@@ -28,7 +28,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
     {
         $testDirectory = __DIR__ . '/application/state-new-files-only';
         $file = 'file1.csv';
-        self::writeStateOut($testDirectory, [$file]);
+        self::writeOutStateFile($testDirectory, [$file]);
 
         $this->runTestWithCustomConfiguration(
             $testDirectory,
