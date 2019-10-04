@@ -21,7 +21,7 @@ $client =  new \Aws\S3\S3Client([
 ]);
 
 // Where the files will be source from
-$source = $basedir . '/tests/_data';
+$source = $basedir . '/tests/_S3InitData';
 
 // Where the files will be transferred to
 $bucket = getenv('AWS_S3_BUCKET');

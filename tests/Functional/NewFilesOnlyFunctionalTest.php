@@ -1,0 +1,69 @@
+<?php
+
+namespace Keboola\S3ExtractorTest\Functional;
+
+class NewFilesOnlyFunctionalTest extends FunctionalTestCase
+{
+    public function testSuccessfulDownloadFromRoot(): void
+    {
+        $testDirectory = __DIR__ . '/new-files-only/download-from-root';
+        $file = 'file1.csv';
+        self::writeOutStateFile($testDirectory, [$file]);
+
+        $this->runTestWithCustomConfiguration(
+            $testDirectory,
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => $file,
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => true,
+                    'limit' => 0,
+                ],
+            ],
+            0,
+            self::convertToStdout([
+                'Downloading file /file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
+            null
+        );
+    }
+
+    public function testSuccessfulDownloadFromFolderUpdated(): void
+    {
+        $lastModified = self::getS3FileLastModified('folder2/file1.csv');
+        self::s3Client()->putObject([
+            'Bucket' => getenv(self::UPDATE_AWS_S3_BUCKET),
+            'Key' => 'folder2/file1.csv',
+            'Body' => fopen(__DIR__ . '/../_S3InitData/folder2/file1.csv', 'rb+'),
+        ]);
+
+        $testDirectory = __DIR__ . '/new-files-only/download-from-updated';
+        self::writeInStateFile($testDirectory, ['folder2/file2.csv'], $lastModified);
+        self::writeOutStateFile($testDirectory, ['folder2/file1.csv']);
+
+        $this->runTestWithCustomConfiguration(
+            $testDirectory,
+            [
+                'parameters' => [
+                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => 'folder2/*',
+                    'includeSubfolders' => false,
+                    'newFilesOnly' => true,
+                    'limit' => 0,
+                ],
+            ],
+            0,
+            self::convertToStdout([
+                'Downloading file /folder2/file1.csv',
+                'Downloaded 1 file(s)',
+            ]),
+            null
+        );
+    }
+}
