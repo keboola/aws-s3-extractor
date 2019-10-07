@@ -9,6 +9,7 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\Component\UserException;
+use function Keboola\Utils\formatBytes;
 
 class Extractor
 {
@@ -155,6 +156,7 @@ class Extractor
                 ];
                 $filesToDownload[] = [
                     "timestamp" => $object['LastModified']->format("U"),
+                    "size" => (int) $object['Size'],
                     "parameters" => $parameters,
                 ];
             }
@@ -171,6 +173,7 @@ class Extractor
             $head = $client->headObject($parameters);
             $filesToDownload[] = [
                 "timestamp" => $head["LastModified"]->format("U"),
+                "size" => $head->get('ContentLength'),
                 "parameters" => $parameters,
             ];
         }
@@ -211,6 +214,7 @@ class Extractor
 
         $fs = new Filesystem();
         $downloadedFiles = 0;
+        $downloadedSize = 0;
 
         // Download files
         foreach ($filesToDownload as $fileToDownload) {
@@ -218,9 +222,13 @@ class Extractor
             if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
-            $this->logger->info("Downloading file /" . $fileToDownload["parameters"]["Key"]);
 
             DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
+
+            $this->logger->info(sprintf('Downloading file /%s (%s)',
+                $fileToDownload['parameters']['Key'],
+                formatBytes($fileToDownload['size'])
+            ));
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
@@ -228,8 +236,13 @@ class Extractor
             $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
             $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
             $downloadedFiles++;
+            $downloadedSize += $fileToDownload['size'];
         }
-        $this->logger->info("Downloaded {$downloadedFiles} file(s)");
+
+        $this->logger->info(sprintf('Downloaded %d file(s) (%s)',
+            $downloadedFiles,
+            formatBytes($downloadedSize)
+        ));
 
         if ($this->config->isNewFilesOnly() === true) {
             return [
