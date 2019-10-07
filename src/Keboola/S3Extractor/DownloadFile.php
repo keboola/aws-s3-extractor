@@ -7,6 +7,7 @@ use Psr\Log\LoggerInterface;
 use Retry\RetryProxy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\BackOff\ExponentialBackOffPolicy;
+use GuzzleHttp\Promise\Promise;
 
 class DownloadFile
 {
@@ -17,15 +18,16 @@ class DownloadFile
      * @param S3Client $client
      * @param LoggerInterface $logger
      * @param array $fileParameters
+     * @return Promise
      */
-    public static function process(S3Client $client, LoggerInterface $logger, array $fileParameters): void
+    public static function process(S3Client $client, LoggerInterface $logger, array $fileParameters): Promise
     {
-        (new RetryProxy(
+        return (new RetryProxy(
             new SimpleRetryPolicy(self::MAX_ATTEMPTS),
             new ExponentialBackOffPolicy(self::INTERVAL_MS),
             $logger
         ))->call(static function () use ($client, $fileParameters) {
-            $client->getObject($fileParameters);
+            return $client->getObjectAsync($fileParameters);
         });
     }
 }
