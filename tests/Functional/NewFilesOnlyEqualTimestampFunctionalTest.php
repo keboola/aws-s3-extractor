@@ -14,8 +14,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 5',
-                'Downloading file /no-unique-timestamps/folder2/collision-file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /no-unique-timestamps/folder2/collision-file1.csv (133 B)',
+                'Downloaded 1 file(s) (133 B)',
             ]),
             null
         );
@@ -35,8 +35,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 4',
-                'Downloading file /no-unique-timestamps/folder2/collision/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /no-unique-timestamps/folder2/collision/file1.csv (133 B)',
+                'Downloaded 1 file(s) (133 B)',
             ]),
             null
         );
@@ -60,8 +60,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 3',
-                'Downloading file /no-unique-timestamps/folder2/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /no-unique-timestamps/folder2/file1.csv (113 B)',
+                'Downloaded 1 file(s) (113 B)',
             ]),
             null
         );
@@ -87,8 +87,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 2',
-                'Downloading file /no-unique-timestamps/folder2/file2.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /no-unique-timestamps/folder2/file2.csv (113 B)',
+                'Downloaded 1 file(s) (113 B)',
             ]),
             null
         );
@@ -109,8 +109,8 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             self::config(),
             0,
             self::convertToStdout([
-                'Downloading file /no-unique-timestamps/folder2/file3/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /no-unique-timestamps/folder2/file3/file1.csv (125 B)',
+                'Downloaded 1 file(s) (125 B)',
             ]),
             null
         );
@@ -125,7 +125,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             $testDirectory,
             self::config(),
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }

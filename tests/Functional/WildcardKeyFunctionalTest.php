@@ -25,8 +25,8 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloaded 1 file(s) (97 B)',
             ]),
             null
         );
@@ -53,8 +53,8 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /collision-file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /collision-file1.csv (117 B)',
+                'Downloaded 1 file(s) (117 B)',
             ]),
             null
         );
@@ -81,10 +81,10 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/collision-file1.csv',
-                'Downloading file /folder2/file1.csv',
-                'Downloading file /folder2/file2.csv',
-                'Downloaded 3 file(s)',
+                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Downloading file /folder2/file1.csv (113 B)',
+                'Downloading file /folder2/file2.csv (113 B)',
+                'Downloaded 3 file(s) (359 B)',
             ]),
             null
         );
@@ -111,8 +111,8 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/file3/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 1 file(s) (125 B)',
             ]),
             null
         );
@@ -138,7 +138,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }
@@ -163,7 +163,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }
@@ -188,7 +188,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }

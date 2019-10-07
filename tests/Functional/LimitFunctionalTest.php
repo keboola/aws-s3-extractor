@@ -22,8 +22,8 @@ class LimitFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 7',
-                'Downloading file /file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloaded 1 file(s) (97 B)',
             ]),
             null
         );
@@ -46,14 +46,14 @@ class LimitFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /file1.csv',
-                'Downloading file /folder1/file1.csv',
-                'Downloading file /folder2/collision-file1.csv',
-                'Downloading file /folder2/collision/file1.csv',
-                'Downloading file /folder2/file1.csv',
-                'Downloading file /folder2/file2.csv',
-                'Downloading file /folder2/file3/file1.csv',
-                'Downloaded 7 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloading file /folder1/file1.csv (113 B)',
+                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Downloading file /folder2/collision/file1.csv (133 B)',
+                'Downloading file /folder2/file1.csv (113 B)',
+                'Downloading file /folder2/file2.csv (113 B)',
+                'Downloading file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 7 file(s) (827 B)',
             ]),
             null
         );
@@ -81,8 +81,8 @@ class LimitFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 6',
-                'Downloading file /folder1/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /folder1/file1.csv (113 B)',
+                'Downloaded 1 file(s) (113 B)',
             ]),
             null
         );
