@@ -223,13 +223,13 @@ class Extractor
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
 
-            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
-
             $this->logger->info(sprintf(
                 'Downloading file /%s (%s)',
                 $fileToDownload['parameters']['Key'],
                 formatBytes($fileToDownload['size'])
             ));
+
+            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
