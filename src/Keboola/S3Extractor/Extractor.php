@@ -225,7 +225,8 @@ class Extractor
 
             DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
 
-            $this->logger->info(sprintf('Downloading file /%s (%s)',
+            $this->logger->info(sprintf(
+                'Downloading file /%s (%s)',
                 $fileToDownload['parameters']['Key'],
                 formatBytes($fileToDownload['size'])
             ));
@@ -239,7 +240,8 @@ class Extractor
             $downloadedSize += $fileToDownload['size'];
         }
 
-        $this->logger->info(sprintf('Downloaded %d file(s) (%s)',
+        $this->logger->info(sprintf(
+            'Downloaded %d file(s) (%s)',
             $downloadedFiles,
             formatBytes($downloadedSize)
         ));
