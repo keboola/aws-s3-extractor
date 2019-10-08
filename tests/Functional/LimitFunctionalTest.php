@@ -2,6 +2,8 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\DatadirTests\DatadirTestSpecification;
+
 class LimitFunctionalTest extends FunctionalTestCase
 {
     public function testLimitReached(): void
@@ -22,7 +24,7 @@ class LimitFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 7',
-                'Downloading file /file1.csv (97 B)',
+                'Downloading file complete /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
             null
@@ -31,32 +33,41 @@ class LimitFunctionalTest extends FunctionalTestCase
 
     public function testLimitNotExceeded(): void
     {
-        $this->runTestWithCustomConfiguration(
-            __DIR__ . '/limit/not-exceeded',
-            [
-                'parameters' => [
-                    'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
-                    '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
-                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-                    'key' => 'f*',
-                    'includeSubfolders' => true,
-                    'newFilesOnly' => false,
-                    'limit' => 10,
-                ],
-            ],
+        $specification = new DatadirTestSpecification(
+            __DIR__ . '/limit/not-exceeded/source/data',
             0,
-            self::convertToStdout([
-                'Downloading file /file1.csv (97 B)',
-                'Downloading file /folder1/file1.csv (113 B)',
-                'Downloading file /folder2/collision-file1.csv (133 B)',
-                'Downloading file /folder2/collision/file1.csv (133 B)',
-                'Downloading file /folder2/file1.csv (113 B)',
-                'Downloading file /folder2/file2.csv (113 B)',
-                'Downloading file /folder2/file3/file1.csv (125 B)',
-                'Downloaded 7 file(s) (827 B)',
-            ]),
-            null
+            null,
+            null,
+            __DIR__ . '/limit/not-exceeded/expected/data/out'
         );
+
+        $tempDatadir = $this->getTempDatadir($specification);
+
+        self::writeConfigFile($tempDatadir, [
+            'parameters' => [
+                'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
+                '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
+                'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                'key' => 'f*',
+                'includeSubfolders' => true,
+                'newFilesOnly' => false,
+                'limit' => 10,
+            ],
+        ]);
+
+        $process = $this->runScript($tempDatadir->getTmpFolder());
+        $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
+
+        $output = explode(PHP_EOL, $process->getOutput());
+        $this->assertCount(9, $output);
+        $this->assertContains('Downloading file complete /file1.csv (97 B)', $output);
+        $this->assertContains('Downloading file complete /folder1/file1.csv (113 B)', $output);
+        $this->assertContains('Downloading file complete /folder2/collision-file1.csv (133 B)', $output);
+        $this->assertContains('Downloading file complete /folder2/collision/file1.csv (133 B)', $output);
+        $this->assertContains('Downloading file complete /folder2/file1.csv (113 B)', $output);
+        $this->assertContains('Downloading file complete /folder2/file2.csv (113 B)', $output);
+        $this->assertContains('Downloading file complete /folder2/file3/file1.csv (125 B)', $output);
+        $this->assertContains('Downloaded 7 file(s) (827 B)', $output);
     }
 
     public function testLimitNewFilesOnly(): void
@@ -81,7 +92,7 @@ class LimitFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 6',
-                'Downloading file /folder1/file1.csv (113 B)',
+                'Downloading file complete /folder1/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
             null
