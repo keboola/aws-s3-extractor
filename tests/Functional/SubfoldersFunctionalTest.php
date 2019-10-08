@@ -25,14 +25,14 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /file1.csv',
-                'Downloading file /folder1/file1.csv',
-                'Downloading file /folder2/collision-file1.csv',
-                'Downloading file /folder2/collision/file1.csv',
-                'Downloading file /folder2/file1.csv',
-                'Downloading file /folder2/file2.csv',
-                'Downloading file /folder2/file3/file1.csv',
-                'Downloaded 7 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloading file /folder1/file1.csv (113 B)',
+                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Downloading file /folder2/collision/file1.csv (133 B)',
+                'Downloading file /folder2/file1.csv (113 B)',
+                'Downloading file /folder2/file2.csv (113 B)',
+                'Downloading file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 7 file(s) (827 B)',
             ]),
             null
         );
@@ -59,9 +59,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /collision-file1.csv',
-                'Downloading file /collision/file1.csv',
-                'Downloaded 2 file(s)',
+                'Downloading file /collision-file1.csv (117 B)',
+                'Downloading file /collision/file1.csv (117 B)',
+                'Downloaded 2 file(s) (234 B)',
             ]),
             null
         );
@@ -88,12 +88,12 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/collision-file1.csv',
-                'Downloading file /folder2/collision/file1.csv',
-                'Downloading file /folder2/file1.csv',
-                'Downloading file /folder2/file2.csv',
-                'Downloading file /folder2/file3/file1.csv',
-                'Downloaded 5 file(s)',
+                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Downloading file /folder2/collision/file1.csv (133 B)',
+                'Downloading file /folder2/file1.csv (113 B)',
+                'Downloading file /folder2/file2.csv (113 B)',
+                'Downloading file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 5 file(s) (617 B)',
             ]),
             null
         );
@@ -120,9 +120,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/collision-file1.csv',
-                'Downloading file /folder2/collision/file1.csv',
-                'Downloaded 2 file(s)',
+                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Downloading file /folder2/collision/file1.csv (133 B)',
+                'Downloaded 2 file(s) (266 B)',
             ]),
             null
         );
@@ -149,8 +149,8 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/file3/file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 1 file(s) (125 B)',
             ]),
             null
         );
@@ -176,7 +176,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }
@@ -201,7 +201,7 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }

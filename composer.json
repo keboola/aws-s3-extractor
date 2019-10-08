@@ -26,7 +26,8 @@
     "symfony/config": "^4.2",
     "monolog/monolog": "^1.22",
     "keboola/retry": "^0.4.1",
-    "keboola/php-component": "^7.0"
+    "keboola/php-component": "^7.0",
+    "keboola/php-utils": "^4.1"
   },
   "require-dev": {
     "squizlabs/php_codesniffer": "^2.6",

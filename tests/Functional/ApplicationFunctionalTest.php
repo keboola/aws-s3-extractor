@@ -20,8 +20,8 @@ class ApplicationFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloaded 1 file(s) (97 B)',
             ]),
             null
         );
@@ -47,8 +47,8 @@ class ApplicationFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /file1.csv',
-                'Downloaded 1 file(s)',
+                'Downloading file /file1.csv (97 B)',
+                'Downloaded 1 file(s) (97 B)',
             ]),
             null
         );
@@ -74,7 +74,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s)']),
+            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
             null
         );
     }
