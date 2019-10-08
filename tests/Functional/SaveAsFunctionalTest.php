@@ -95,12 +95,12 @@ class SaveAsFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-
-        $output = explode(PHP_EOL, $process->getOutput());
-        $this->assertCount(4, $output);
-        $this->assertContains('Downloading file complete /folder2/file1.csv (113 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/file2.csv (113 B)', $output);
-        $this->assertContains('Downloaded 2 file(s) (226 B)', $output);
+        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
+            'Downloading file complete /folder2/file1.csv (113 B)',
+            'Downloading file complete /folder2/file2.csv (113 B)',
+            'Downloaded 2 file(s) (226 B)',
+            '',
+        ]);
     }
 
     /**

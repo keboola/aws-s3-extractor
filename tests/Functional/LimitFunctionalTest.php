@@ -57,17 +57,17 @@ class LimitFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-
-        $output = explode(PHP_EOL, $process->getOutput());
-        $this->assertCount(9, $output);
-        $this->assertContains('Downloading file complete /file1.csv (97 B)', $output);
-        $this->assertContains('Downloading file complete /folder1/file1.csv (113 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/collision-file1.csv (133 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/collision/file1.csv (133 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/file1.csv (113 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/file2.csv (113 B)', $output);
-        $this->assertContains('Downloading file complete /folder2/file3/file1.csv (125 B)', $output);
-        $this->assertContains('Downloaded 7 file(s) (827 B)', $output);
+        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
+            'Downloading file complete /file1.csv (97 B)',
+            'Downloading file complete /folder1/file1.csv (113 B)',
+            'Downloading file complete /folder2/collision-file1.csv (133 B)',
+            'Downloading file complete /folder2/collision/file1.csv (133 B)',
+            'Downloading file complete /folder2/file1.csv (113 B)',
+            'Downloading file complete /folder2/file2.csv (113 B)',
+            'Downloading file complete /folder2/file3/file1.csv (125 B)',
+            'Downloaded 7 file(s) (827 B)',
+            '',
+        ]);
     }
 
     public function testLimitNewFilesOnly(): void
