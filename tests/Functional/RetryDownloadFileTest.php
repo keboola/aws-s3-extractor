@@ -9,6 +9,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Keboola\S3Extractor\DownloadFile;
 use PHPUnit\Framework\MockObject\MockObject;
+use GuzzleHttp\Promise\Promise;
 
 class RetryDownloadFileTest extends FunctionalTestCase
 {
@@ -16,7 +17,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
     {
         $consecutive = 0;
         $client = $this->mockS3Client();
-        $client->method('getObject')
+        $client->method('getObjectAsync')
             ->willReturnCallback(static function ($args) use (&$consecutive) {
                 $consecutive++;
                 if ($consecutive < 3) {
@@ -28,6 +29,8 @@ class RetryDownloadFileTest extends FunctionalTestCase
                 }
 
                 file_put_contents($args['SaveAs'], 'dummy content');
+
+                return new Promise();
             });
 
         $handler = new TestHandler;
@@ -48,7 +51,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
     public function testRetryFailure(): void
     {
         $client = $this->mockS3Client();
-        $client->method('getObject')
+        $client->method('getObjectAsync')
             ->willReturnCallback(static function () {
                 throw new S3Exception(
                     'Error executing "GetObject" on "foo"; AWS HTTP error: Server error: `GET bar` ' .
@@ -71,7 +74,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
     private function mockS3Client(): MockObject
     {
         return $this->getMockBuilder(S3Client::class)
-            ->setMethods(['getObject'])
+            ->setMethods(['getObjectAsync'])
             ->disableOriginalConstructor()
             ->getMock();
     }
