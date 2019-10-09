@@ -11,7 +11,6 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\Component\UserException;
 use function Keboola\Utils\formatBytes;
-use GuzzleHttp\Promise;
 
 class Extractor
 {
@@ -215,9 +214,9 @@ class Extractor
         }
 
         $fs = new Filesystem();
+        $downloader = new S3AsyncDownloader($client, $this->logger);
         $downloadedFiles = 0;
         $downloadedSize = 0;
-        $promises = [];
 
         // Download files
         foreach ($filesToDownload as $fileToDownload) {
@@ -226,16 +225,7 @@ class Extractor
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
 
-            $promises[] = DownloadFile::process($client, $this->logger, $fileToDownload['parameters'])
-                ->then(function () use ($fileToDownload) {
-                    $this->logger->info(sprintf(
-                        'Downloading file complete /%s (%s)',
-                        $fileToDownload['parameters']['Key'],
-                        formatBytes($fileToDownload['size'])
-                    ));
-                });
-
-            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
+            $downloader->fileRequest($fileToDownload['parameters'], $fileToDownload['size']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
@@ -246,7 +236,7 @@ class Extractor
             $downloadedSize += $fileToDownload['size'];
         }
 
-        Promise\all($promises)->wait();
+        $downloader->downloadFiles();
 
         $this->logger->info(sprintf(
             'Downloaded %d file(s) (%s)',
