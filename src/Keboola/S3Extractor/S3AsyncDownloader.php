@@ -53,7 +53,7 @@ class S3AsyncDownloader
             ->then(
                 function () use ($fileParameters, $sizeBytes) {
                     $this->logger->info(sprintf(
-                        'Downloading file complete /%s (%s)',
+                        'Downloaded file complete /%s (%s)',
                         $fileParameters['Key'],
                         formatBytes($sizeBytes)
                     ));
