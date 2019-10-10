@@ -15,7 +15,7 @@ class S3AsyncDownloader
 {
     private const MAX_ATTEMPTS = 5;
     private const INTERVAL_MS = 500;
-    private const ASYNC_DOWNLOAD_LIMIT = 50;
+    private const MAX_CONCURRENT_DOWNLOADS = 50;
 
     /**
      * @var S3Client
@@ -71,7 +71,7 @@ class S3AsyncDownloader
             new ExponentialBackOffPolicy(self::INTERVAL_MS),
             $this->logger
         ))->call(function () {
-            each_limit_all($this->promises, self::ASYNC_DOWNLOAD_LIMIT)->wait();
+            each_limit_all($this->promises, self::MAX_CONCURRENT_DOWNLOADS)->wait();
         });
     }
 }
