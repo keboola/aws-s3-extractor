@@ -47,7 +47,7 @@ class S3AsyncDownloader
      * @param int $sizeBytes
      * @return void
      */
-    public function fileRequest(array $fileParameters, int $sizeBytes): void
+    public function addFileRequest(array $fileParameters, int $sizeBytes): void
     {
         $this->promises[] = $this->client->getObjectAsync($fileParameters)
             ->then(
@@ -64,7 +64,7 @@ class S3AsyncDownloader
     /**
      * @return void
      */
-    public function downloadFiles(): void
+    public function processRequests(): void
     {
         (new RetryProxy(
             new SimpleRetryPolicy(self::MAX_ATTEMPTS),

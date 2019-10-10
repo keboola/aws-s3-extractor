@@ -13,14 +13,14 @@ class RetryDownloadFileTest extends FunctionalTestCase
     {
         $handler = new TestHandler;
         $downloader = new S3AsyncDownloader(self::s3Client(), (new Logger('s3ClientTest'))->pushHandler($handler));
-        $downloader->fileRequest([
+        $downloader->addFileRequest([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
             'Key' => 'file-404.csv',
             'SaveAs' => 'file-404.csv',
         ], 0);
 
         try {
-            $downloader->downloadFiles();
+            $downloader->processRequests();
         } catch (S3Exception $e) {
             $this->assertCount(4, $handler->getRecords());
             self::assertTrue($handler->hasInfoThatContains('404 Not Found'));

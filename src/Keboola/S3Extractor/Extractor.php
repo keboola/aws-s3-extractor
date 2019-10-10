@@ -225,7 +225,7 @@ class Extractor
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
 
-            $downloader->fileRequest($fileToDownload['parameters'], $fileToDownload['size']);
+            $downloader->addFileRequest($fileToDownload['parameters'], $fileToDownload['size']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
@@ -236,7 +236,7 @@ class Extractor
             $downloadedSize += $fileToDownload['size'];
         }
 
-        $downloader->downloadFiles();
+        $downloader->processRequests();
 
         $this->logger->info(sprintf(
             'Downloaded %d file(s) (%s)',
