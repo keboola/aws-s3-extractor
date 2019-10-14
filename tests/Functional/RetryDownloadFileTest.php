@@ -16,8 +16,8 @@ class RetryDownloadFileTest extends FunctionalTestCase
         $downloader->addFileRequest([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
             'Key' => 'file-404.csv',
-            'SaveAs' => 'file-404.csv',
-        ], 0);
+            'SaveAs' => '/tmp/file-404.csv',
+        ]);
 
         try {
             $downloader->processRequests();

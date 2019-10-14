@@ -10,7 +10,6 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\Component\UserException;
-use function Keboola\Utils\formatBytes;
 
 class Extractor
 {
@@ -157,7 +156,6 @@ class Extractor
                 ];
                 $filesToDownload[] = [
                     "timestamp" => $object['LastModified']->format("U"),
-                    "size" => (int) $object['Size'],
                     "parameters" => $parameters,
                 ];
             }
@@ -174,7 +172,6 @@ class Extractor
             $head = $client->headObject($parameters);
             $filesToDownload[] = [
                 "timestamp" => $head["LastModified"]->format("U"),
-                "size" => $head->get('ContentLength'),
                 "parameters" => $parameters,
             ];
         }
@@ -215,8 +212,6 @@ class Extractor
 
         $fs = new Filesystem();
         $downloader = new S3AsyncDownloader($client, $this->logger);
-        $downloadedFiles = 0;
-        $downloadedSize = 0;
 
         // Download files
         foreach ($filesToDownload as $fileToDownload) {
@@ -225,24 +220,16 @@ class Extractor
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
 
-            $downloader->addFileRequest($fileToDownload['parameters'], $fileToDownload['size']);
+            $downloader->addFileRequest($fileToDownload['parameters']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
             }
             $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
             $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
-            $downloadedFiles++;
-            $downloadedSize += $fileToDownload['size'];
         }
 
         $downloader->processRequests();
-
-        $this->logger->info(sprintf(
-            'Downloaded %d file(s) (%s)',
-            $downloadedFiles,
-            formatBytes($downloadedSize)
-        ));
 
         if ($this->config->isNewFilesOnly() === true) {
             return [
