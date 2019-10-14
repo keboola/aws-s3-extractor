@@ -94,16 +94,16 @@ class S3AsyncDownloader
     {
         return new CommandPool($this->client, $this->commands, [
             'concurrency' => self::MAX_CONCURRENT_DOWNLOADS,
-            'before' => function (CommandInterface $cmd, int $iterKey) {
-                $this->keys[$iterKey] = $cmd->offsetGet('Key');
+            'before' => function (CommandInterface $command, int $index) {
+                $this->keys[$index] = $command->offsetGet('Key');
             },
-            'fulfilled' => function (ResultInterface $result, int $iterKey) {
+            'fulfilled' => function (ResultInterface $result, int $index) {
                 $body = $result->get('Body');
                 /** @var LazyOpenStream $body */
                 $fileSize = $body->getSize();
                 $this->logger->info(sprintf(
                     'Downloaded file complete /%s (%s)',
-                    $this->keys[$iterKey],
+                    $this->keys[$index],
                     formatBytes($body->getSize())
                 ));
 
