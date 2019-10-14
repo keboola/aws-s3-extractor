@@ -98,8 +98,8 @@ class S3AsyncDownloader
                 $this->keys[$iterKey] = $cmd->offsetGet('Key');
             },
             'fulfilled' => function (ResultInterface $result, int $iterKey) {
-                /** @var $body LazyOpenStream */
                 $body = $result->get('Body');
+                /** @var LazyOpenStream $body */
                 $fileSize = $body->getSize();
                 $this->logger->info(sprintf(
                     'Downloaded file complete /%s (%s)',
