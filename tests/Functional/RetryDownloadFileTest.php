@@ -16,7 +16,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
         $downloader->addFileRequest([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
             'Key' => 'file-404.csv',
-            'SaveAs' => '/tmp/file-404.csv',
+            'SaveAs' => self::makeTempPath('retry-failure') . 'file-404.csv',
         ]);
 
         try {
@@ -29,5 +29,16 @@ class RetryDownloadFileTest extends FunctionalTestCase
             self::assertTrue($handler->hasInfoThatContains('Retrying... [3x]'));
             self::assertTrue($handler->hasInfoThatContains('Retrying... [4x]'));
         }
+    }
+
+    /**
+     * @param string $testDirectory
+     * @return string
+     */
+    public static function makeTempPath(string $testDirectory): string
+    {
+        $path = sprintf('/tmp/%s/%s/', $testDirectory, uniqid('test_', true));
+        mkdir($path, 0777, true);
+        return $path;
     }
 }
