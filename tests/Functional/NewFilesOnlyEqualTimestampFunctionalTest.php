@@ -14,6 +14,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 5',
+                'Dwnloading 1 file(s) (133 B)',
                 'Downloaded file complete /no-unique-timestamps/folder2/collision-file1.csv (133 B)',
                 'Downloaded 1 file(s) (133 B)',
             ]),
@@ -35,6 +36,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 4',
+                'Dwnloading 1 file(s) (133 B)',
                 'Downloaded file complete /no-unique-timestamps/folder2/collision/file1.csv (133 B)',
                 'Downloaded 1 file(s) (133 B)',
             ]),
@@ -60,6 +62,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 3',
+                'Dwnloading 1 file(s) (113 B)',
                 'Downloaded file complete /no-unique-timestamps/folder2/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
@@ -87,6 +90,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 2',
+                'Dwnloading 1 file(s) (113 B)',
                 'Downloaded file complete /no-unique-timestamps/folder2/file2.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
@@ -109,6 +113,7 @@ class NewFilesOnlyEqualTimestampFunctionalTest extends FunctionalTestCase
             self::config(),
             0,
             self::convertToStdout([
+                'Dwnloading 1 file(s) (125 B)',
                 'Downloaded file complete /no-unique-timestamps/folder2/file3/file1.csv (125 B)',
                 'Downloaded 1 file(s) (125 B)',
             ]),

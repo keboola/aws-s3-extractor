@@ -28,6 +28,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
+                'Dwnloading 1 file(s) (97 B)',
                 'Downloaded file complete /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
@@ -57,6 +58,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
+                'Dwnloading 1 file(s) (113 B)',
                 'Downloaded file complete /folder1/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
@@ -96,6 +98,7 @@ class SaveAsFunctionalTest extends FunctionalTestCase
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
         $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
+            'Dwnloading 2 file(s) (226 B)',
             'Downloaded file complete /folder2/file1.csv (113 B)',
             'Downloaded file complete /folder2/file2.csv (113 B)',
             'Downloaded 2 file(s) (226 B)',

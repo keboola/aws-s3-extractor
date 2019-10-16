@@ -10,6 +10,7 @@ use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\Component\UserException;
+use function Keboola\Utils\formatBytes;
 
 class Extractor
 {
@@ -156,6 +157,7 @@ class Extractor
                 ];
                 $filesToDownload[] = [
                     "timestamp" => $object['LastModified']->format("U"),
+                    "size" => (int) $object['Size'],
                     "parameters" => $parameters,
                 ];
             }
@@ -172,6 +174,7 @@ class Extractor
             $head = $client->headObject($parameters);
             $filesToDownload[] = [
                 "timestamp" => $head["LastModified"]->format("U"),
+                "size" => $head->get('ContentLength'),
                 "parameters" => $parameters,
             ];
         }
@@ -214,6 +217,7 @@ class Extractor
         $downloader = new S3AsyncDownloader($client, $this->logger);
 
         // Download files
+        $downloadedSize = 0;
         foreach ($filesToDownload as $fileToDownload) {
             // create folder
             if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
@@ -227,6 +231,15 @@ class Extractor
             }
             $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
             $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
+            $downloadedSize += $fileToDownload['size'];
+        }
+
+        if (count($filesToDownload) > 0) {
+            $this->logger->info(sprintf(
+                'Dwnloading %d file(s) (%s)',
+                count($filesToDownload),
+                formatBytes($downloadedSize)
+            ));
         }
 
         $downloader->processRequests();
