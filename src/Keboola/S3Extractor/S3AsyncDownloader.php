@@ -110,7 +110,7 @@ class S3AsyncDownloader
                     if (is_callable($this->retryCallback)) {
                         call_user_func($this->retryCallback, $this->filesParameter[$index]);
                     }
-                    return $this->client->getObject($this->filesParameter[$index]);
+                    return $this->client->getObjectAsync($this->filesParameter[$index])->wait();
                 });
                 $promise->then(function () use ($result, $index) {
                     $this->processFulfilled($result, $index);
