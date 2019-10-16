@@ -54,6 +54,7 @@ class OneFileFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
+                'Dwnloading 1 file(s) (113 B)',
                 'Downloaded file /folder1/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
