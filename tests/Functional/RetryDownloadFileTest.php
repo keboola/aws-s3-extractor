@@ -20,19 +20,22 @@ class RetryDownloadFileTest extends FunctionalTestCase
         $handler = new TestHandler;
         $tempPath = self::makeTempPath('retry-success');
         $consecutive = 0;
+
+        $retryCallback = static function (array $fileParameters) use (&$consecutive, $tempPath) {
+            $consecutive++;
+            if ($consecutive === 3) {
+                self::s3Client()->putObject([
+                    'Bucket' => $fileParameters['Bucket'],
+                    'Key' => $fileParameters['Key'],
+                    'Body' => file_put_contents($tempPath . $fileParameters['Key'], 'dummy content'),
+                ]);
+            }
+        };
+
         $downloader = new S3AsyncDownloader(
             self::s3Client(),
             (new Logger('s3ClientTest'))->pushHandler($handler),
-            static function (array $fileParameters) use (&$consecutive, $tempPath) {
-                $consecutive++;
-                if ($consecutive === 3) {
-                    self::s3Client()->putObject([
-                        'Bucket' => $fileParameters['Bucket'],
-                        'Key' => $fileParameters['Key'],
-                        'Body' => file_put_contents($tempPath . $fileParameters['Key'], 'dummy content'),
-                    ]);
-                }
-            }
+            $retryCallback
         );
 
         $downloader->addFileRequest([
