@@ -12,6 +12,7 @@ use Retry\RetryProxy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use GuzzleHttp\Psr7\LazyOpenStream;
+use GuzzleHttp\Promise\PromiseInterface;
 use function Keboola\Utils\formatBytes;
 
 class S3AsyncDownloader
@@ -38,7 +39,7 @@ class S3AsyncDownloader
     /**
      * @var array
      */
-    private $keys = [];
+    private $filesParameter = [];
 
     /**
      * @var int
@@ -46,13 +47,20 @@ class S3AsyncDownloader
     private $downloadedSize = 0;
 
     /**
+     * @var callable|null
+     */
+    private $retryCallback;
+
+    /**
      * @param S3Client $client
      * @param LoggerInterface $logger
+     * @param callable|null $retryCallback
      */
-    public function __construct(S3Client $client, LoggerInterface $logger)
+    public function __construct(S3Client $client, LoggerInterface $logger, callable $retryCallback = null)
     {
         $this->client = $client;
         $this->logger = $logger;
+        $this->retryCallback = $retryCallback;
     }
 
     /**
@@ -69,22 +77,15 @@ class S3AsyncDownloader
      */
     public function processRequests(): void
     {
-        (new RetryProxy(
-            new SimpleRetryPolicy(self::MAX_ATTEMPTS),
-            new ExponentialBackOffPolicy(self::INTERVAL_MS),
-            $this->logger
-        ))->call(function () {
-            $this->makeCommandPool()
-                ->promise()
-                ->then(function () {
-                    $this->logger->info(sprintf(
-                        'Downloaded %d file(s) (%s)',
-                        count($this->commands),
-                        formatBytes($this->downloadedSize)
-                    ));
-                })
-                ->wait();
-        });
+        $this->makeCommandPool()
+            ->promise()
+            ->wait();
+
+        $this->logger->info(sprintf(
+            'Downloaded %d file(s) (%s)',
+            count($this->commands),
+            formatBytes($this->downloadedSize)
+        ));
     }
 
     /**
@@ -95,23 +96,46 @@ class S3AsyncDownloader
         return new CommandPool($this->client, $this->commands, [
             'concurrency' => self::MAX_CONCURRENT_DOWNLOADS,
             'before' => function (CommandInterface $command, int $index) {
-                $this->keys[$index] = $command->offsetGet('Key');
+                $this->filesParameter[$index] = $command->toArray();
             },
             'fulfilled' => function (ResultInterface $result, int $index) {
-                $body = $result->get('Body');
-                /** @var LazyOpenStream $body */
-                $fileSize = $body->getSize();
-                $this->logger->info(sprintf(
-                    'Downloaded file complete /%s (%s)',
-                    $this->keys[$index],
-                    formatBytes($body->getSize())
-                ));
-
-                $this->downloadedSize += $fileSize;
+                $this->processFulfilled($result, $index);
             },
-            'rejected' => static function (AwsException $reason) {
-                throw $reason;
+            'rejected' => function (AwsException $reason, int $index, PromiseInterface $promise) {
+                $result = (new RetryProxy(
+                    new SimpleRetryPolicy(self::MAX_ATTEMPTS),
+                    new ExponentialBackOffPolicy(self::INTERVAL_MS),
+                    $this->logger
+                ))->call(function () use ($index) {
+                    $fileParameters = $this->filesParameter[$index];
+                    if (is_callable($this->retryCallback)) {
+                        call_user_func($this->retryCallback, $fileParameters);
+                    }
+                    return $this->client->getObject($fileParameters);
+                });
+                $promise->then(function () use ($result, $index) {
+                    $this->processFulfilled($result, $index);
+                });
+                $promise->resolve($result);
             },
         ]);
+    }
+
+    /**
+     * @param ResultInterface $result
+     * @param int $index
+     */
+    private function processFulfilled(ResultInterface $result, int $index): void
+    {
+        $body = $result->get('Body');
+        /** @var LazyOpenStream $body */
+        $fileSize = $body->getSize();
+        $this->logger->info(sprintf(
+            'Downloaded file complete /%s (%s)',
+            $this->filesParameter[$index]['Key'],
+            formatBytes($fileSize)
+        ));
+
+        $this->downloadedSize += $fileSize;
     }
 }
