@@ -107,11 +107,10 @@ class S3AsyncDownloader
                     new ExponentialBackOffPolicy(self::INTERVAL_MS),
                     $this->logger
                 ))->call(function () use ($index) {
-                    $fileParameters = $this->filesParameter[$index];
                     if (is_callable($this->retryCallback)) {
-                        call_user_func($this->retryCallback, $fileParameters);
+                        call_user_func($this->retryCallback, $this->filesParameter[$index]);
                     }
-                    return $this->client->getObject($fileParameters);
+                    return $this->client->getObject($this->filesParameter[$index]);
                 });
                 $promise->then(function () use ($result, $index) {
                     $this->processFulfilled($result, $index);
