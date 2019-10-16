@@ -62,11 +62,11 @@ class RetryDownloadFileTest extends FunctionalTestCase
         self::assertFileExists($tempPath . 'collision-file1.csv');
         self::assertFileExists($tempPath . $retryFile);
         $this->assertCount(6, $handler->getRecords());
-        self::assertTrue($handler->hasInfoThatContains('Downloaded file complete /file1.csv (97 B)'));
-        self::assertTrue($handler->hasInfoThatContains('Downloaded file complete /collision-file1.csv (117 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /file1.csv (97 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /collision-file1.csv (117 B)'));
         self::assertTrue($handler->hasInfoThatContains('Retrying... [1x]'));
         self::assertTrue($handler->hasInfoThatContains('Retrying... [2x]'));
-        self::assertTrue($handler->hasInfoThatContains('Downloaded file complete /retry-file.csv (2 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /retry-file.csv (2 B)'));
         self::assertTrue($handler->hasInfoThatContains('Downloaded 3 file(s) (216 B)'));
     }
 

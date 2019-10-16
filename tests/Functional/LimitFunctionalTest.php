@@ -25,7 +25,7 @@ class LimitFunctionalTest extends FunctionalTestCase
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 7',
                 'Dwnloading 1 file(s) (97 B)',
-                'Downloaded file complete /file1.csv (97 B)',
+                'Downloaded file /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
             null
@@ -60,13 +60,13 @@ class LimitFunctionalTest extends FunctionalTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
         $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
             'Dwnloading 7 file(s) (827 B)',
-            'Downloaded file complete /file1.csv (97 B)',
-            'Downloaded file complete /folder1/file1.csv (113 B)',
-            'Downloaded file complete /folder2/collision-file1.csv (133 B)',
-            'Downloaded file complete /folder2/collision/file1.csv (133 B)',
-            'Downloaded file complete /folder2/file1.csv (113 B)',
-            'Downloaded file complete /folder2/file2.csv (113 B)',
-            'Downloaded file complete /folder2/file3/file1.csv (125 B)',
+            'Downloaded file /file1.csv (97 B)',
+            'Downloaded file /folder1/file1.csv (113 B)',
+            'Downloaded file /folder2/collision-file1.csv (133 B)',
+            'Downloaded file /folder2/collision/file1.csv (133 B)',
+            'Downloaded file /folder2/file1.csv (113 B)',
+            'Downloaded file /folder2/file2.csv (113 B)',
+            'Downloaded file /folder2/file3/file1.csv (125 B)',
             'Downloaded 7 file(s) (827 B)',
             '',
         ]);
@@ -95,7 +95,7 @@ class LimitFunctionalTest extends FunctionalTestCase
             self::convertToStdout([
                 'Downloading only 1 oldest file(s) out of 6',
                 'Dwnloading 1 file(s) (113 B)',
-                'Downloaded file complete /folder1/file1.csv (113 B)',
+                'Downloaded file /folder1/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
             null

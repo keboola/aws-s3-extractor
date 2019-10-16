@@ -28,7 +28,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Dwnloading 1 file(s) (97 B)',
-                'Downloaded file complete /file1.csv (97 B)',
+                'Downloaded file /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
             null
@@ -57,7 +57,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Dwnloading 1 file(s) (117 B)',
-                'Downloaded file complete /collision-file1.csv (117 B)',
+                'Downloaded file /collision-file1.csv (117 B)',
                 'Downloaded 1 file(s) (117 B)',
             ]),
             null
@@ -96,9 +96,9 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
         $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
             'Dwnloading 3 file(s) (359 B)',
-            'Downloaded file complete /folder2/collision-file1.csv (133 B)',
-            'Downloaded file complete /folder2/file1.csv (113 B)',
-            'Downloaded file complete /folder2/file2.csv (113 B)',
+            'Downloaded file /folder2/collision-file1.csv (133 B)',
+            'Downloaded file /folder2/file1.csv (113 B)',
+            'Downloaded file /folder2/file2.csv (113 B)',
             'Downloaded 3 file(s) (359 B)',
             '',
         ]);
@@ -126,7 +126,7 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             0,
             self::convertToStdout([
                 'Dwnloading 1 file(s) (125 B)',
-                'Downloaded file complete /folder2/file3/file1.csv (125 B)',
+                'Downloaded file /folder2/file3/file1.csv (125 B)',
                 'Downloaded 1 file(s) (125 B)',
             ]),
             null

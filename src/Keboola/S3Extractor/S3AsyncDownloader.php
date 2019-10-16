@@ -130,7 +130,7 @@ class S3AsyncDownloader
         /** @var LazyOpenStream $body */
         $fileSize = $body->getSize();
         $this->logger->info(sprintf(
-            'Downloaded file complete /%s (%s)',
+            'Downloaded file /%s (%s)',
             $this->filesParameter[$index]['Key'],
             formatBytes($fileSize)
         ));
