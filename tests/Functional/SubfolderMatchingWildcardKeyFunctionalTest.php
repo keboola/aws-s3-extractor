@@ -21,7 +21,8 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /collision-file1.csv (117 B)',
+                'Dwnloading 1 file(s) (117 B)',
+                'Downloaded file /collision-file1.csv (117 B)',
                 'Downloaded 1 file(s) (117 B)',
             ]),
             null
@@ -45,7 +46,8 @@ class SubfolderMatchingWildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Downloading file /folder2/collision-file1.csv (133 B)',
+                'Dwnloading 1 file(s) (133 B)',
+                'Downloaded file /folder2/collision-file1.csv (133 B)',
                 'Downloaded 1 file(s) (133 B)',
             ]),
             null

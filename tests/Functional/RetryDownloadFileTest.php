@@ -2,77 +2,104 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
-use Aws\Command;
 use Aws\S3\Exception\S3Exception;
-use Aws\S3\S3Client;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use Keboola\S3Extractor\DownloadFile;
-use PHPUnit\Framework\MockObject\MockObject;
+use Keboola\S3Extractor\S3AsyncDownloader;
 
 class RetryDownloadFileTest extends FunctionalTestCase
 {
     public function testRetrySuccess(): void
     {
-        $consecutive = 0;
-        $client = $this->mockS3Client();
-        $client->method('getObject')
-            ->willReturnCallback(static function ($args) use (&$consecutive) {
-                $consecutive++;
-                if ($consecutive < 3) {
-                    throw new S3Exception(
-                        'Error executing "GetObject" on "foo"; AWS HTTP error: Server error: `GET bar` ' .
-                        'resulted in a `503 Slow Down` response:',
-                        new Command('dummy')
-                    );
-                }
-
-                file_put_contents($args['SaveAs'], 'dummy content');
-            });
-
-        $handler = new TestHandler;
-        /** @var S3Client $client */
-        DownloadFile::process($client, (new Logger('s3ClientTest'))->pushHandler($handler), [
+        $retryFile = 'retry-file.csv';
+        self::s3Client()->deleteObject([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'file1.csv',
-            'SaveAs' => '/file1.csv',
+            'Key' => $retryFile,
         ]);
 
-        $expectedFile = '/file1.csv';
-        self::assertFileExists($expectedFile);
-        self::assertEquals('dummy content', (string) file_get_contents($expectedFile));
-        self::assertTrue($handler->hasInfoThatContains('resulted in a `503 Slow Down` response'));
-        self::assertTrue($handler->hasInfoThatContains('Retrying'));
+        $handler = new TestHandler;
+        $tempPath = self::makeTempPath('retry-success');
+        $consecutive = 0;
+
+        $retryCallback = static function (array $fileParameters) use (&$consecutive, $tempPath) {
+            $consecutive++;
+            if ($consecutive === 3) {
+                self::s3Client()->putObject([
+                    'Bucket' => $fileParameters['Bucket'],
+                    'Key' => $fileParameters['Key'],
+                    'Body' => file_put_contents($tempPath . $fileParameters['Key'], 'dummy content'),
+                ]);
+            }
+        };
+
+        $downloader = new S3AsyncDownloader(
+            self::s3Client(),
+            (new Logger('s3ClientTest'))->pushHandler($handler),
+            $retryCallback
+        );
+
+        $downloader->addFileRequest([
+            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+            'Key' => 'file1.csv',
+            'SaveAs' => $tempPath . 'file1.csv',
+        ]);
+
+        $downloader->addFileRequest([
+            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+            'Key' => 'collision-file1.csv',
+            'SaveAs' => $tempPath . 'collision-file1.csv',
+        ]);
+
+        $downloader->addFileRequest([
+            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+            'Key' => $retryFile,
+            'SaveAs' => $tempPath . $retryFile,
+        ]);
+
+        $downloader->processRequests();
+
+        self::assertFileExists($tempPath . 'file1.csv');
+        self::assertFileExists($tempPath . 'collision-file1.csv');
+        self::assertFileExists($tempPath . $retryFile);
+        $this->assertCount(6, $handler->getRecords());
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /file1.csv (97 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /collision-file1.csv (117 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Retrying... [1x]'));
+        self::assertTrue($handler->hasInfoThatContains('Retrying... [2x]'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded file /retry-file.csv (2 B)'));
+        self::assertTrue($handler->hasInfoThatContains('Downloaded 3 file(s) (216 B)'));
     }
 
     public function testRetryFailure(): void
     {
-        $client = $this->mockS3Client();
-        $client->method('getObject')
-            ->willReturnCallback(static function () {
-                throw new S3Exception(
-                    'Error executing "GetObject" on "foo"; AWS HTTP error: Server error: `GET bar` ' .
-                    'resulted in a `503 Slow Down` response:',
-                    new Command('dummy')
-                );
-            });
-
-        $this->expectException(S3Exception::class);
-        $this->expectExceptionMessage('resulted in a `503 Slow Down` response');
-
-        /** @var S3Client $client */
-        DownloadFile::process($client, (new Logger('s3ClientTest'))->pushHandler(new TestHandler), [
+        $handler = new TestHandler;
+        $downloader = new S3AsyncDownloader(self::s3Client(), (new Logger('s3ClientTest'))->pushHandler($handler));
+        $downloader->addFileRequest([
             'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'file1.csv',
-            'SaveAs' => '/file1.csv',
+            'Key' => 'file-not-found.csv',
+            'SaveAs' => self::makeTempPath('retry-failure') . 'file-not-found.csv',
         ]);
+
+        try {
+            $downloader->processRequests();
+        } catch (S3Exception $e) {
+            $this->assertCount(4, $handler->getRecords());
+            self::assertTrue($handler->hasInfoThatContains('404 Not Found'));
+            self::assertTrue($handler->hasInfoThatContains('Retrying... [1x]'));
+            self::assertTrue($handler->hasInfoThatContains('Retrying... [2x]'));
+            self::assertTrue($handler->hasInfoThatContains('Retrying... [3x]'));
+            self::assertTrue($handler->hasInfoThatContains('Retrying... [4x]'));
+        }
     }
 
-    private function mockS3Client(): MockObject
+    /**
+     * @param string $testDirectory
+     * @return string
+     */
+    public static function makeTempPath(string $testDirectory): string
     {
-        return $this->getMockBuilder(S3Client::class)
-            ->setMethods(['getObject'])
-            ->disableOriginalConstructor()
-            ->getMock();
+        $path = sprintf('/tmp/%s/', uniqid($testDirectory, true));
+        mkdir($path, 0777, true);
+        return $path;
     }
 }

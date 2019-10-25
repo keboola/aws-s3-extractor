@@ -1,4 +1,5 @@
 <?php
+
 namespace Keboola\S3Extractor;
 
 use Aws\Api\DateTimeResult;
@@ -81,7 +82,7 @@ class Extractor
 
         $saveAsSubfolder = '';
         if (!empty($this->config->getSaveAs())) {
-            $saveAsSubfolder = $this->config->getSaveAs(). '/';
+            $saveAsSubfolder = $this->config->getSaveAs() . '/';
         }
 
         $filesToDownload = [];
@@ -213,38 +214,35 @@ class Extractor
         }
 
         $fs = new Filesystem();
-        $downloadedFiles = 0;
-        $downloadedSize = 0;
+        $downloader = new S3AsyncDownloader($client, $this->logger);
 
         // Download files
+        $downloadedSize = 0;
         foreach ($filesToDownload as $fileToDownload) {
             // create folder
             if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
                 $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
             }
 
-            $this->logger->info(sprintf(
-                'Downloading file /%s (%s)',
-                $fileToDownload['parameters']['Key'],
-                formatBytes($fileToDownload['size'])
-            ));
-
-            DownloadFile::process($client, $this->logger, $fileToDownload['parameters']);
+            $downloader->addFileRequest($fileToDownload['parameters']);
 
             if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
                 $processedFilesInLastTimestampSecond = [];
             }
             $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
             $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
-            $downloadedFiles++;
             $downloadedSize += $fileToDownload['size'];
         }
 
-        $this->logger->info(sprintf(
-            'Downloaded %d file(s) (%s)',
-            $downloadedFiles,
-            formatBytes($downloadedSize)
-        ));
+        if (count($filesToDownload) > 0) {
+            $this->logger->info(sprintf(
+                'Dwnloading %d file(s) (%s)',
+                count($filesToDownload),
+                formatBytes($downloadedSize)
+            ));
+        }
+
+        $downloader->processRequests();
 
         if ($this->config->isNewFilesOnly() === true) {
             return [

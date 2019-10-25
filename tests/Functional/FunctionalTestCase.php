@@ -7,6 +7,7 @@ namespace Keboola\S3ExtractorTest\Functional;
 use Aws\S3\S3Client;
 use Keboola\Component\JsonHelper;
 use Keboola\DatadirTests\AbstractDatadirTestCase;
+use Keboola\Temp\Temp;
 use Symfony\Component\Process\Process;
 
 class FunctionalTestCase extends AbstractDatadirTestCase
@@ -93,6 +94,25 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     }
 
     /**
+     * @param array $messages
+     * @return string
+     */
+    protected static function convertToStdout(array $messages): string
+    {
+        return implode(PHP_EOL, $messages) . PHP_EOL;
+    }
+
+    /**
+     * @param Temp $temp
+     * @param array $config
+     * @throws JsonHelper\JsonHelperException
+     */
+    protected static function writeConfigFile(Temp $temp, array $config): void
+    {
+        JsonHelper::writeFile($temp->getTmpFolder() . '/config.json', $config);
+    }
+
+    /**
      * @param string $fileName
      * @param array $processedFiles
      * @param string|null $forceTimestamp
@@ -107,14 +127,5 @@ class FunctionalTestCase extends AbstractDatadirTestCase
             'lastDownloadedFileTimestamp' => $forceTimestamp ?: self::getS3FileLastModified($processedFiles[0]),
             'processedFilesInLastTimestampSecond' => $processedFiles,
         ]);
-    }
-
-    /**
-     * @param array $messages
-     * @return string
-     */
-    protected static function convertToStdout(array $messages): string
-    {
-        return implode(PHP_EOL, $messages) . PHP_EOL;
     }
 }
