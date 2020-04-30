@@ -25,7 +25,10 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (97 B)',
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'There are 1 new file(s)',
+                'Downloading 1 file(s) (97 B)',
                 'Downloaded file /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
@@ -61,7 +64,10 @@ class NewFilesOnlyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (113 B)',
+                'Listing files to be downloaded',
+                'Found 3 file(s)',
+                'There are 1 new file(s)',
+                'Downloading 1 file(s) (113 B)',
                 'Downloaded file /folder2/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
