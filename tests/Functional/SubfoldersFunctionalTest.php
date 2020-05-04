@@ -36,18 +36,23 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 7 file(s) (827 B)',
-            'Downloaded file /file1.csv (97 B)',
-            'Downloaded file /folder1/file1.csv (113 B)',
-            'Downloaded file /folder2/collision-file1.csv (133 B)',
-            'Downloaded file /folder2/collision/file1.csv (133 B)',
-            'Downloaded file /folder2/file1.csv (113 B)',
-            'Downloaded file /folder2/file2.csv (113 B)',
-            'Downloaded file /folder2/file3/file1.csv (125 B)',
-            'Downloaded 7 file(s) (827 B)',
-            '',
-        ]);
+        $this->assertEqualsCanonicalizing(
+            [
+                'Listing files to be downloaded',
+                'Found 7 file(s)',
+                'Downloading 7 file(s) (827 B)',
+                'Downloaded file /file1.csv (97 B)',
+                'Downloaded file /folder1/file1.csv (113 B)',
+                'Downloaded file /folder2/collision-file1.csv (133 B)',
+                'Downloaded file /folder2/collision/file1.csv (133 B)',
+                'Downloaded file /folder2/file1.csv (113 B)',
+                'Downloaded file /folder2/file2.csv (113 B)',
+                'Downloaded file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 7 file(s) (827 B)',
+                '',
+            ],
+            explode(PHP_EOL, $process->getOutput())
+        );
     }
 
     /**
@@ -80,13 +85,18 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 2 file(s) (234 B)',
-            'Downloaded file /collision-file1.csv (117 B)',
-            'Downloaded file /collision/file1.csv (117 B)',
-            'Downloaded 2 file(s) (234 B)',
-            '',
-        ]);
+        $this->assertEqualsCanonicalizing(
+            [
+                'Listing files to be downloaded',
+                'Found 2 file(s)',
+                'Downloading 2 file(s) (234 B)',
+                'Downloaded file /collision-file1.csv (117 B)',
+                'Downloaded file /collision/file1.csv (117 B)',
+                'Downloaded 2 file(s) (234 B)',
+                '',
+            ],
+            explode(PHP_EOL, $process->getOutput())
+        );
     }
 
     /**
@@ -119,16 +129,21 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 5 file(s) (617 B)',
-            'Downloaded file /folder2/collision-file1.csv (133 B)',
-            'Downloaded file /folder2/collision/file1.csv (133 B)',
-            'Downloaded file /folder2/file1.csv (113 B)',
-            'Downloaded file /folder2/file2.csv (113 B)',
-            'Downloaded file /folder2/file3/file1.csv (125 B)',
-            'Downloaded 5 file(s) (617 B)',
-            '',
-        ]);
+        $this->assertEqualsCanonicalizing(
+            [
+                'Listing files to be downloaded',
+                'Found 5 file(s)',
+                'Downloading 5 file(s) (617 B)',
+                'Downloaded file /folder2/collision-file1.csv (133 B)',
+                'Downloaded file /folder2/collision/file1.csv (133 B)',
+                'Downloaded file /folder2/file1.csv (113 B)',
+                'Downloaded file /folder2/file2.csv (113 B)',
+                'Downloaded file /folder2/file3/file1.csv (125 B)',
+                'Downloaded 5 file(s) (617 B)',
+                '',
+            ],
+            explode(PHP_EOL, $process->getOutput())
+        );
     }
 
     /**
@@ -161,13 +176,18 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 2 file(s) (266 B)',
-            'Downloaded file /folder2/collision-file1.csv (133 B)',
-            'Downloaded file /folder2/collision/file1.csv (133 B)',
-            'Downloaded 2 file(s) (266 B)',
-            '',
-        ]);
+        $this->assertEqualsCanonicalizing(
+            [
+                'Listing files to be downloaded',
+                'Found 2 file(s)',
+                'Downloading 2 file(s) (266 B)',
+                'Downloaded file /folder2/collision-file1.csv (133 B)',
+                'Downloaded file /folder2/collision/file1.csv (133 B)',
+                'Downloaded 2 file(s) (266 B)',
+                '',
+            ],
+            explode(PHP_EOL, $process->getOutput())
+        );
     }
 
     /**
@@ -191,7 +211,9 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (125 B)',
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'Downloading 1 file(s) (125 B)',
                 'Downloaded file /folder2/file3/file1.csv (125 B)',
                 'Downloaded 1 file(s) (125 B)',
             ]),
@@ -219,7 +241,11 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 0 file(s)',
+                'Downloaded 0 file(s) (0 B)'
+            ]),
             null
         );
     }
@@ -244,7 +270,11 @@ class SubfoldersFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 0 file(s)',
+                'Downloaded 0 file(s) (0 B)'
+            ]),
             null
         );
     }

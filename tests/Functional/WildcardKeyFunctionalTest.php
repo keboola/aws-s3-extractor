@@ -27,7 +27,9 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (97 B)',
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'Downloading 1 file(s) (97 B)',
                 'Downloaded file /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
@@ -56,7 +58,9 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (117 B)',
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'Downloading 1 file(s) (117 B)',
                 'Downloaded file /collision-file1.csv (117 B)',
                 'Downloaded 1 file(s) (117 B)',
             ]),
@@ -94,14 +98,19 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
 
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
-        $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 3 file(s) (359 B)',
-            'Downloaded file /folder2/collision-file1.csv (133 B)',
-            'Downloaded file /folder2/file1.csv (113 B)',
-            'Downloaded file /folder2/file2.csv (113 B)',
-            'Downloaded 3 file(s) (359 B)',
-            '',
-        ]);
+        $this->assertEqualsCanonicalizing(
+            [
+                'Listing files to be downloaded',
+                'Found 3 file(s)',
+                'Downloading 3 file(s) (359 B)',
+                'Downloaded file /folder2/collision-file1.csv (133 B)',
+                'Downloaded file /folder2/file1.csv (113 B)',
+                'Downloaded file /folder2/file2.csv (113 B)',
+                'Downloaded 3 file(s) (359 B)',
+                '',
+            ],
+            explode(PHP_EOL, $process->getOutput())
+        );
     }
 
     /**
@@ -125,7 +134,9 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
-                'Dwnloading 1 file(s) (125 B)',
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'Downloading 1 file(s) (125 B)',
                 'Downloaded file /folder2/file3/file1.csv (125 B)',
                 'Downloaded 1 file(s) (125 B)',
             ]),
@@ -153,7 +164,11 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 0 file(s)',
+                'Downloaded 0 file(s) (0 B)'
+            ]),
             null
         );
     }
@@ -178,7 +193,11 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 0 file(s)',
+                'Downloaded 0 file(s) (0 B)'
+            ]),
             null
         );
     }
@@ -203,7 +222,11 @@ class WildcardKeyFunctionalTest extends FunctionalTestCase
                 ],
             ],
             0,
-            self::convertToStdout(['Downloaded 0 file(s) (0 B)']),
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 0 file(s)',
+                'Downloaded 0 file(s) (0 B)'
+            ]),
             null
         );
     }

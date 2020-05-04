@@ -87,13 +87,19 @@ class Extractor
 
         $filesToDownload = [];
 
+        $this->logger->info('Listing files to be downloaded');
+
         // Detect wildcard at the end
         if (substr($key, -1) == '*') {
             $iterator = $client->getIterator('ListObjects', [
                 'Bucket' => $this->config->getBucket(),
                 'Prefix' => substr($key, 0, -1),
             ]);
+            $filesListedCount = 0;
+            $filesToDownloadCount = 0;
             foreach ($iterator as $object) {
+                $filesListedCount++;
+
                 // Skip objects in Glacier
                 if ($object['StorageClass'] === "GLACIER") {
                     continue;
@@ -160,6 +166,18 @@ class Extractor
                     "size" => (int) $object['Size'],
                     "parameters" => $parameters,
                 ];
+
+                $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
+                    && $filesListedCount !== 0;
+                $isImportantMilestoneForDownloaded = ($filesToDownloadCount % 1000) === 0
+                    && $filesToDownloadCount !== 0;
+                if ($isImportantMilestoneForListed || $isImportantMilestoneForDownloaded) {
+                    $this->logger->info(sprintf(
+                        'Listed %s files (%s matching the filter so far)',
+                        $filesListedCount,
+                        $filesToDownloadCount
+                    ));
+                }
             }
         } else {
             if ($this->config->isIncludeSubfolders() === true) {
@@ -183,6 +201,11 @@ class Extractor
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
         $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
 
+        $this->logger->info(sprintf(
+            'Found %s file(s)',
+            count($filesToDownload)
+        ));
+
         // Filter out old files with newFilesOnly flag
         if ($this->config->isNewFilesOnly() === true) {
             $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use (
@@ -198,6 +221,11 @@ class Extractor
                 }
                 return true;
             });
+
+            $this->logger->info(sprintf(
+                'There are %s new file(s)',
+                count($filesToDownload)
+            ));
         }
 
         // Apply limit if set
@@ -236,7 +264,7 @@ class Extractor
 
         if (count($filesToDownload) > 0) {
             $this->logger->info(sprintf(
-                'Dwnloading %d file(s) (%s)',
+                'Downloading %d file(s) (%s)',
                 count($filesToDownload),
                 formatBytes($downloadedSize)
             ));

@@ -23,8 +23,10 @@ class LimitFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 7 file(s)',
                 'Downloading only 1 oldest file(s) out of 7',
-                'Dwnloading 1 file(s) (97 B)',
+                'Downloading 1 file(s) (97 B)',
                 'Downloaded file /file1.csv (97 B)',
                 'Downloaded 1 file(s) (97 B)',
             ]),
@@ -59,7 +61,9 @@ class LimitFunctionalTest extends FunctionalTestCase
         $process = $this->runScript($tempDatadir->getTmpFolder());
         $this->assertMatchesSpecification($specification, $process, $tempDatadir->getTmpFolder());
         $this->assertEqualsCanonicalizing(explode(PHP_EOL, $process->getOutput()), [
-            'Dwnloading 7 file(s) (827 B)',
+            'Listing files to be downloaded',
+            'Found 7 file(s)',
+            'Downloading 7 file(s) (827 B)',
             'Downloaded file /file1.csv (97 B)',
             'Downloaded file /folder1/file1.csv (113 B)',
             'Downloaded file /folder2/collision-file1.csv (133 B)',
@@ -93,8 +97,11 @@ class LimitFunctionalTest extends FunctionalTestCase
             ],
             0,
             self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 7 file(s)',
+                'There are 6 new file(s)',
                 'Downloading only 1 oldest file(s) out of 6',
-                'Dwnloading 1 file(s) (113 B)',
+                'Downloading 1 file(s) (113 B)',
                 'Downloaded file /folder1/file1.csv (113 B)',
                 'Downloaded 1 file(s) (113 B)',
             ]),
