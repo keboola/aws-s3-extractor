@@ -166,6 +166,7 @@ class Extractor
                     "size" => (int) $object['Size'],
                     "parameters" => $parameters,
                 ];
+                $filesToDownloadCount++;
 
                 $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
                     && $filesListedCount !== 0;
