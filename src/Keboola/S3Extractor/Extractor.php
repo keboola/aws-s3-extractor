@@ -91,7 +91,7 @@ class Extractor
 
         // Detect wildcard at the end
         if (substr($key, -1) == '*') {
-            $iterator = $client->getIterator('ListObjects', [
+            $iterator = $client->getIterator('ListObjectsV2', [
                 'Bucket' => $this->config->getBucket(),
                 'Prefix' => substr($key, 0, -1),
             ]);
