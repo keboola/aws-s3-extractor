@@ -296,9 +296,12 @@ class Extractor
     private function loginViaRole(): S3Client
     {
         $stsClient = new StsClient([
-            'profile' => 'default',
             'region' => 'us-east-1',
-            'version' => '2011-06-15'
+            'version' => '2011-06-15',
+            'credentials' => [
+                'key' => getenv('KEBOOLA_AWS_ACCESS_KEY_ID'),
+                'secret' => getenv('KEBOOLA_AWS_SECRET_ACCESS_KEY'),
+            ],
         ]);
 
         $roleArn = sprintf(
