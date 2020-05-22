@@ -30,6 +30,21 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', '#secretAccessKey']);
     }
 
+    public function getLoginType(): string
+    {
+        return $this->getValue(['parameters', 'loginType']);
+    }
+
+    public function getAccountId(): string
+    {
+        return $this->getValue(['parameters', 'accountId']);
+    }
+
+    public function getRoleName(): string
+    {
+        return $this->getValue(['parameters', 'roleName']);
+    }
+
     /**
      * @return string
      */

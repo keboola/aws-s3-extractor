@@ -21,6 +21,7 @@ class ConfigDefinitionTest extends TestCase
                 'newFilesOnly' => false,
                 'saveAs' => 'myfile.csv',
                 'limit' => 1,
+                'loginType' => 'credentials',
             ],
         ];
 
