@@ -30,6 +30,34 @@ class ApplicationFunctionalTest extends FunctionalTestCase
         );
     }
 
+
+    public function testApplicationWithLoginViaRole(): void
+    {
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/application/base',
+            [
+                'parameters' => [
+                    'loginType' => 'role',
+                    'accountId' => getenv(self::ACCOUNT_ID),
+                    'roleName' => getenv(self::ROLE_NAME),
+                    'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
+                    'key' => '/file1.csv',
+                    'newFilesOnly' => false,
+                    'limit' => 0,
+                ],
+            ],
+            0,
+            self::convertToStdout([
+                'Listing files to be downloaded',
+                'Found 1 file(s)',
+                'Downloading 1 file(s) (97 B)',
+                'Downloaded file /file1.csv (97 B)',
+                'Downloaded 1 file(s) (97 B)',
+            ]),
+            null
+        );
+    }
+
     public function testApplicationStateNewFilesOnly(): void
     {
         $testDirectory = __DIR__ . '/application/state-new-files-only';
