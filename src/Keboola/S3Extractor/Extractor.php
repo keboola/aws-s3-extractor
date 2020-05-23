@@ -299,8 +299,8 @@ class Extractor
             'region' => 'us-east-1',
             'version' => '2011-06-15',
             'credentials' => [
-                'key' => getenv('KEBOOLA_AWS_ACCESS_KEY_ID'),
-                'secret' => getenv('KEBOOLA_AWS_SECRET_ACCESS_KEY'),
+                'key' => getenv('KEBOOLA_USER_AWS_ACCESS_KEY'),
+                'secret' => getenv('KEBOOLA_USER_AWS_SECRET_KEY'),
             ],
         ]);
 
