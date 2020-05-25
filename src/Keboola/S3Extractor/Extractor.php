@@ -3,6 +3,7 @@
 namespace Keboola\S3Extractor;
 
 use Aws\Api\DateTimeResult;
+use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Aws\S3\S3MultiRegionClient;
 use Aws\Sts\StsClient;
@@ -56,7 +57,7 @@ class Extractor
      * @return array
      * @throws UserException
      */
-    public function extract($outputPath)
+    public function extract($outputPath): array
     {
         if ($this->config->getLoginType() === 'role') {
             $client = $this->loginViaRole();
@@ -275,33 +276,25 @@ class Extractor
 
     private function loginViaCredentials(): S3Client
     {
-        $client = new S3MultiRegionClient([
-            'version' => '2006-03-01',
-            'credentials' => [
-                'key' => $this->config->getAccessKeyId(),
-                'secret' => $this->config->getSecretAccessKey(),
-            ],
-        ]);
-        $region = $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
+        $awsCred = new Credentials($this->config->getAccessKeyId(), $this->config->getSecretAccessKey());
         return new S3Client([
-            'region' => $region,
+            'region' => $this->getBucketRegion($awsCred),
             'version' => '2006-03-01',
-            'credentials' => [
-                'key' => $this->config->getAccessKeyId(),
-                'secret' => $this->config->getSecretAccessKey(),
-            ],
+            'credentials' => $awsCred,
         ]);
     }
 
     private function loginViaRole(): S3Client
     {
+        $awsCred = new Credentials(
+            getenv('KEBOOLA_USER_AWS_ACCESS_KEY'),
+            getenv('KEBOOLA_USER_AWS_SECRET_KEY')
+        );
+
         $stsClient = new StsClient([
             'region' => 'us-east-1',
             'version' => '2011-06-15',
-            'credentials' => [
-                'key' => getenv('KEBOOLA_USER_AWS_ACCESS_KEY'),
-                'secret' => getenv('KEBOOLA_USER_AWS_SECRET_KEY'),
-            ],
+            'credentials' => $awsCred,
         ]);
 
         $roleArn = sprintf(
@@ -315,25 +308,21 @@ class Extractor
         ]);
 
         $credentials = $result->offsetGet('Credentials');
-
-        $client = new S3MultiRegionClient([
-            'version' => '2006-03-01',
-            'credentials' => [
-                'key' => $credentials['AccessKeyId'],
-                'secret' => $credentials['SecretAccessKey'],
-                'token' => $credentials['SessionToken'],
-            ],
-        ]);
-        $region = $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
+        $awsCred = new Credentials($credentials['AccessKeyId'], $credentials['SecretAccessKey'], $credentials['SessionToken']);
 
         return new S3Client([
-            'region' => $region,
+            'region' => $this->getBucketRegion($awsCred),
             'version' => '2006-03-01',
-            'credentials' => [
-                'key' => $credentials['AccessKeyId'],
-                'secret' => $credentials['SecretAccessKey'],
-                'token' => $credentials['SessionToken'],
-            ],
+            'credentials' => $awsCred,
         ]);
+    }
+
+    private function getBucketRegion(Credentials $credentials): string
+    {
+        $client = new S3MultiRegionClient([
+            'version' => '2006-03-01',
+            'credentials' => $credentials,
+        ]);
+        return $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
     }
 }
