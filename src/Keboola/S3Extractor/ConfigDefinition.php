@@ -4,6 +4,8 @@ namespace Keboola\S3Extractor;
 
 use Keboola\Component\Config\BaseConfigDefinition;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
+use Symfony\Component\Config\Definition\Builder\NodeDefinition;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigDefinition extends BaseConfigDefinition
 {
@@ -15,6 +17,8 @@ class ConfigDefinition extends BaseConfigDefinition
         $parametersNode = parent::getParametersDefinition();
         // @formatter:off
         /** @noinspection NullPointerExceptionInspection */
+        $this->addValidate($parametersNode);
+
         $parametersNode
             ->children()
                 ->scalarNode('loginType')
@@ -64,5 +68,39 @@ class ConfigDefinition extends BaseConfigDefinition
         ;
        // @formatter:on
         return $parametersNode;
+    }
+
+    private function addValidate(NodeDefinition $definition)
+    {
+        $definition
+            ->validate()
+            ->always(function ($item) {
+                if (!isset($item['loginType']) || $item['loginType'] === 'credentials') {
+                    if (!isset($item['accessKeyId'])) {
+                        throw new InvalidConfigurationException(
+                            'The child node "accessKeyId" at path "root.parameters" must be configured.'
+                        );
+                    }
+                    if (!isset($item['#secretAccessKey'])) {
+                        throw new InvalidConfigurationException(
+                            'The child node "#secretAccessKey" at path "root.parameters" must be configured.'
+                        );
+                    }
+                } elseif ($item['loginType'] === 'role') {
+                    if (!isset($item['accountId'])) {
+                        throw new InvalidConfigurationException(
+                            'The child node "accountId" at path "root.parameters" must be configured.'
+                        );
+                    }
+                    if (!isset($item['roleName'])) {
+                        throw new InvalidConfigurationException(
+                            'The child node "roleName" at path "root.parameters" must be configured.'
+                        );
+                    }
+                }
+                return $item;
+            })
+            ->end()
+        ;
     }
 }
