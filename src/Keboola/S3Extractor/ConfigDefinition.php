@@ -9,9 +9,6 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigDefinition extends BaseConfigDefinition
 {
-    /**
-     * @return ArrayNodeDefinition
-     */
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
@@ -70,37 +67,25 @@ class ConfigDefinition extends BaseConfigDefinition
         return $parametersNode;
     }
 
-    private function addValidate(NodeDefinition $definition)
+    private function addValidate(NodeDefinition $definition): void
     {
-        $definition
-            ->validate()
-            ->always(function ($item) {
-                if (!isset($item['loginType']) || $item['loginType'] === 'credentials') {
-                    if (!isset($item['accessKeyId'])) {
-                        throw new InvalidConfigurationException(
-                            'The child node "accessKeyId" at path "root.parameters" must be configured.'
-                        );
-                    }
-                    if (!isset($item['#secretAccessKey'])) {
-                        throw new InvalidConfigurationException(
-                            'The child node "#secretAccessKey" at path "root.parameters" must be configured.'
-                        );
-                    }
-                } elseif ($item['loginType'] === 'role') {
-                    if (!isset($item['accountId'])) {
-                        throw new InvalidConfigurationException(
-                            'The child node "accountId" at path "root.parameters" must be configured.'
-                        );
-                    }
-                    if (!isset($item['roleName'])) {
-                        throw new InvalidConfigurationException(
-                            'The child node "roleName" at path "root.parameters" must be configured.'
-                        );
-                    }
+        $definition->validate()->always(function ($item) {
+            if (!isset($item['loginType']) || $item['loginType'] === 'credentials') {
+                if (!isset($item['accessKeyId'])) {
+                    throw new InvalidConfigurationException('The child node "accessKeyId" at path "root.parameters" must be configured.');
                 }
-                return $item;
-            })
-            ->end()
-        ;
+                if (!isset($item['#secretAccessKey'])) {
+                    throw new InvalidConfigurationException('The child node "#secretAccessKey" at path "root.parameters" must be configured.');
+                }
+            } elseif ($item['loginType'] === 'role') {
+                if (!isset($item['accountId'])) {
+                    throw new InvalidConfigurationException('The child node "accountId" at path "root.parameters" must be configured.');
+                }
+                if (!isset($item['roleName'])) {
+                    throw new InvalidConfigurationException('The child node "roleName" at path "root.parameters" must be configured.');
+                }
+            }
+            return $item;
+        })->end();
     }
 }
