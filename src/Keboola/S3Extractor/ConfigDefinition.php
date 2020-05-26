@@ -34,6 +34,9 @@ class ConfigDefinition extends BaseConfigDefinition
                 ->scalarNode('roleName')
                     ->cannotBeEmpty()
                 ->end()
+                ->scalarNode('externalId')
+                    ->cannotBeEmpty()
+                ->end()
                 ->scalarNode('bucket')
                     ->isRequired()
                     ->cannotBeEmpty()
@@ -83,6 +86,9 @@ class ConfigDefinition extends BaseConfigDefinition
                 }
                 if (!isset($item['roleName'])) {
                     throw new InvalidConfigurationException('The child node "roleName" at path "root.parameters" must be configured.');
+                }
+                if (!isset($item['externalId'])) {
+                    throw new InvalidConfigurationException('The child node "externalId" at path "root.parameters" must be configured.');
                 }
             }
             return $item;

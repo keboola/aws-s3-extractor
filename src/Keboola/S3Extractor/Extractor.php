@@ -305,6 +305,7 @@ class Extractor
         $result = $stsClient->assumeRole([
             'RoleArn' => $roleArn,
             'RoleSessionName' => 'KeboolaS3Extractor',
+            'ExternalId' => $this->config->getExternalId(),
         ]);
 
         $credentials = $result->offsetGet('Credentials');
