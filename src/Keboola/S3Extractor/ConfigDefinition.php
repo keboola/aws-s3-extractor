@@ -18,8 +18,8 @@ class ConfigDefinition extends BaseConfigDefinition
 
         $parametersNode
             ->children()
-                ->scalarNode('loginType')
-                    ->cannotBeEmpty()
+                ->enumNode('loginType')
+                    ->values(['credentials', 'role'])
                     ->defaultValue('credentials')
                 ->end()
                 ->scalarNode('accessKeyId')
@@ -73,7 +73,7 @@ class ConfigDefinition extends BaseConfigDefinition
     private function addValidate(NodeDefinition $definition): void
     {
         $definition->validate()->always(function ($item) {
-            if (!isset($item['loginType']) || $item['loginType'] === 'credentials') {
+            if ($item['loginType'] === 'credentials') {
                 if (!isset($item['accessKeyId'])) {
                     throw new InvalidConfigurationException('The child node "accessKeyId" at path "root.parameters" must be configured.');
                 }
@@ -90,6 +90,8 @@ class ConfigDefinition extends BaseConfigDefinition
                 if (!isset($item['externalId'])) {
                     throw new InvalidConfigurationException('The child node "externalId" at path "root.parameters" must be configured.');
                 }
+            } else {
+                throw new InvalidConfigurationException(sprintf('Unrecognized login type "%s".', $item['loginType']));
             }
             return $item;
         })->end();
