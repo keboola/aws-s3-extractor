@@ -12,8 +12,10 @@ Download files from S3 to `/data/out/files`.
 
 ## Configuration options
 
-- `accessKeyId` (required) -- AWS Access Key ID
-- `#secretAccessKey` (required) -- AWS Secret Access Key
+- `loginType` (required) -- Login type (credentials/role)
+- `accessKeyId` (required if your choise loginType "credentials") -- AWS Access Key ID
+- `#secretAccessKey` (required if your choise loginType "credentials") -- AWS Secret Access Key
+- `accountId` (required if your choise loginType "role") - AWS Account Id
 - `bucket` (required) -- AWS S3 bucket name, it's region will be autodetected
 - `key` (required) -- Search key prefix, optionally ending with a `*` wildcard. all filed downloaded with a wildcard are stored in `/data/out/files/wildcard` folder.
 - `saveAs` (optional) -- Store all downloaded file(s) in a folder.
@@ -27,13 +29,26 @@ If used together with `newFilesOnly`, the extractor will process `limit` number 
 
 ### Sample configurations
 
-#### Single file
+#### Single file (login via credentials)
 
 ```json
 {
     "parameters": {
         "accessKeyId": "AKIA****",
         "#secretAccessKey": "****",
+        "bucket": "myBucket",
+        "key": "myfile.csv",
+        "includeSubfolders": false,
+        "newFilesOnly": false
+    }
+}
+```
+
+#### Single file (login via role)
+```json
+{
+    "parameters": {
+        "accountId": "1234567890",
         "bucket": "myBucket",
         "key": "myfile.csv",
         "includeSubfolders": false,
@@ -107,6 +122,12 @@ UPLOAD_USER_AWS_ACCESS_KEY=
 UPLOAD_USER_AWS_SECRET_KEY=
 DOWNLOAD_USER_AWS_ACCESS_KEY=
 DOWNLOAD_USER_AWS_SECRET_KEY=
+KEBOOLA_USER_AWS_ACCESS_KEY=
+KEBOOLA_USER_AWS_SECRET_KEY=
+ACCOUNT_ID=
+ROLE_NAME=
+EXTERNAL_ID=
+KBC_STACK_ID=
 ```
 
 - Build Docker images
