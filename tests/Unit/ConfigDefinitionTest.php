@@ -66,6 +66,16 @@ class ConfigDefinitionTest extends TestCase
         new Config($config, new ConfigDefinition);
     }
 
+    /**
+     * @dataProvider missingCredentialsProvider
+     */
+    public function testMissingCredentials(array $config, string $expectedMessage): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expectedMessage);
+        new Config($config, new ConfigDefinition());
+    }
+
     public function testMissingLimit()
     {
         $config = [
@@ -115,6 +125,83 @@ class ConfigDefinitionTest extends TestCase
             ['*/'],
             ['//'],
             ['/'],
+        ];
+    }
+
+    public function missingCredentialsProvider(): array
+    {
+        return [
+            [
+                [
+                    'parameters' => [
+                        '#secretAccessKey' => 'b',
+                        'bucket' => 'c',
+                        'key' => 'd',
+                        'includeSubfolders' => false,
+                        'newFilesOnly' => false,
+                        'saveAs' => 'myfile.csv',
+                    ],
+                ],
+                'The child node "accessKeyId" at path "root.parameters" must be configured.'
+            ],
+            [
+                [
+                    'parameters' => [
+                        'accessKeyId' => 'a',
+                        'bucket' => 'c',
+                        'key' => 'd',
+                        'includeSubfolders' => false,
+                        'newFilesOnly' => false,
+                        'saveAs' => 'myfile.csv',
+                    ],
+                ],
+                'The child node "#secretAccessKey" at path "root.parameters" must be configured.'
+            ],
+            [
+                [
+                    'parameters' => [
+                        'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
+                        'roleName' => '123',
+                        'externalId' => '123',
+                        'bucket' => 'c',
+                        'key' => 'd',
+                        'includeSubfolders' => false,
+                        'newFilesOnly' => false,
+                        'saveAs' => 'myfile.csv',
+                    ],
+                ],
+                'The child node "accountId" at path "root.parameters" must be configured.'
+            ],
+            [
+                [
+                    'parameters' => [
+                        'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
+                        'accountId' => '123',
+                        'externalId' => '123',
+                        'bucket' => 'c',
+                        'key' => 'd',
+                        'includeSubfolders' => false,
+                        'newFilesOnly' => false,
+                        'saveAs' => 'myfile.csv',
+                    ],
+                ],
+                'The child node "roleName" at path "root.parameters" must be configured.'
+            ],
+            [
+                [
+                    'parameters' => [
+                        'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
+                        'accountId' => '123',
+                        'roleName' => '123',
+                        'bucket' => 'c',
+                        'key' => 'd',
+                        'includeSubfolders' => false,
+                        'newFilesOnly' => false,
+                        'saveAs' => 'myfile.csv',
+                    ],
+                ],
+                'The child node "externalId" at path "root.parameters" must be configured.'
+            ]
         ];
     }
 }
