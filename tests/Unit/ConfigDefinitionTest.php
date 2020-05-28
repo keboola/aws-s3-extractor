@@ -22,6 +22,7 @@ class ConfigDefinitionTest extends TestCase
                 'saveAs' => 'myfile.csv',
                 'limit' => 1,
                 'loginType' => 'credentials',
+                'roleName' => 'keboola-s3-extractor'
             ],
         ];
 
@@ -171,21 +172,6 @@ class ConfigDefinitionTest extends TestCase
                     ],
                 ],
                 'The child node "accountId" at path "root.parameters" must be configured.'
-            ],
-            [
-                [
-                    'parameters' => [
-                        'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
-                        'accountId' => '123',
-                        'externalId' => '123',
-                        'bucket' => 'c',
-                        'key' => 'd',
-                        'includeSubfolders' => false,
-                        'newFilesOnly' => false,
-                        'saveAs' => 'myfile.csv',
-                    ],
-                ],
-                'The child node "roleName" at path "root.parameters" must be configured.'
             ],
             [
                 [
