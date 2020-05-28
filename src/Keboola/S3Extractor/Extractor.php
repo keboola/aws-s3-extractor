@@ -304,7 +304,7 @@ class Extractor
             'RoleSessionName' => 'KeboolaS3Extractor',
             'ExternalId' => sprintf(
                 '%s-%s',
-                getenv('KBC_STACK_ID'),
+                getenv('KBC_STACKID'),
                 $this->config->getExternalId()
             ),
         ]);
