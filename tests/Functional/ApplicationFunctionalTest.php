@@ -2,6 +2,8 @@
 
 namespace Keboola\S3ExtractorTest\Functional;
 
+use Keboola\S3Extractor\ConfigDefinition;
+
 class ApplicationFunctionalTest extends FunctionalTestCase
 {
     public function testApplication(): void
@@ -37,7 +39,7 @@ class ApplicationFunctionalTest extends FunctionalTestCase
             __DIR__ . '/application/base',
             [
                 'parameters' => [
-                    'loginType' => 'role',
+                    'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
                     'accountId' => getenv(self::ACCOUNT_ID),
                     'roleName' => getenv(self::ROLE_NAME),
                     'externalId' => getenv(self::EXTERNAL_ID),

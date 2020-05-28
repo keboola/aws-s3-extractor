@@ -59,7 +59,7 @@ class Extractor
      */
     public function extract($outputPath): array
     {
-        if ($this->config->getLoginType() === 'role') {
+        if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
             $client = $this->loginViaRole();
         } else {
             $client = $this->loginViaCredentials();

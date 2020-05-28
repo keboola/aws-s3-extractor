@@ -9,6 +9,10 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigDefinition extends BaseConfigDefinition
 {
+    public const LOGIN_TYPE_CREDENTIALS = 'credentials';
+
+    public const LOGIN_TYPE_ROLE = 'role';
+
     protected function getParametersDefinition(): ArrayNodeDefinition
     {
         $parametersNode = parent::getParametersDefinition();
@@ -19,8 +23,8 @@ class ConfigDefinition extends BaseConfigDefinition
         $parametersNode
             ->children()
                 ->enumNode('loginType')
-                    ->values(['credentials', 'role'])
-                    ->defaultValue('credentials')
+                    ->values([self::LOGIN_TYPE_CREDENTIALS, self::LOGIN_TYPE_ROLE])
+                    ->defaultValue(self::LOGIN_TYPE_CREDENTIALS)
                 ->end()
                 ->scalarNode('accessKeyId')
                     ->cannotBeEmpty()
@@ -73,14 +77,14 @@ class ConfigDefinition extends BaseConfigDefinition
     private function addValidate(NodeDefinition $definition): void
     {
         $definition->validate()->always(function ($item) {
-            if ($item['loginType'] === 'credentials') {
+            if ($item['loginType'] === self::LOGIN_TYPE_CREDENTIALS) {
                 if (!isset($item['accessKeyId'])) {
                     throw new InvalidConfigurationException('The child node "accessKeyId" at path "root.parameters" must be configured.');
                 }
                 if (!isset($item['#secretAccessKey'])) {
                     throw new InvalidConfigurationException('The child node "#secretAccessKey" at path "root.parameters" must be configured.');
                 }
-            } elseif ($item['loginType'] === 'role') {
+            } elseif ($item['loginType'] === self::LOGIN_TYPE_ROLE) {
                 if (!isset($item['accountId'])) {
                     throw new InvalidConfigurationException('The child node "accountId" at path "root.parameters" must be configured.');
                 }
