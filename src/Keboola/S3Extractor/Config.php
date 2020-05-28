@@ -45,11 +45,6 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'roleName']);
     }
 
-    public function getExternalId(): string
-    {
-        return $this->getValue(['parameters', 'externalId']);
-    }
-
     /**
      * @return string
      */

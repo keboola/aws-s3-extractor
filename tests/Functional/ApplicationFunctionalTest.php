@@ -42,7 +42,6 @@ class ApplicationFunctionalTest extends FunctionalTestCase
                     'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
                     'accountId' => getenv(self::ACCOUNT_ID),
                     'roleName' => getenv(self::ROLE_NAME),
-                    'externalId' => getenv(self::EXTERNAL_ID),
                     'bucket' => getenv(self::AWS_S3_BUCKET_ENV),
                     'key' => '/file1.csv',
                     'newFilesOnly' => false,

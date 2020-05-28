@@ -302,7 +302,7 @@ class Extractor
         $result = $stsClient->assumeRole([
             'RoleArn' => $roleArn,
             'RoleSessionName' => 'KeboolaS3Extractor',
-            'ExternalId' => sprintf('%s-%s', getenv('KBC_STACKID'), $this->config->getExternalId()),
+            'ExternalId' => sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID')),
         ]);
 
         $credentials = $result->offsetGet('Credentials');

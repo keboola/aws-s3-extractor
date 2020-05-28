@@ -12,7 +12,7 @@ services:
       - AWS_REGION
       - ACCOUNT_ID
       - ROLE_NAME
-      - EXTERNAL_ID
+      - KBC_PROJECTID
       - KBC_STACKID
       - KEBOOLA_USER_AWS_ACCESS_KEY
       - KEBOOLA_USER_AWS_SECRET_KEY

@@ -15,7 +15,6 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     protected const AWS_S3_BUCKET_ENV = 'AWS_S3_BUCKET';
     protected const ACCOUNT_ID = 'ACCOUNT_ID';
     protected const ROLE_NAME = 'ROLE_NAME';
-    protected const EXTERNAL_ID = 'EXTERNAL_ID';
     protected const AWS_S3_ACCESS_KEY_ENV = 'DOWNLOAD_USER_AWS_ACCESS_KEY';
     protected const AWS_S3_SECRET_KEY_ENV = 'DOWNLOAD_USER_AWS_SECRET_KEY';
     protected const UPDATE_AWS_S3_ACCESS_KEY_ENV = 'UPLOAD_USER_AWS_ACCESS_KEY';

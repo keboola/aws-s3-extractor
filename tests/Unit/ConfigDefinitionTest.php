@@ -163,7 +163,6 @@ class ConfigDefinitionTest extends TestCase
                     'parameters' => [
                         'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
                         'roleName' => '123',
-                        'externalId' => '123',
                         'bucket' => 'c',
                         'key' => 'd',
                         'includeSubfolders' => false,
@@ -172,21 +171,6 @@ class ConfigDefinitionTest extends TestCase
                     ],
                 ],
                 'The child node "accountId" at path "root.parameters" must be configured.'
-            ],
-            [
-                [
-                    'parameters' => [
-                        'loginType' => ConfigDefinition::LOGIN_TYPE_ROLE,
-                        'accountId' => '123',
-                        'roleName' => '123',
-                        'bucket' => 'c',
-                        'key' => 'd',
-                        'includeSubfolders' => false,
-                        'newFilesOnly' => false,
-                        'saveAs' => 'myfile.csv',
-                    ],
-                ],
-                'The child node "externalId" at path "root.parameters" must be configured.'
             ]
         ];
     }
