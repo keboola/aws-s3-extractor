@@ -36,6 +36,7 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->cannotBeEmpty()
                 ->end()
                 ->scalarNode('roleName')
+                    ->defaultValue('keboola-s3-extractor')
                     ->cannotBeEmpty()
                 ->end()
                 ->scalarNode('externalId')
