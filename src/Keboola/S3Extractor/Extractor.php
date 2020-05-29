@@ -6,6 +6,7 @@ use Aws\Api\DateTimeResult;
 use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Aws\S3\S3MultiRegionClient;
+use Aws\Sts\Exception\StsException;
 use Aws\Sts\StsClient;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -288,22 +289,27 @@ class Extractor
     {
         $awsCred = new Credentials(getenv('KEBOOLA_USER_AWS_ACCESS_KEY'), getenv('KEBOOLA_USER_AWS_SECRET_KEY'));
 
-        $stsClient = new StsClient([
-            'region' => 'us-east-1',
-            'version' => '2011-06-15',
-            'credentials' => $awsCred,
-        ]);
+        try {
+            $stsClient = new StsClient([
+                'region' => 'us-east-1',
+                'version' => '2011-06-15',
+                'credentials' => $awsCred,
+            ]);
 
-        $roleArn = sprintf(
-            'arn:aws:iam::%s:role/%s',
-            $this->config->getAccountId(),
-            $this->config->getRoleName()
-        );
-        $result = $stsClient->assumeRole([
-            'RoleArn' => $roleArn,
-            'RoleSessionName' => 'KeboolaS3Extractor',
-            'ExternalId' => sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID')),
-        ]);
+            $roleArn = sprintf(
+                'arn:aws:iam::%s:role/%s',
+                $this->config->getAccountId(),
+                $this->config->getRoleName()
+            );
+            $result = $stsClient->assumeRole([
+                'RoleArn' => $roleArn,
+                'RoleSessionName' => 'KeboolaS3Extractor',
+                'ExternalId' => sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID')),
+            ]);
+        } catch (StsException $exception) {
+            throw new UserException($exception->getMessage(), 0, $exception);
+        }
+
 
         $credentials = $result->offsetGet('Credentials');
         $awsCred = new Credentials($credentials['AccessKeyId'], $credentials['SecretAccessKey'], $credentials['SessionToken']);
