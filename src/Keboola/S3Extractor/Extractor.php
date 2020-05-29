@@ -287,7 +287,7 @@ class Extractor
 
     private function loginViaRole(): S3Client
     {
-        $awsCred = new Credentials(getenv('KEBOOLA_USER_AWS_ACCESS_KEY'), getenv('KEBOOLA_USER_AWS_SECRET_KEY'));
+        $awsCred = new Credentials($this->config->getKeboolaUserAwsAccessKey(), $this->config->getKeboolaUserAwsSecretKey());
 
         try {
             $stsClient = new StsClient([
@@ -296,11 +296,7 @@ class Extractor
                 'credentials' => $awsCred,
             ]);
 
-            $roleArn = sprintf(
-                'arn:aws:iam::%s:role/%s',
-                $this->config->getAccountId(),
-                $this->config->getRoleName()
-            );
+            $roleArn = sprintf('arn:aws:iam::%s:role/%s', $this->config->getAccountId(), $this->config->getRoleName());
             $result = $stsClient->assumeRole([
                 'RoleArn' => $roleArn,
                 'RoleSessionName' => 'KeboolaS3Extractor',
@@ -309,7 +305,6 @@ class Extractor
         } catch (StsException $exception) {
             throw new UserException($exception->getMessage(), 0, $exception);
         }
-
 
         $credentials = $result->offsetGet('Credentials');
         $awsCred = new Credentials($credentials['AccessKeyId'], $credentials['SecretAccessKey'], $credentials['SessionToken']);
