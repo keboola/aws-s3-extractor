@@ -20,14 +20,6 @@ class FunctionalTestCase extends AbstractDatadirTestCase
     protected const UPDATE_AWS_S3_BUCKET = 'AWS_S3_BUCKET';
     protected const UPDATE_AWS_REGION = 'AWS_REGION';
 
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        (new Process('php ' . __DIR__ . '/../loadS3.php'))
-            ->setTimeout(1000)
-            ->mustRun();
-    }
-
     /**
      * @return S3Client
      */
