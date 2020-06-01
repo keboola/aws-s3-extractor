@@ -89,6 +89,7 @@ do {
             ]
         );
     }
+    sleep(1);
     // check timestamps if all of them are equal
     $timestamps = [];
     foreach ($files as $file) {
