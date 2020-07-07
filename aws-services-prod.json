@@ -7,26 +7,28 @@
         "Path": "/",
         "Policies": [
           {
-            "PolicyName": "stsAssumeRoleDenyCurrentAccount",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": {
-                "Effect": "Deny",
-                "Action": "sts:AssumeRole",
-                "Resource": {
-                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/*"
-                }
-              }
-            }
-          },
-          {
-            "PolicyName": "stsAssumeRole",
+            "PolicyName": "allowSpecificRolesFromSameAccount",
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": {
                 "Effect": "Allow",
                 "Action": "sts:AssumeRole",
-                "Resource": "*"
+                "Resource": [
+                  "arn:aws:iam::061240556736:role/martin-ex-s3"
+                ]
+              }
+            }
+          },
+          {
+            "PolicyName": "stsAssumeAllRolesFromOtherAccounts",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": {
+                "Effect": "Allow",
+                "Action": "sts:AssumeRole",
+                "NotResource": {
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/*"
+                }
               }
             }
           }
