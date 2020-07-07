@@ -7,13 +7,26 @@
         "Path": "/",
         "Policies": [
           {
+            "PolicyName": "stsAssumeRoleDenyCurrentAccount",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": {
+                "Effect": "Deny",
+                "Action": "sts:AssumeRole",
+                "Resource": {
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/*"
+                }
+              }
+            }
+          },
+          {
             "PolicyName": "stsAssumeRole",
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": {
                 "Effect": "Allow",
                 "Action": "sts:AssumeRole",
-                "Resource": "arn:aws:iam::*:role/keboola-s3-extractor"
+                "Resource": "*"
               }
             }
           }
