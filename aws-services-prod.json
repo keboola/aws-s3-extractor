@@ -7,13 +7,15 @@
         "Path": "/",
         "Policies": [
           {
-            "PolicyName": "stsAssumeRole",
+            "PolicyName": "stsAssumeAllRolesFromOtherAccounts",
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": {
                 "Effect": "Allow",
                 "Action": "sts:AssumeRole",
-                "Resource": "arn:aws:iam::*:role/keboola-s3-extractor"
+                "NotResource": {
+                  "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/*"
+                }
               }
             }
           }
