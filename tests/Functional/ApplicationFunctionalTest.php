@@ -32,6 +32,20 @@ class ApplicationFunctionalTest extends FunctionalTestCase
         );
     }
 
+    public function testExternalIdAsyncAction(): void
+    {
+        $this->runTestWithCustomConfiguration(
+            __DIR__ . '/application/external-id-action',
+            [
+                'action' => 'getExternalId',
+                'parameters' => [],
+            ],
+            0,
+            '{"external-id":"connection.keboola.com-6231"}',
+            null
+        );
+    }
+
 
     public function testApplicationWithLoginViaRole(): void
     {

@@ -275,6 +275,11 @@ class Extractor
         }
     }
 
+    public function getExternalId(): string
+    {
+        return sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID'));
+    }
+
     private function loginViaCredentials(): S3Client
     {
         $awsCred = new Credentials($this->config->getAccessKeyId(), $this->config->getSecretAccessKey());
@@ -300,7 +305,7 @@ class Extractor
             $result = $stsClient->assumeRole([
                 'RoleArn' => $roleArn,
                 'RoleSessionName' => 'KeboolaS3Extractor',
-                'ExternalId' => sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID')),
+                'ExternalId' => $this->getExternalId(),
             ]);
         } catch (StsException $exception) {
             throw new UserException($exception->getMessage(), 0, $exception);
