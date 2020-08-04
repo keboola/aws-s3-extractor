@@ -8,6 +8,10 @@ use Keboola\Component\UserException;
 
 class Application extends BaseComponent
 {
+    private const ACTION_GET_EXTERNAL_ID = 'getExternalId';
+
+    private const ACTION_RUN = 'run';
+
     /**
      * @throws UserException
      */
@@ -24,6 +28,23 @@ class Application extends BaseComponent
         } catch (S3Exception $e) {
             S3ExceptionConverter::resolve($e, $config->getKey());
         }
+    }
+
+    public function getExternalIdAction(): array
+    {
+        /** @var Config $config */
+        $config = $this->getConfig();
+
+        $extractor = new Extractor($config, $this->getInputState(), $this->getLogger());
+
+        return ['external-id' => $extractor->getExternalId()];
+    }
+
+    protected function getSyncActions(): array
+    {
+        return [
+            self::ACTION_GET_EXTERNAL_ID => 'getExternalIdAction',
+        ];
     }
 
     /**
@@ -47,6 +68,14 @@ class Application extends BaseComponent
      */
     protected function getConfigDefinitionClass(): string
     {
-        return ConfigDefinition::class;
+        $action = $this->getRawConfig()['action'] ?? self::ACTION_RUN;
+        switch ($action) {
+            case self::ACTION_RUN:
+                return ConfigDefinition::class;
+            case self::ACTION_GET_EXTERNAL_ID:
+                return GetExternalIdDefinition::class;
+            default:
+                throw new UserException(sprintf('Unexpected action "%s"', $action));
+        }
     }
 }
