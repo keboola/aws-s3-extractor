@@ -327,6 +327,6 @@ class Extractor
             'version' => '2006-03-01',
             'credentials' => $credentials,
         ]);
-        return $client->determineBucketRegion($this->config->getBucket());
+        return $client->determineBucketRegion($this->config->getBucket()) ?: 'us-east-1';
     }
 }
