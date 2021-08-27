@@ -17,7 +17,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
                 'accessKeyId' => getenv(self::AWS_S3_ACCESS_KEY_ENV),
                 '#secretAccessKey' => getenv(self::AWS_S3_SECRET_KEY_ENV),
                 'bucket' => getenv(self::AWS_S3_BUCKET_ENV) . '_invalid',
-                'key' => '/file1.csv',
+                'key' => '/*',
                 'includeSubfolders' => false,
                 'newFilesOnly' => false,
                 'limit' => 0
