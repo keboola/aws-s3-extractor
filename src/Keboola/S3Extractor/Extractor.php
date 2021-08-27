@@ -327,6 +327,6 @@ class Extractor
             'version' => '2006-03-01',
             'credentials' => $credentials,
         ]);
-        return $client->getBucketLocation(["Bucket" => $this->config->getBucket()])->get('LocationConstraint');
+        return $client->determineBucketRegion($this->config->getBucket()) ?: 'us-east-1';
     }
 }
