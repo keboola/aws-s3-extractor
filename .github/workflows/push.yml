@@ -95,18 +95,18 @@ jobs:
         name: Run tests
         run: |
           docker run \
-          -e AWS_S3_BUCKET
-          -e AWS_REGION
-          -e ACCOUNT_ID
-          -e ROLE_NAME
-          -e KBC_PROJECTID
-          -e KBC_STACKID
-          -e KEBOOLA_USER_AWS_ACCESS_KEY
-          -e KEBOOLA_USER_AWS_SECRET_KEY
-          -e UPLOAD_USER_AWS_ACCESS_KEY
-          -e UPLOAD_USER_AWS_SECRET_KEY
-          -e DOWNLOAD_USER_AWS_ACCESS_KEY
-          -e DOWNLOAD_USER_AWS_SECRET_KEY
+          -e AWS_S3_BUCKET \
+          -e AWS_REGION \
+          -e ACCOUNT_ID \
+          -e ROLE_NAME \
+          -e KBC_PROJECTID \
+          -e KBC_STACKID \
+          -e KEBOOLA_USER_AWS_ACCESS_KEY \
+          -e KEBOOLA_USER_AWS_SECRET_KEY \
+          -e UPLOAD_USER_AWS_ACCESS_KEY \
+          -e UPLOAD_USER_AWS_SECRET_KEY \
+          -e DOWNLOAD_USER_AWS_ACCESS_KEY \
+          -e DOWNLOAD_USER_AWS_SECRET_KEY \
           ${{env.APP_IMAGE}} \
           composer ci
 
