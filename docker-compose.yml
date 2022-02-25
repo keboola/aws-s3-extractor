@@ -3,10 +3,9 @@ services:
   dev:
     build: .
     image: keboola/ex-aws-s3
-    tty: true
-    stdin_open: true
     volumes:
       - ./:/code
+      - ./data:/data
     environment:
       - AWS_S3_BUCKET
       - AWS_REGION
@@ -20,21 +19,3 @@ services:
       - UPLOAD_USER_AWS_SECRET_KEY
       - DOWNLOAD_USER_AWS_ACCESS_KEY
       - DOWNLOAD_USER_AWS_SECRET_KEY
-
-  code-coverage:
-    build:
-      context: .
-      dockerfile: ./docker/dockerfile/code-coverage
-    image: keboola/ex-aws-s3-code-coverage
-    command: >
-             sh -c '
-             ./code-coverage.sh
-             '
-    volumes:
-      - ./:/code
-    environment:
-      - AWS_S3_BUCKET
-      - AWS_REGION
-      - DOWNLOAD_USER_AWS_ACCESS_KEY
-      - DOWNLOAD_USER_AWS_SECRET_KEY
-      - CODECLIMATE_REPO_TOKEN
