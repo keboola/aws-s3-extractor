@@ -12,7 +12,7 @@ env:
   KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
 
   AWS_S3_BUCKET: "aws-s3-extractor-gh-actions-s3filesbucket-158v0wxddeqz2"
-  AWS_REGION: "us-east-1"
+  AWS_REGION: "eu-central-1"
   ACCOUNT_ID: "061240556736"
   ROLE_NAME: "s3-extractor-tests"
   KBC_PROJECTID: "6231"
