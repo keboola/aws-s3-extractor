@@ -183,8 +183,10 @@ class Extractor
                 'SaveAs' => $dst,
             ];
             $head = $client->headObject($parameters);
+            /** @var \Datetime $lastModified */
+            $lastModified = $head['LastModified'];
             $filesToDownload[] = [
-                "timestamp" => $head["LastModified"]->format("U"),
+                "timestamp" => $lastModified->format("U"),
                 "size" => $head->get('ContentLength'),
                 "parameters" => $parameters,
             ];
@@ -205,7 +207,6 @@ class Extractor
                 $lastDownloadedFileTimestamp,
                 $processedFilesInLastTimestampSecond
             ) {
-                /** @var DateTimeResult $lastModified */
                 if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
                     return false;
                 }
@@ -311,8 +312,13 @@ class Extractor
             throw new UserException($exception->getMessage(), 0, $exception);
         }
 
+        /** @var array $credentials */
         $credentials = $result->offsetGet('Credentials');
-        $awsCred = new Credentials($credentials['AccessKeyId'], $credentials['SecretAccessKey'], $credentials['SessionToken']);
+        $awsCred = new Credentials(
+            (string) $credentials['AccessKeyId'],
+            (string) $credentials['SecretAccessKey'],
+            (string) $credentials['SessionToken']
+        );
 
         return new S3Client([
             'region' => $this->getBucketRegion($awsCred),

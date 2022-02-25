@@ -102,6 +102,7 @@ class S3AsyncDownloader
                 $this->processFulfilled($result, $index);
             },
             'rejected' => function (AwsException $reason, int $index, PromiseInterface $promise) {
+                /** @var ResultInterface $result */
                 $result = (new RetryProxy(
                     new SimpleRetryPolicy(self::MAX_ATTEMPTS),
                     new ExponentialBackOffPolicy(self::INTERVAL_MS),

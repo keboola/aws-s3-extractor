@@ -32,7 +32,7 @@
   "require-dev": {
     "squizlabs/php_codesniffer": "^2.6",
     "codeclimate/php-test-reporter": "^0.4",
-    "phpstan/phpstan": "^0.9",
+    "phpstan/phpstan": "^1.4",
     "phpunit/phpunit": "^7.0",
     "keboola/datadir-tests": "^3.0",
     "php-parallel-lint/php-parallel-lint": "^1.3"

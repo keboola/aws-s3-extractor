@@ -6,25 +6,16 @@ use Keboola\Component\Config\BaseConfig;
 
 class Config extends BaseConfig
 {
-    /**
-     * @return string
-     */
     public function getKey(): string
     {
         return $this->getValue(['parameters', 'key']);
     }
 
-    /**
-     * @return string
-     */
     public function getAccessKeyId(): string
     {
         return $this->getValue(['parameters', 'accessKeyId']);
     }
 
-    /**
-     * @return string
-     */
     public function getSecretAccessKey(): string
     {
         return $this->getValue(['parameters', '#secretAccessKey']);
@@ -45,41 +36,26 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'roleName']);
     }
 
-    /**
-     * @return string
-     */
     public function getBucket(): string
     {
         return $this->getValue(['parameters', 'bucket']);
     }
 
-    /**
-     * @return string
-     */
     public function getSaveAs(): string
     {
         return $this->getValue(['parameters', 'saveAs']);
     }
 
-    /**
-     * @return bool
-     */
     public function isIncludeSubfolders(): bool
     {
         return $this->getValue(['parameters', 'includeSubfolders']);
     }
 
-    /**
-     * @return bool
-     */
     public function isNewFilesOnly(): bool
     {
         return $this->getValue(['parameters', 'newFilesOnly']);
     }
 
-    /**
-     * @return int
-     */
     public function getLimit(): int
     {
         return $this->getValue(['parameters', 'limit']);
@@ -99,7 +75,7 @@ class Config extends BaseConfig
 
     public function getKeboolaUserAwsSecretKey(): string
     {
-        $secretKey = getenv('KEBOOLA_USER_AWS_SECRET_KEY');
+        $secretKey = (string) getenv('KEBOOLA_USER_AWS_SECRET_KEY');
         if ($secretKey) {
             return $secretKey;
         }

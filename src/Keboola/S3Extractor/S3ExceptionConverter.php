@@ -22,14 +22,11 @@ class S3ExceptionConverter
         switch ($e->getStatusCode()) {
             case 403:
                 throw new UserException('Invalid credentials or permissions.', $e->getCode(), $e);
-                break;
             case 503:
                 self::handleServiceUnavailable($e);
-                break;
             case 400:
             case 401:
                 self::handleBaseUserErrors($e);
-                break;
             case 404:
                 self::handleNotFound($e, $searchKey);
                 break;
