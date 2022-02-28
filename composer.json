@@ -30,11 +30,12 @@
     "keboola/php-utils": "^4.1"
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "^2.6",
     "codeclimate/php-test-reporter": "^0.4",
-    "phpstan/phpstan": "^0.9",
+    "phpstan/phpstan": "^1.4",
     "phpunit/phpunit": "^7.0",
-    "keboola/datadir-tests": "^3.0"
+    "keboola/datadir-tests": "^3.0",
+    "php-parallel-lint/php-parallel-lint": "^1.3",
+    "keboola/coding-standard": "^13.0"
   },
   "autoload": {
     "psr-4": {
@@ -53,10 +54,22 @@
     "phpstan": "phpstan analyse ./src --level=max --no-progress -c phpstan.neon",
     "phpcs": "phpcs --standard=psr2 -n --ignore=vendor --extensions=php .",
     "phpcbf": "phpcbf --standard=psr2 -n --ignore=vendor --extensions=php .",
+    "phplint": "parallel-lint -j 10 --exclude vendor .",
     "build": [
+      "@phplint",
       "@phpcs",
       "@phpstan",
       "@tests"
+    ],
+    "ci": [
+      "@composer validate --no-check-publish --no-check-all",
+      "@build"
     ]
+  },
+  "config": {
+    "allow-plugins": {
+      "ocramius/package-versions": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }

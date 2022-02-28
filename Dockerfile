@@ -1,21 +1,42 @@
-FROM php:7.2
-MAINTAINER Ondrej Hlavacek <ondrej.hlavacek@keboola.com>
-ENV DEBIAN_FRONTEND noninteractive
+FROM php:7.4-cli
 
-RUN apt-get update -q \
-  && apt-get install unzip git libssl-dev -y --no-install-recommends \
-  && rm -rf /var/lib/apt/lists/*
+ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
+ARG DEBIAN_FRONTEND=noninteractive
+ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_PROCESS_TIMEOUT 3600
 
-WORKDIR /root
+WORKDIR /code/
 
-RUN curl -sS https://getcomposer.org/installer | php \
-  && mv composer.phar /usr/local/bin/composer
+COPY docker/php-prod.ini /usr/local/etc/php/php.ini
+COPY docker/composer-install.sh /tmp/composer-install.sh
 
-COPY ./docker/php/php.ini /usr/local/etc/php/php.ini
-COPY . /code
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        unzip \
+        git \
+        locales \
+        libssl-dev \
+	&& rm -r /var/lib/apt/lists/* \
+	&& sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
+	&& locale-gen
 
-WORKDIR /code
+RUN chmod +x /tmp/composer-install.sh \
+	&& /tmp/composer-install.sh
 
-RUN composer install --prefer-dist --no-interaction
+ENV LANGUAGE=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
-CMD php ./src/run.php
+## Composer - deps always cached unless changed
+# First copy only composer files
+COPY composer.* /code/
+
+# Download dependencies, but don't run scripts or init autoloaders as the app is missing
+RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
+
+# Copy rest of the app
+COPY . /code/
+
+# Run normal composer - all deps are cached already
+RUN composer install $COMPOSER_FLAGS
+
+CMD ["php", "/code/src/run.php"]

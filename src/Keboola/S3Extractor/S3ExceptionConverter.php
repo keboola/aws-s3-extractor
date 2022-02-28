@@ -11,25 +11,18 @@ class S3ExceptionConverter
     public const ERROR_CODE_SLOW_DOWN = 'SlowDown';
     public const ERROR_CODE_NOT_FOUND_KEY = 'NotFound';
 
-    /**
-     * @param S3Exception $e
-     * @param string $searchKey
-     * @throws UserException
-     * @throws S3Exception
-     */
     public static function resolve(S3Exception $e, string $searchKey): void
     {
         switch ($e->getStatusCode()) {
             case 403:
                 throw new UserException('Invalid credentials or permissions.', $e->getCode(), $e);
-                break;
             case 503:
                 self::handleServiceUnavailable($e);
-                break;
+                /** @throws UserException */
             case 400:
             case 401:
                 self::handleBaseUserErrors($e);
-                break;
+                /** @throws UserException */
             case 404:
                 self::handleNotFound($e, $searchKey);
                 break;
