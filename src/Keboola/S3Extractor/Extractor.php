@@ -222,15 +222,16 @@ class Extractor
             ));
         }
 
+        // Sort files to download using timestamp
+        usort($filesToDownload, function ($a, $b) {
+            if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
+                return strcmp($a["parameters"]["Key"], $b["parameters"]["Key"]);
+            }
+            return intval($a["timestamp"]) - intval($b["timestamp"]);
+        });
+
         // Apply limit if set
         if ($this->config->getLimit() > 0 && count($filesToDownload) > $this->config->getLimit()) {
-            // Sort files to download using timestamp
-            usort($filesToDownload, function ($a, $b) {
-                if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
-                    return strcmp($a["parameters"]["Key"], $b["parameters"]["Key"]);
-                }
-                return intval($a["timestamp"]) - intval($b["timestamp"]);
-            });
             $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($filesToDownload));
             $filesToDownload = array_slice($filesToDownload, 0, $this->config->getLimit());
         }
