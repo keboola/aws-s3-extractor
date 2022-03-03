@@ -210,7 +210,9 @@ class Extractor
                 if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
                     return false;
                 }
-                if (in_array($fileToDownload["parameters"]["Key"], $processedFilesInLastTimestampSecond)) {
+                if ($fileToDownload["timestamp"] === $lastDownloadedFileTimestamp
+                    && in_array($fileToDownload["parameters"]["Key"], $processedFilesInLastTimestampSecond)
+                ) {
                     return false;
                 }
                 return true;
