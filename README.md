@@ -148,3 +148,7 @@ Run tests with following command.
 docker-compose run --rm dev ./vendor/bin/phpunit
 ```
 
+
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
