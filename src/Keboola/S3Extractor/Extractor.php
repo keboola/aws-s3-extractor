@@ -8,6 +8,7 @@ use Aws\S3\S3Client;
 use Aws\S3\S3MultiRegionClient;
 use Aws\Sts\Exception\StsException;
 use Aws\Sts\StsClient;
+use DateTimeInterface;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
@@ -77,6 +78,12 @@ class Extractor
             $saveAsSubfolder = $this->config->getSaveAs() . '/';
         }
 
+        /** @var array<int, array{
+         *     'timestamp': string,
+         *     'size': int,
+         *     'parameters': array{'Bucket': string, 'Key': string, 'SaveAs': string},
+         * }> $filesToDownload
+         */
         $filesToDownload = [];
 
         $this->logger->info('Listing files to be downloaded');
@@ -90,6 +97,13 @@ class Extractor
             $filesListedCount = 0;
             $filesToDownloadCount = 0;
             foreach ($iterator as $object) {
+                /** @var array{
+                 *     StorageClass: string,
+                 *     Key: string,
+                 *     Size: string,
+                 *     LastModified: DateTimeInterface,
+                 * } $object
+                 */
                 $filesListedCount++;
 
                 // Skip objects in Glacier
