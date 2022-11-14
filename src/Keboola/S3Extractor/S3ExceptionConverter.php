@@ -50,22 +50,19 @@ class S3ExceptionConverter
      */
     private static function handleBaseUserErrors(S3Exception $e): void
     {
-        if ($e->getPrevious() && get_class($e->getPrevious()) === ClientException::class) {
-            /** @var ClientException $previous */
-            $previous = $e->getPrevious();
-            if ($previous->getResponse()) {
-                throw new UserException(
-                    $previous->getResponse()->getStatusCode()
-                    . " "
-                    . $previous->getResponse()->getReasonPhrase()
-                    . " ("
-                    . $e->getAwsErrorCode()
-                    . ")\n"
-                    . $previous->getResponse()->getBody()->__toString()
-                );
-            }
-            throw new UserException($previous->getMessage());
+        $previous = $e->getPrevious();
+        if ($previous instanceof ClientException) {
+            throw new UserException(
+                $previous->getResponse()->getStatusCode()
+                . " "
+                . $previous->getResponse()->getReasonPhrase()
+                . " ("
+                . $e->getAwsErrorCode()
+                . ")\n"
+                . $previous->getResponse()->getBody()->__toString()
+            );
         }
+
         throw new UserException($e->getMessage());
     }
 
