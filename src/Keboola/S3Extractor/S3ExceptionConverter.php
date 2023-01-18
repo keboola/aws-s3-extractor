@@ -51,7 +51,7 @@ class S3ExceptionConverter
     private static function handleBaseUserErrors(S3Exception $e): void
     {
         $previous = $e->getPrevious();
-        if ($previous instanceof ClientException) {
+        if ($previous instanceof ClientException && $previous->getResponse()) {
             throw new UserException(
                 $previous->getResponse()->getStatusCode()
                 . " "
