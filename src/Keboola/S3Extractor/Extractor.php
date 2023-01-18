@@ -305,6 +305,7 @@ class Extractor
             'region' => $this->getBucketRegion($awsCred),
             'version' => '2006-03-01',
             'credentials' => $awsCred,
+            'retries' => 10
         ]);
     }
 
