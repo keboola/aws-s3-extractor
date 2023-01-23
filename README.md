@@ -1,7 +1,5 @@
 # Keboola AWS S3 Extractor
 
-[![Build Status](https://travis-ci.org/keboola/aws-s3-extractor.svg?branch=master)](https://travis-ci.org/keboola/aws-s3-extractor) [![Code Climate](https://codeclimate.com/github/keboola/aws-s3-extractor/badges/gpa.svg)](https://codeclimate.com/github/keboola/aws-s3-extractor) [![Test Coverage](https://codeclimate.com/github/keboola/aws-s3-extractor/badges/coverage.svg)](https://codeclimate.com/github/keboola/aws-s3-extractor)
-
 Download files from S3 to `/data/out/files`.
 
 ## Features
