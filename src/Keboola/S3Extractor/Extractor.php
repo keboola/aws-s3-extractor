@@ -107,7 +107,8 @@ class Extractor
              * } $page
              */
             foreach ($paginator as $page) {
-                foreach ($page['Contents'] as $object) {
+                $objects = $page['Contents'] ?? [];
+                foreach ($objects as $object) {
                     /** @var array{
                      *     StorageClass: string,
                      *     Key: string,
