@@ -103,7 +103,7 @@ class Extractor
             $filesListedCount = 0;
             $filesToDownloadCount = 0;
             /** @var array{
-             *     Contents: array,
+             *     Contents: ?array,
              * } $page
              */
             foreach ($paginator as $page) {
