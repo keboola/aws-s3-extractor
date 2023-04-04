@@ -60,18 +60,13 @@ class Extractor
      */
     public function extract(string $outputDir): array
     {
-        if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
-            $client = $this->loginViaRole();
-        } else {
-            $client = $this->loginViaCredentials();
-        }
-
-        $finder = new Finder($this->config, $this->state, $this->logger);
-        $filesToDownload = $finder->listFiles($client);
-
+        $client = $this->login();
         $fs = new Filesystem();
         $downloader = new S3AsyncDownloader($client, $this->logger);
+        $finder = new Finder($this->config, $this->state, $this->logger);
 
+        $filesToDownload = $finder->listFiles($client);
+        
         // Download files
         $downloadedSize = 0;
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
@@ -128,6 +123,14 @@ class Extractor
             'credentials' => $awsCred,
             'retries' => 10
         ]);
+    }
+
+    private function login(): S3Client
+    {
+        if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
+            return $this->loginViaRole();
+        }
+        return $this->loginViaCredentials();
     }
 
     private function loginViaRole(): S3Client
