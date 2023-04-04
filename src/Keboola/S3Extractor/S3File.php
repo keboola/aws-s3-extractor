@@ -43,12 +43,12 @@ class S3File
         return $this->sizeBytes;
     }
 
-    public function getParameters(): array
+    public function getParameters(string $outputDir): array
     {
         return [
             'Bucket' => $this->bucket,
             'Key' => $this->key,
-            'SaveAs' => $this->saveAs,
+            'SaveAs' => $outputDir . '/'  . $this->saveAs
         ];
     }
 }

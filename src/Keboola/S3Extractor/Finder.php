@@ -49,7 +49,7 @@ class Finder
     /**
      * @return S3File[]
      */
-    public function listFiles(S3Client $client, string $outputPath): array
+    public function listFiles(S3Client $client): array
     {
         $this->logger->info('Listing files to be downloaded');
 
@@ -57,9 +57,9 @@ class Finder
         /** @var S3File[] $filesToDownload */
         $filesToDownload = [];
         if (substr($this->key, -1) == '*') {
-            $filesToDownload = $this->listWildcard($client, $outputPath);
+            $filesToDownload = $this->listWildcard($client);
         } else {
-            $filesToDownload = $this->listSingleFile($client, $outputPath);
+            $filesToDownload = $this->listSingleFile($client);
         }
 
         // Timestamp of last downloaded file, processed files in the last timestamp second
@@ -114,7 +114,7 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listWildcard(S3Client $client, string $outputPath)
+    private function listWildcard(S3Client $client)
     {
         $paginator = $client->getPaginator(
             'ListObjectsV2',
@@ -196,9 +196,9 @@ class Finder
                             str_replace('-', '--', basename($object['Key']))
                         );
                     }
-                    $dst = $outputPath . '/' . $this->subFolder . $flattened;
+                    $dst = $this->subFolder . $flattened;
                 } else {
-                    $dst = $outputPath . '/' . $this->subFolder . basename($object['Key']);
+                    $dst = $this->subFolder . basename($object['Key']);
                 }
                 $filesToDownload[] = new S3File(
                     $this->config->getBucket(),
@@ -229,9 +229,9 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listSingleFile(S3Client $client, string $outputPath)
+    private function listSingleFile(S3Client $client)
     {
-        if ($this->config->isIncludeSubfolders() === true) {
+        if ($this->config->isIncludeSubfolders()) {
             throw new UserException("Cannot include subfolders without wildcard.");
         }
 
@@ -244,14 +244,13 @@ class Finder
             'Bucket' => $this->config->getBucket(),
             'Key' => $this->key,
         ]);
-        $dst = $outputPath . '/' . $this->subFolder . basename($this->key);
         return [
             new S3File(
                 $this->config->getBucket(),
                 $this->key,
                 $head['LastModified'],
                 (int)$head['ContentLength'],
-                $dst
+                $this->subFolder . basename($this->key)
             )
         ];
     }

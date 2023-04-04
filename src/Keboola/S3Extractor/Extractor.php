@@ -55,12 +55,10 @@ class Extractor
 
     /**
      * Creates exports and runs extraction
-     *
-     * @param string $outputPath
      * @return array
      * @throws UserException
      */
-    public function extract($outputPath): array
+    public function extract(string $outputDir): array
     {
         if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
             $client = $this->loginViaRole();
@@ -69,7 +67,7 @@ class Extractor
         }
 
         $finder = new Finder($this->config, $this->state, $this->logger);
-        $filesToDownload = $finder->listFiles($client, $outputPath);
+        $filesToDownload = $finder->listFiles($client);
 
         $fs = new Filesystem();
         $downloader = new S3AsyncDownloader($client, $this->logger);
@@ -79,7 +77,7 @@ class Extractor
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
         $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
         foreach ($filesToDownload as $fileToDownload) {
-            $parameters = $fileToDownload->getParameters();
+            $parameters = $fileToDownload->getParameters($outputDir);
 
             // create folder
             if (!$fs->exists(dirname($parameters['SaveAs']))) {
