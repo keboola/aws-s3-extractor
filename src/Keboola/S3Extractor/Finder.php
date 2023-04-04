@@ -64,15 +64,7 @@ class Finder
     public function listFiles(S3Client $client): array
     {
         $this->logger->info('Listing files to be downloaded');
-
-        // List files by the API
-        /** @var S3File[] $files */
-        $files = [];
-        if (substr($this->key, -1) == '*') {
-            $files = $this->listWildcard($client);
-        } else {
-            $files = $this->listSingleFile($client);
-        }
+        $files = $this->listAllFiles($client);
         $this->logger->info(sprintf('Found %s file(s)', count($files)));
 
         // Filter out old files with newFilesOnly flag
@@ -115,6 +107,18 @@ class Finder
             $files = array_slice($files, 0, $this->config->getLimit());
         }
         return $files;
+    }
+
+    /**
+     * @return S3File[]
+     */
+    private function listAllFiles(S3Client $client)
+    {
+        if (substr($this->key, -1) == '*') {
+            return $this->listWildcard($client);
+        } else {
+            return $this->listSingleFile($client);
+        }
     }
 
     /**
