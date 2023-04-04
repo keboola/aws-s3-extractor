@@ -66,7 +66,7 @@ class Extractor
         $finder = new Finder($this->config, $this->state, $this->logger);
 
         $filesToDownload = $finder->listFiles($client);
-        
+
         // Download files
         $downloadedSize = 0;
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;

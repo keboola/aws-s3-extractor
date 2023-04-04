@@ -53,35 +53,34 @@ class Finder
     {
         $this->logger->info('Listing files to be downloaded');
 
-        // Detect wildcard at the end
-        /** @var S3File[] $filesToDownload */
-        $filesToDownload = [];
+        // List files by the API
+        /** @var S3File[] $files */
+        $files = [];
         if (substr($this->key, -1) == '*') {
-            $filesToDownload = $this->listWildcard($client);
+            $files = $this->listWildcard($client);
         } else {
-            $filesToDownload = $this->listSingleFile($client);
+            $files = $this->listSingleFile($client);
         }
+        $this->logger->info(sprintf(
+            'Found %s file(s)',
+            count($files)
+        ));
 
         // Timestamp of last downloaded file, processed files in the last timestamp second
         $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
         $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
 
-        $this->logger->info(sprintf(
-            'Found %s file(s)',
-            count($filesToDownload)
-        ));
-
         // Filter out old files with newFilesOnly flag
         if ($this->config->isNewFilesOnly() === true) {
-            $filesToDownload = array_filter($filesToDownload, function (S3File $fileToDownload) use (
+            $files = array_filter($files, function (S3File $files) use (
                 $lastDownloadedFileTimestamp,
                 $processedFilesInLastTimestampSecond
             ) {
-                if ($fileToDownload->getTimestamp() < $lastDownloadedFileTimestamp) {
+                if ($files->getTimestamp() < $lastDownloadedFileTimestamp) {
                     return false;
                 }
-                if ($fileToDownload->getTimestamp() === $lastDownloadedFileTimestamp
-                    && in_array($fileToDownload->getKey(), $processedFilesInLastTimestampSecond)
+                if ($files->getTimestamp() === $lastDownloadedFileTimestamp
+                    && in_array($files->getKey(), $processedFilesInLastTimestampSecond)
                 ) {
                     return false;
                 }
@@ -90,25 +89,33 @@ class Finder
 
             $this->logger->info(sprintf(
                 'There are %s new file(s)',
-                count($filesToDownload)
+                count($files)
             ));
         }
 
+        return $this->limitCount($this->sortByTimestamp($files));
+    }
+
+    private function sortByTimestamp(array $files): array
+    {
         // Sort files to download using timestamp
-        usort($filesToDownload, function (S3File $a, S3File $b) {
+        usort($files, function (S3File $a, S3File $b) {
             if ($a->getTimestamp() - $b->getTimestamp() === 0) {
                 return strcmp($a->getKey(), $b->getKey());
             }
             return $a->getTimestamp() - $b->getTimestamp();
         });
+        return $files;
+    }
 
+    private function limitCount(array $files): array
+    {
         // Apply limit if set
-        if ($this->config->getLimit() > 0 && count($filesToDownload) > $this->config->getLimit()) {
-            $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($filesToDownload));
-            $filesToDownload = array_slice($filesToDownload, 0, $this->config->getLimit());
+        if ($this->config->getLimit() > 0 && count($files) > $this->config->getLimit()) {
+            $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($files));
+            $files = array_slice($files, 0, $this->config->getLimit());
         }
-
-        return $filesToDownload;
+        return $files;
     }
 
     /**
