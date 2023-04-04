@@ -34,6 +34,24 @@ class Finder
     /** @var string[] */
     private $processedFilesInLastTimestampSecond;
 
+    /**
+     * Count of all files returned by the API.
+     * @var int
+     */
+    private $listedCount;
+
+    /**
+     * Count of all not ignored files (see isFileIgnored method).
+     * @var int
+     */
+    private $matchedCount;
+
+    /**
+     * Count of all new files (see isFileOld method).
+     * @var int
+     */
+    private $newCount;
+
     public function __construct(Config $config, array $state, LoggerInterface $logger, S3Client $client)
     {
         $this->config = $config;
@@ -53,25 +71,20 @@ class Finder
      */
     public function listFiles(): array
     {
+        $this->listedCount = 0;
+        $this->matchedCount = 0;
+        $this->newCount = 0;
         $this->logger->info('Listing files to be downloaded');
-        $files = $this->listAllFiles();
-        $this->logger->info(sprintf('Found %s file(s)', count($files)));
 
-        // Filter out old files with newFilesOnly flag
-        if ($this->config->isNewFilesOnly() === true) {
-            $files = array_filter($files, function (S3File $files) {
-                if ($files->getTimestamp() < $this->lastDownloadedFileTimestamp) {
-                    return false;
-                }
-                if ($files->getTimestamp() === $this->lastDownloadedFileTimestamp
-                    && in_array($files->getKey(), $this->processedFilesInLastTimestampSecond)
-                ) {
-                    return false;
-                }
-                return true;
-            });
 
-            $this->logger->info(sprintf('There are %s new file(s)', count($files)));
+        $files = [];
+        foreach ($this->listAllFiles() as $file) {
+            $files[] = $file;
+        }
+
+        $this->logger->info(sprintf('Found %s file(s)', $this->matchedCount));
+        if ($this->config->isNewFilesOnly()) {
+            $this->logger->info(sprintf('There are %s new file(s)', $this->newCount));
         }
 
         return $this->limitCount($this->sortByTimestamp($files));
@@ -102,7 +115,7 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listAllFiles()
+    private function listAllFiles(): iterable
     {
         if (substr($this->key, -1) == '*') {
             return $this->listWildcard();
@@ -114,7 +127,7 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listWildcard()
+    private function listWildcard(): iterable
     {
         $paginator = $this->client->getPaginator(
             'ListObjectsV2',
@@ -125,21 +138,17 @@ class Finder
             ]
         );
 
-        $filesListedCount = 0;
-        $filesToDownloadCount = 0;
-        /** @var S3File[] $filesToDownload */
-        $filesToDownload = [];
-
         /** @var array{Contents: ?array} $page */
         foreach ($paginator as $page) {
             $objects = $page['Contents'] ?? [];
 
             /** @var array{StorageClass: string, Key: string, Size: string, LastModified: \DateTimeInterface} $object */
             foreach ($objects as $object) {
-                $filesListedCount++;
+                $this->listedCount++;
                 if ($this->isFileIgnored($object)) {
                     continue;
                 }
+                $this->matchedCount++;
 
                 // remove wilcard mask from search key
                 $keyWithoutWildcard = trim($this->key, "*");
@@ -175,36 +184,43 @@ class Finder
                 } else {
                     $dst = $this->subFolder . basename($object['Key']);
                 }
-                $filesToDownload[] = new S3File(
+
+                // create object
+                $file = new S3File(
                     $this->config->getBucket(),
                     $object['Key'],
                     $object['LastModified'],
                     (int)$object['Size'],
                     $dst
                 );
-                $filesToDownloadCount++;
 
-                $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
-                    && $filesListedCount !== 0;
-                $isImportantMilestoneForDownloaded = ($filesToDownloadCount % 1000) === 0
-                    && $filesToDownloadCount !== 0;
-                if ($isImportantMilestoneForListed || $isImportantMilestoneForDownloaded) {
+                // skip old files
+                if ($this->isFileOld($file)) {
+                    continue;
+                }
+                $this->newCount++;
+
+                // log progress
+                if ($this->listedCount !== 0 &&
+                    $this->matchedCount !== 0 &&
+                    (($this->listedCount % 10000) === 0 || ($this->matchedCount % 1000) === 0)
+                ) {
                     $this->logger->info(sprintf(
                         'Listed %s files (%s matching the filter so far)',
-                        $filesListedCount,
-                        $filesToDownloadCount
+                        $this->listedCount,
+                        $this->matchedCount
                     ));
                 }
+
+                yield $file;
             }
         }
-
-        return $filesToDownload;
     }
 
     /**
      * @return S3File[]
      */
-    private function listSingleFile()
+    private function listSingleFile(): iterable
     {
         if ($this->config->isIncludeSubfolders()) {
             throw new UserException("Cannot include subfolders without wildcard.");
@@ -216,15 +232,22 @@ class Finder
             'Key' => $this->key,
         ]);
 
-        return [
-            new S3File(
-                $this->config->getBucket(),
-                $this->key,
-                $head['LastModified'],
-                (int)$head['ContentLength'],
-                $this->subFolder . basename($this->key)
-            )
-        ];
+        $this->listedCount++;
+        $this->matchedCount++;
+        $file = new S3File(
+            $this->config->getBucket(),
+            $this->key,
+            $head['LastModified'],
+            (int)$head['ContentLength'],
+            $this->subFolder . basename($this->key)
+        );
+
+        if ($this->isFileOld($file)) {
+            return;
+        }
+
+        $this->newCount++;
+        yield $file;
     }
 
     /**
@@ -251,6 +274,23 @@ class Finder
         // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
         if (substr($object['Key'], -1, 1) === '/') {
             return true;
+        }
+
+        return false;
+    }
+
+    private function isFileOld(S3File $file): bool
+    {
+        if ($this->config->isNewFilesOnly()) {
+            if ($file->getTimestamp() < $this->lastDownloadedFileTimestamp) {
+                return true;
+            }
+
+            if ($file->getTimestamp() === $this->lastDownloadedFileTimestamp
+                && in_array($file->getKey(), $this->processedFilesInLastTimestampSecond)
+            ) {
+                return true;
+            }
         }
 
         return false;
