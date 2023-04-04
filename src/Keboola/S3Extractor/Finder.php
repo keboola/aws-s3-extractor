@@ -84,13 +84,11 @@ class Finder
         foreach ($this->iteratorFromTmpFile($sortedFilePath, false) as $file) {
             $count++;
             $size += $file->getSizeBytes();
-            if ($count == 1) {
-                $state->filesInLastTimestamp = [];
-            }
-            $state->lastTimestamp = max($state->lastTimestamp, $file->getTimestamp());
+
             if ($state->lastTimestamp != $file->getTimestamp()) {
                 $state->filesInLastTimestamp = [];
             }
+            $state->lastTimestamp = max($state->lastTimestamp, $file->getTimestamp());
             $state->filesInLastTimestamp[] = $file->getKey();
         }
         if ($this->limit > 0 && $this->newCount > $this->limit) {
@@ -115,8 +113,9 @@ class Finder
         try {
             $i = 0;
             while (($line = fgets($sortedFile, 20480)) !== false) {
-                // Skip timestamp + space character
-                $serialized = substr($line, self::TIMESTAMP_STR_LENGTH + 1);
+                // Skip the firdt word separated by NUL char
+                strtok($line, "\0");
+                $serialized = (string)strtok("");
                 /** @var S3File $file */
                 $file = unserialize(base64_decode($serialized));
                 yield $file;
@@ -136,7 +135,9 @@ class Finder
     {
         // Sort metadata by timestamp using "sort" command
         $sortedFilePath = $tmpFilePath . ".sorted";
-        (new Process(["sort", "-k1.1,1." . self::TIMESTAMP_STR_LENGTH, "--parallel=1", "--output", $sortedFilePath, $tmpFilePath]))->mustRun();
+        $args = ["sort", "-k", "1,1", "-t", '\0',  "-s", "--parallel=1", "--output", $sortedFilePath, $tmpFilePath];
+        $env = ["LC_ALL" => "C"];
+        (new Process($args, null, $env))->mustRun();
         unlink($tmpFilePath);
         return $sortedFilePath;
     }
@@ -159,7 +160,8 @@ class Finder
                 // Write each file metadata as: <timestamp> <serialized S3File object>\n
                 // The base64 encoding is used to prevent new lines in the serialized object.
                 fwrite($tmpFile, str_pad((string)$file->getTimestamp(), self::TIMESTAMP_STR_LENGTH, "0"));
-                fwrite($tmpFile, " ");
+                fwrite($tmpFile, $file->getKey());
+                fwrite($tmpFile, "\0");
                 fwrite($tmpFile, base64_encode(serialize($file)));
                 fwrite($tmpFile, "\n");
             }
@@ -251,12 +253,6 @@ class Finder
                     $dst
                 );
 
-                // skip old files
-                if ($this->isFileOld($file)) {
-                    continue;
-                }
-                $this->newCount++;
-
                 // log progress
                 if ($this->listedCount !== 0 &&
                     $this->matchedCount !== 0 &&
@@ -269,6 +265,12 @@ class Finder
                     ));
                 }
 
+                // skip old files
+                if ($this->isFileOld($file)) {
+                    continue;
+                }
+
+                $this->newCount++;
                 yield $file;
             }
         }
