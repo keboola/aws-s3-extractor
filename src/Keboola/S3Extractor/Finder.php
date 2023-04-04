@@ -28,6 +28,11 @@ class Finder
     /**
      * @var string
      */
+    private $key;
+
+    /**
+     * @var string
+     */
     private $subFolder;
 
     public function __construct(Config $config, array $state, LoggerInterface $logger)
@@ -35,6 +40,7 @@ class Finder
         $this->config = $config;
         $this->state = $state;
         $this->logger = $logger;
+        $this->key = $config->getKey();
         if (!empty($this->config->getSaveAs())) {
             $this->subFolder = $this->config->getSaveAs() . '/';
         }
@@ -45,21 +51,15 @@ class Finder
      */
     public function listFiles(S3Client $client, string $outputPath): array
     {
-        // Remove initial forwardslash
-        $key = $this->config->getKey();
-        if (substr($key, 0, 1) == '/') {
-            $key = substr($key, 1);
-        }
-
         $this->logger->info('Listing files to be downloaded');
 
         // Detect wildcard at the end
         /** @var S3File[] $filesToDownload */
         $filesToDownload = [];
-        if (substr($key, -1) == '*') {
-            $filesToDownload = $this->listWildcard($client, $outputPath, $key);
+        if (substr($this->key, -1) == '*') {
+            $filesToDownload = $this->listWildcard($client, $outputPath);
         } else {
-            $filesToDownload = $this->listSingleFile($client, $outputPath, $key);
+            $filesToDownload = $this->listSingleFile($client, $outputPath);
         }
 
         // Timestamp of last downloaded file, processed files in the last timestamp second
@@ -114,13 +114,13 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listWildcard(S3Client $client, string $outputPath, string $key)
+    private function listWildcard(S3Client $client, string $outputPath)
     {
         $paginator = $client->getPaginator(
             'ListObjectsV2',
             [
                 'Bucket' => $this->config->getBucket(),
-                'Prefix' => substr($key, 0, -1),
+                'Prefix' => substr($this->key, 0, -1),
                 'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
             ]
         );
@@ -152,12 +152,12 @@ class Finder
 
                 // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
                 // https://github.com/keboola/s3-extractor/issues/1
-                if (strlen($key) > strlen($object['Key'])) {
+                if (strlen($this->key) > strlen($object['Key'])) {
                     continue;
                 }
 
                 // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
+                if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
                     continue;
                 }
 
@@ -167,7 +167,7 @@ class Finder
                 }
 
                 // remove wilcard mask from search key
-                $keyWithoutWildcard = trim($key, "*");
+                $keyWithoutWildcard = trim($this->key, "*");
 
                 // search key contains folder
                 $dirPrefixToBeRemoved = '';
@@ -229,7 +229,7 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listSingleFile(S3Client $client, string $outputPath, string $key)
+    private function listSingleFile(S3Client $client, string $outputPath)
     {
         if ($this->config->isIncludeSubfolders() === true) {
             throw new UserException("Cannot include subfolders without wildcard.");
@@ -242,13 +242,13 @@ class Finder
          */
         $head = $client->getObject([
             'Bucket' => $this->config->getBucket(),
-            'Key' => $key,
+            'Key' => $this->key,
         ]);
-        $dst = $outputPath . '/' . $this->subFolder . basename($key);
+        $dst = $outputPath . '/' . $this->subFolder . basename($this->key);
         return [
             new S3File(
                 $this->config->getBucket(),
-                $key,
+                $this->key,
                 $head['LastModified'],
                 (int)$head['ContentLength'],
                 $dst

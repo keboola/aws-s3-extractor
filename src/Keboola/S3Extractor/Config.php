@@ -8,7 +8,12 @@ class Config extends BaseConfig
 {
     public function getKey(): string
     {
-        return $this->getValue(['parameters', 'key']);
+        /** @var string $value */
+        $value = $this->getValue(['parameters', 'key']);
+        if (substr($value, 0, 1) == '/') {
+            $value = substr($value, 1);
+        }
+        return $value;
     }
 
     public function getAccessKeyId(): string
