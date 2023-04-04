@@ -93,8 +93,8 @@ class Extractor
         if ($this->config->isNewFilesOnly() === true) {
             $state = $result->getState();
             return [
-                'lastDownloadedFileTimestamp' => (string)$state->lastDownloadedFileTimestamp,
-                'processedFilesInLastTimestampSecond' => $state->processedFilesInLastTimestampSecond,
+                'lastDownloadedFileTimestamp' => (string)$state->lastTimestamp,
+                'processedFilesInLastTimestampSecond' => $state->filesInLastTimestamp,
             ];
         } else {
             return [];

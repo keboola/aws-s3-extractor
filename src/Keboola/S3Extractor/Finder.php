@@ -5,10 +5,12 @@ namespace Keboola\S3Extractor;
 use Aws\S3\S3Client;
 use Keboola\Component\UserException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Process\Process;
 
 class Finder
 {
     private const MAX_OBJECTS_PER_PAGE = 1000;
+    private const TIMESTAMP_STR_LENGTH = 12;
 
     /** @var Config */
     private $config;
@@ -28,30 +30,27 @@ class Finder
     /** @var State */
     private $oldState;
 
-    /** @var State */
-    private $newState;
+    /** @var int */
+    private $limit;
 
     /**
      * Count of all files returned by the API.
      * @var int
      */
-    private $listedCount;
+    private $listedCount = 0;
 
     /**
      * Count of all not ignored files (see isFileIgnored method).
      * @var int
      */
-    private $matchedCount;
+    private $matchedCount = 0;
 
     /**
      * Count of all new files (see isFileOld method).
-     * If newFilesOnly=false, the the value is equal to $matchedCount.
+     * If newFilesOnly=false, then the value is equal to $matchedCount.
      * @var int
      */
-    private $newCount;
-
-    /** @var int */
-    private $downloadSizeBytes;
+    private $newCount = 0;
 
     public function __construct(Config $config, array $state, LoggerInterface $logger, S3Client $client)
     {
@@ -63,59 +62,116 @@ class Finder
             $this->subFolder = $this->config->getSaveAs() . '/';
         }
         $this->oldState = new State($state);
-        $this->newState = new State($state);
+        $this->limit = $this->config->getLimit();
     }
 
     public function listFiles(): FinderResult
     {
-        $this->listedCount = 0;
-        $this->matchedCount = 0;
-        $this->newCount = 0;
         $this->logger->info('Listing files to be downloaded');
-        $iterator = $this->sortByTimestamp($this->listAllFiles());
-        return new FinderResult($iterator, $this->newCount, $this->downloadSizeBytes, $this->newState);
-    }
-
-
-        $files = [];
-        foreach ($this->listAllFiles() as $file) {
-            $files[] = $file;
-        }
-
+        $tmpFilePath = $this->listFilesToTmpFile();
         $this->logger->info(sprintf('Found %s file(s)', $this->matchedCount));
         if ($this->config->isNewFilesOnly()) {
             $this->logger->info(sprintf('There are %s new file(s)', $this->newCount));
         }
 
-        return $this->limitCount($this->sortByTimestamp($files));
-    }
+        // Sort by timestamp
+        $sortedFilePath = $this->sortTmpFile($tmpFilePath);
 
-    private function sortByTimestamp(array $files): array
-    {
-        // Sort files to download using timestamp
-        usort($files, function (S3File $a, S3File $b) {
-            if ($a->getTimestamp() - $b->getTimestamp() === 0) {
-                return strcmp($a->getKey(), $b->getKey());
+        // Compute total count and size, take into account the limit
+        $count = 0;
+        $size = 0;
+        $state = clone $this->oldState;
+        foreach ($this->iteratorFromTmpFile($sortedFilePath, false) as $file) {
+            $count++;
+            $size += $file->getSizeBytes();
+            $state->lastTimestamp = max($state->lastTimestamp, $file->getTimestamp());
+            if ($state->lastTimestamp != $file->getTimestamp()) {
+                $state->filesInLastTimestamp = [];
+            } else {
+                $state->filesInLastTimestamp[] = $file->getKey();
             }
-            return $a->getTimestamp() - $b->getTimestamp();
-        });
-        return $files;
-    }
-
-    private function limitCount(array $files): array
-    {
-        // Apply limit if set
-        if ($this->config->getLimit() > 0 && count($files) > $this->config->getLimit()) {
-            $this->logger->info("Downloading only {$this->config->getLimit()} oldest file(s) out of " . count($files));
-            $files = array_slice($files, 0, $this->config->getLimit());
         }
-        return $files;
+        if ($this->limit > 0 && $this->newCount > $this->limit) {
+            $this->logger->info("Downloading only {$count} oldest file(s) out of " . $this->newCount);
+        }
+
+        // Rewind the sorted file and return the iterator
+        $iterator = $this->iteratorFromTmpFile($sortedFilePath, true);
+        return new FinderResult($iterator, $count, $size, $state);
     }
 
     /**
      * @return S3File[]
      */
-    private function listAllFiles(): iterable
+    private function iteratorFromTmpFile(string $sortedFilePath, bool $unlink): iterable
+    {
+        // Read sorted metadata
+        $sortedFile = fopen($sortedFilePath, "r");
+        if (!$sortedFile) {
+            throw new \RuntimeException(sprintf('Cannot open sorted file "%s".', $sortedFilePath));
+        }
+        try {
+            $i = 0;
+            while (($line = fgets($sortedFile, 20480)) !== false) {
+                // Skip timestamp + space character
+                $serialized = substr($line, self::TIMESTAMP_STR_LENGTH + 1);
+                /** @var S3File $file */
+                $file = unserialize(base64_decode($serialized));
+                yield $file;
+                if ($this->limit > 0 && ++$i >= $this->limit) {
+                    break;
+                }
+            }
+        } finally {
+            fclose($sortedFile);
+            if ($unlink) {
+                unlink($sortedFilePath);
+            }
+        }
+    }
+
+    private function sortTmpFile(string $tmpFilePath): string
+    {
+        // Sort metadata by timestamp using "sort" command
+        $sortedFilePath = $tmpFilePath . ".sorted";
+        (new Process(["sort", "-k1.1,1." . self::TIMESTAMP_STR_LENGTH, "--parallel=1", "--output", $sortedFilePath, $tmpFilePath]))->mustRun();
+        unlink($tmpFilePath);
+        return $sortedFilePath;
+    }
+
+    private function listFilesToTmpFile(): string
+    {
+        // Write all metadata from the generator to a temporary file, to prevent memory issues.
+        $tmpFilePath = tempnam(sys_get_temp_dir(), 'aws-files');
+        if (!$tmpFilePath) {
+            throw new \RuntimeException("Cannot create a temp file.");
+        }
+
+        $tmpFile = fopen($tmpFilePath, "w");
+        if (!$tmpFile) {
+            throw new \RuntimeException(sprintf('Cannot open temp file "%s".', $tmpFilePath));
+        }
+
+        try {
+            foreach ($this->listFilesIterator() as $file) {
+                // Write each file metadata as: <timestamp> <serialized S3File object>\n
+                // The base64 encoding is used to prevent new lines in the serialized object.
+                fwrite($tmpFile, str_pad((string)$file->getTimestamp(), self::TIMESTAMP_STR_LENGTH, "0"));
+                fwrite($tmpFile, " ");
+                fwrite($tmpFile, base64_encode(serialize($file)));
+                fwrite($tmpFile, "\n");
+            }
+        } finally {
+            fclose($tmpFile);
+        }
+
+        return $tmpFilePath;
+    }
+
+    /**
+     * @return S3File[]
+     */
+    private function listFilesIterator(): iterable
     {
         if (substr($this->key, -1) == '*') {
             return $this->listWildcard();
@@ -129,7 +185,7 @@ class Finder
      */
     private function listWildcard(): iterable
     {
-        $keyWithoutWildcard = trim($this->key, "*");
+        $keyWithoutWildcard = rtrim($this->key, "*");
 
         // search key can contain folder
         $dirPrefixToBeRemoved = '';
@@ -197,15 +253,7 @@ class Finder
                 if ($this->isFileOld($file)) {
                     continue;
                 }
-
-                // update state
                 $this->newCount++;
-                $this->downloadSizeBytes += $file->getSizeBytes();
-                if ($this->newState->lastDownloadedFileTimestamp != $file->getTimestamp()) {
-                    $this->newState->processedFilesInLastTimestampSecond = [];
-                }
-                $this->newState->lastDownloadedFileTimestamp = max($this->newState->lastDownloadedFileTimestamp, $file->getTimestamp());
-                $this->newState->processedFilesInLastTimestampSecond[] = $file->getKey();
 
                 // log progress
                 if ($this->listedCount !== 0 &&
@@ -289,12 +337,12 @@ class Finder
     private function isFileOld(S3File $file): bool
     {
         if ($this->config->isNewFilesOnly()) {
-            if ($file->getTimestamp() < $this->oldState->lastDownloadedFileTimestamp) {
+            if ($file->getTimestamp() < $this->oldState->lastTimestamp) {
                 return true;
             }
 
-            if ($file->getTimestamp() === $this->oldState->lastDownloadedFileTimestamp
-                && in_array($file->getKey(), $this->oldState->processedFilesInLastTimestampSecond)
+            if ($file->getTimestamp() === $this->oldState->lastTimestamp
+                && in_array($file->getKey(), $this->oldState->filesInLastTimestamp)
             ) {
                 return true;
             }
