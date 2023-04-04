@@ -61,18 +61,23 @@ class Extractor
     public function extract(string $outputDir): array
     {
         $client = $this->login();
-        $fs = new Filesystem();
-        $downloader = new S3AsyncDownloader($client, $this->logger);
-        $finder = new Finder($this->config, $this->state, $this->logger, $client);
 
-        $filesToDownload = $finder->listFiles();
+        // Find files
+        $finder = new Finder($this->config, $this->state, $this->logger, $client);
+        $result = $finder->listFiles();
+        if ($result->getCount() > 0) {
+            $this->logger->info(sprintf(
+                'Downloading %d file(s) (%s)',
+                $result->getCount(),
+                formatBytes($result->getDownloadSizeBytes())
+            ));
+        }
 
         // Download files
-        $downloadedSize = 0;
-        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
-        $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
-        foreach ($filesToDownload as $fileToDownload) {
-            $parameters = $fileToDownload->getParameters($outputDir);
+        $fs = new Filesystem();
+        $downloader = new S3AsyncDownloader($client, $this->logger);
+        foreach ($result->getIterator() as $file) {
+            $parameters = $file->getParameters($outputDir);
 
             // create folder
             if (!$fs->exists(dirname($parameters['SaveAs']))) {
@@ -80,29 +85,16 @@ class Extractor
             }
 
             $downloader->addFileRequest($parameters);
-
-            if ($lastDownloadedFileTimestamp != $fileToDownload->getTimestamp()) {
-                $processedFilesInLastTimestampSecond = [];
-            }
-            $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload->getTimestamp());
-            $processedFilesInLastTimestampSecond[] = $fileToDownload->getKey();
-            $downloadedSize += $fileToDownload->getSizeBytes();
         }
 
-        if (count($filesToDownload) > 0) {
-            $this->logger->info(sprintf(
-                'Downloading %d file(s) (%s)',
-                count($filesToDownload),
-                formatBytes($downloadedSize)
-            ));
-        }
 
         $downloader->processRequests();
 
         if ($this->config->isNewFilesOnly() === true) {
+            $state = $result->getState();
             return [
-                'lastDownloadedFileTimestamp' => (string)$lastDownloadedFileTimestamp,
-                'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond,
+                'lastDownloadedFileTimestamp' => (string)$state->lastDownloadedFileTimestamp,
+                'processedFilesInLastTimestampSecond' => $state->processedFilesInLastTimestampSecond,
             ];
         } else {
             return [];
@@ -157,9 +149,9 @@ class Extractor
         /** @var array $credentials */
         $credentials = $result->offsetGet('Credentials');
         $awsCred = new Credentials(
-            (string) $credentials['AccessKeyId'],
-            (string) $credentials['SecretAccessKey'],
-            (string) $credentials['SessionToken']
+            (string)$credentials['AccessKeyId'],
+            (string)$credentials['SecretAccessKey'],
+            (string)$credentials['SessionToken']
         );
 
         return new S3Client([

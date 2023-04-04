@@ -66,15 +66,15 @@ class Finder
         $this->newState = new State($state);
     }
 
-    /**
-     * @return S3File[]
-     */
-    public function listFiles(): array
+    public function listFiles(): FinderResult
     {
         $this->listedCount = 0;
         $this->matchedCount = 0;
         $this->newCount = 0;
         $this->logger->info('Listing files to be downloaded');
+        $iterator = $this->sortByTimestamp($this->listAllFiles());
+        return new FinderResult($iterator, $this->newCount, $this->downloadSizeBytes, $this->newState);
+    }
 
 
         $files = [];
