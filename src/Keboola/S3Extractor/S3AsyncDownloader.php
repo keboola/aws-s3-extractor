@@ -20,6 +20,7 @@ class S3AsyncDownloader
     private const MAX_ATTEMPTS = 5;
     private const INTERVAL_MS = 500;
     private const MAX_CONCURRENT_DOWNLOADS = 50;
+    private const FORCE_GC_MIN_BYTES = 512 * 1024 * 1024; // 512MiB
 
     /**
      * @var S3Client
@@ -96,6 +97,10 @@ class S3AsyncDownloader
         return new CommandPool($this->client, $this->commands, [
             'concurrency' => self::MAX_CONCURRENT_DOWNLOADS,
             'before' => function (CommandInterface $command, int $index) {
+                // https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_commands.html#manual-garbage-collection-between-commands
+                if (memory_get_usage() >= self::FORCE_GC_MIN_BYTES) {
+                    gc_collect_cycles();
+                }
                 $this->filesParameter[$index] = $command->toArray();
             },
             'fulfilled' => function (ResultInterface $result, int $index) {
