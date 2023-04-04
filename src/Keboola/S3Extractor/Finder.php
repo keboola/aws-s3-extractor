@@ -10,46 +10,36 @@ class Finder
 {
     private const MAX_OBJECTS_PER_PAGE = 1000;
 
-    /**
-     * @var Config
-     */
+    /** @var Config */
     private $config;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $state;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var string
-     */
+    /** @var S3Client */
+    private $client;
+
+    /** @var string */
     private $key;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $subFolder;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $lastDownloadedFileTimestamp;
 
-    /**
-     * @var string[]
-     */
+    /** @var string[] */
     private $processedFilesInLastTimestampSecond;
 
-    public function __construct(Config $config, array $state, LoggerInterface $logger)
+    public function __construct(Config $config, array $state, LoggerInterface $logger, S3Client $client)
     {
         $this->config = $config;
         $this->state = $state;
         $this->logger = $logger;
+        $this->client = $client;
         $this->key = $config->getKey();
         if (!empty($this->config->getSaveAs())) {
             $this->subFolder = $this->config->getSaveAs() . '/';
@@ -61,10 +51,10 @@ class Finder
     /**
      * @return S3File[]
      */
-    public function listFiles(S3Client $client): array
+    public function listFiles(): array
     {
         $this->logger->info('Listing files to be downloaded');
-        $files = $this->listAllFiles($client);
+        $files = $this->listAllFiles();
         $this->logger->info(sprintf('Found %s file(s)', count($files)));
 
         // Filter out old files with newFilesOnly flag
@@ -112,21 +102,21 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listAllFiles(S3Client $client)
+    private function listAllFiles()
     {
         if (substr($this->key, -1) == '*') {
-            return $this->listWildcard($client);
+            return $this->listWildcard();
         } else {
-            return $this->listSingleFile($client);
+            return $this->listSingleFile();
         }
     }
 
     /**
      * @return S3File[]
      */
-    private function listWildcard(S3Client $client)
+    private function listWildcard()
     {
-        $paginator = $client->getPaginator(
+        $paginator = $this->client->getPaginator(
             'ListObjectsV2',
             [
                 'Bucket' => $this->config->getBucket(),
@@ -214,14 +204,14 @@ class Finder
     /**
      * @return S3File[]
      */
-    private function listSingleFile(S3Client $client)
+    private function listSingleFile()
     {
         if ($this->config->isIncludeSubfolders()) {
             throw new UserException("Cannot include subfolders without wildcard.");
         }
 
         /** @var array{ContentLength: string, LastModified: \DateTimeInterface} $head */
-        $head = $client->getObject([
+        $head = $this->client->getObject([
             'Bucket' => $this->config->getBucket(),
             'Key' => $this->key,
         ]);

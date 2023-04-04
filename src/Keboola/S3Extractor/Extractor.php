@@ -63,9 +63,9 @@ class Extractor
         $client = $this->login();
         $fs = new Filesystem();
         $downloader = new S3AsyncDownloader($client, $this->logger);
-        $finder = new Finder($this->config, $this->state, $this->logger);
+        $finder = new Finder($this->config, $this->state, $this->logger, $client);
 
-        $filesToDownload = $finder->listFiles($client);
+        $filesToDownload = $finder->listFiles();
 
         // Download files
         $downloadedSize = 0;
