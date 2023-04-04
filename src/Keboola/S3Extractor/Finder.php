@@ -35,6 +35,16 @@ class Finder
      */
     private $subFolder;
 
+    /**
+     * @var int
+     */
+    private $lastDownloadedFileTimestamp;
+
+    /**
+     * @var string[]
+     */
+    private $processedFilesInLastTimestampSecond;
+
     public function __construct(Config $config, array $state, LoggerInterface $logger)
     {
         $this->config = $config;
@@ -44,6 +54,8 @@ class Finder
         if (!empty($this->config->getSaveAs())) {
             $this->subFolder = $this->config->getSaveAs() . '/';
         }
+        $this->lastDownloadedFileTimestamp = (int)($this->state['lastDownloadedFileTimestamp'] ?? 0);
+        $this->processedFilesInLastTimestampSecond = $this->state['processedFilesInLastTimestampSecond'] ?? [];
     }
 
     /**
@@ -61,36 +73,23 @@ class Finder
         } else {
             $files = $this->listSingleFile($client);
         }
-        $this->logger->info(sprintf(
-            'Found %s file(s)',
-            count($files)
-        ));
-
-        // Timestamp of last downloaded file, processed files in the last timestamp second
-        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
-        $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
+        $this->logger->info(sprintf('Found %s file(s)', count($files)));
 
         // Filter out old files with newFilesOnly flag
         if ($this->config->isNewFilesOnly() === true) {
-            $files = array_filter($files, function (S3File $files) use (
-                $lastDownloadedFileTimestamp,
-                $processedFilesInLastTimestampSecond
-            ) {
-                if ($files->getTimestamp() < $lastDownloadedFileTimestamp) {
+            $files = array_filter($files, function (S3File $files) {
+                if ($files->getTimestamp() < $this->lastDownloadedFileTimestamp) {
                     return false;
                 }
-                if ($files->getTimestamp() === $lastDownloadedFileTimestamp
-                    && in_array($files->getKey(), $processedFilesInLastTimestampSecond)
+                if ($files->getTimestamp() === $this->lastDownloadedFileTimestamp
+                    && in_array($files->getKey(), $this->processedFilesInLastTimestampSecond)
                 ) {
                     return false;
                 }
                 return true;
             });
 
-            $this->logger->info(sprintf(
-                'There are %s new file(s)',
-                count($files)
-            ));
+            $this->logger->info(sprintf('There are %s new file(s)', count($files)));
         }
 
         return $this->limitCount($this->sortByTimestamp($files));
