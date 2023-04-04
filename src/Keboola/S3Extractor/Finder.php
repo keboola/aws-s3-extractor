@@ -25,11 +25,11 @@ class Finder
     /** @var string */
     private $subFolder;
 
-    /** @var int */
-    private $lastDownloadedFileTimestamp;
+    /** @var State */
+    private $oldState;
 
-    /** @var string[] */
-    private $processedFilesInLastTimestampSecond;
+    /** @var State */
+    private $newState;
 
     /**
      * Count of all files returned by the API.
@@ -45,9 +45,13 @@ class Finder
 
     /**
      * Count of all new files (see isFileOld method).
+     * If newFilesOnly=false, the the value is equal to $matchedCount.
      * @var int
      */
     private $newCount;
+
+    /** @var int */
+    private $downloadSizeBytes;
 
     public function __construct(Config $config, array $state, LoggerInterface $logger, S3Client $client)
     {
@@ -58,8 +62,8 @@ class Finder
         if (!empty($this->config->getSaveAs())) {
             $this->subFolder = $this->config->getSaveAs() . '/';
         }
-        $this->lastDownloadedFileTimestamp = (int)($state['lastDownloadedFileTimestamp'] ?? 0);
-        $this->processedFilesInLastTimestampSecond = $state['processedFilesInLastTimestampSecond'] ?? [];
+        $this->oldState = new State($state);
+        $this->newState = new State($state);
     }
 
     /**
@@ -193,7 +197,15 @@ class Finder
                 if ($this->isFileOld($file)) {
                     continue;
                 }
+
+                // update state
                 $this->newCount++;
+                $this->downloadSizeBytes += $file->getSizeBytes();
+                if ($this->newState->lastDownloadedFileTimestamp != $file->getTimestamp()) {
+                    $this->newState->processedFilesInLastTimestampSecond = [];
+                }
+                $this->newState->lastDownloadedFileTimestamp = max($this->newState->lastDownloadedFileTimestamp, $file->getTimestamp());
+                $this->newState->processedFilesInLastTimestampSecond[] = $file->getKey();
 
                 // log progress
                 if ($this->listedCount !== 0 &&
@@ -277,12 +289,12 @@ class Finder
     private function isFileOld(S3File $file): bool
     {
         if ($this->config->isNewFilesOnly()) {
-            if ($file->getTimestamp() < $this->lastDownloadedFileTimestamp) {
+            if ($file->getTimestamp() < $this->oldState->lastDownloadedFileTimestamp) {
                 return true;
             }
 
-            if ($file->getTimestamp() === $this->lastDownloadedFileTimestamp
-                && in_array($file->getKey(), $this->processedFilesInLastTimestampSecond)
+            if ($file->getTimestamp() === $this->oldState->lastDownloadedFileTimestamp
+                && in_array($file->getKey(), $this->oldState->processedFilesInLastTimestampSecond)
             ) {
                 return true;
             }
