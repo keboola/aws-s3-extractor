@@ -84,12 +84,14 @@ class Finder
         foreach ($this->iteratorFromTmpFile($sortedFilePath, false) as $file) {
             $count++;
             $size += $file->getSizeBytes();
+            if ($count == 1) {
+                $state->filesInLastTimestamp = [];
+            }
             $state->lastTimestamp = max($state->lastTimestamp, $file->getTimestamp());
             if ($state->lastTimestamp != $file->getTimestamp()) {
                 $state->filesInLastTimestamp = [];
-            } else {
-                $state->filesInLastTimestamp[] = $file->getKey();
             }
+            $state->filesInLastTimestamp[] = $file->getKey();
         }
         if ($this->limit > 0 && $this->newCount > $this->limit) {
             $this->logger->info("Downloading only {$count} oldest file(s) out of " . $this->newCount);
