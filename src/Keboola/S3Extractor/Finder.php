@@ -136,40 +136,15 @@ class Finder
         $filesToDownloadCount = 0;
         /** @var S3File[] $filesToDownload */
         $filesToDownload = [];
-        /** @var array{
-         *     Contents: ?array,
-         * } $page
-         */
+
+        /** @var array{Contents: ?array} $page */
         foreach ($paginator as $page) {
             $objects = $page['Contents'] ?? [];
+
+            /** @var array{StorageClass: string, Key: string, Size: string, LastModified: \DateTimeInterface} $object */
             foreach ($objects as $object) {
-                /** @var array{
-                 *     StorageClass: string,
-                 *     Key: string,
-                 *     Size: string,
-                 *     LastModified: \DateTimeInterface,
-                 * } $object
-                 */
                 $filesListedCount++;
-
-                // Skip objects in Glacier
-                if ($object['StorageClass'] === "GLACIER") {
-                    continue;
-                }
-
-                // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
-                // https://github.com/keboola/s3-extractor/issues/1
-                if (strlen($this->key) > strlen($object['Key'])) {
-                    continue;
-                }
-
-                // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
-                    continue;
-                }
-
-                // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
-                if (substr($object['Key'], -1, 1) === '/') {
+                if ($this->isFileIgnored($object)) {
                     continue;
                 }
 
@@ -242,15 +217,12 @@ class Finder
             throw new UserException("Cannot include subfolders without wildcard.");
         }
 
-        /** @var array{
-         *     ContentLength: string,
-         *     LastModified: \DateTimeInterface,
-         * } $head
-         */
+        /** @var array{ContentLength: string, LastModified: \DateTimeInterface} $head */
         $head = $client->getObject([
             'Bucket' => $this->config->getBucket(),
             'Key' => $this->key,
         ]);
+
         return [
             new S3File(
                 $this->config->getBucket(),
@@ -260,5 +232,34 @@ class Finder
                 $this->subFolder . basename($this->key)
             )
         ];
+    }
+
+    /**
+     * @param array{StorageClass: string, Key: string} $object
+     */
+    private function isFileIgnored(array $object): bool
+    {
+        // Skip objects in Glacier
+        if ($object['StorageClass'] === "GLACIER") {
+            return true;
+        }
+
+        // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
+        // https://github.com/keboola/s3-extractor/issues/1
+        if (strlen($this->key) > strlen($object['Key'])) {
+            return true;
+        }
+
+        // Skip objects in subfolders if not includeSubfolders
+        if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->config->isIncludeSubfolders()) {
+            return true;
+        }
+
+        // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
+        if (substr($object['Key'], -1, 1) === '/') {
+            return true;
+        }
+
+        return false;
     }
 }
