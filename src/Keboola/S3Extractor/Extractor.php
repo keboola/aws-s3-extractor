@@ -76,20 +76,24 @@ class Extractor
 
         // Download files
         $downloadedSize = 0;
+        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
+        $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
         foreach ($filesToDownload as $fileToDownload) {
+            $parameters = $fileToDownload->getParameters();
+
             // create folder
-            if (!$fs->exists(dirname($fileToDownload["parameters"]['SaveAs']))) {
-                $fs->mkdir(dirname($fileToDownload["parameters"]['SaveAs']));
+            if (!$fs->exists(dirname($parameters['SaveAs']))) {
+                $fs->mkdir(dirname($parameters['SaveAs']));
             }
 
-            $downloader->addFileRequest($fileToDownload['parameters']);
+            $downloader->addFileRequest($parameters);
 
-            if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
+            if ($lastDownloadedFileTimestamp != $fileToDownload->getTimestamp()) {
                 $processedFilesInLastTimestampSecond = [];
             }
-            $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
-            $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
-            $downloadedSize += $fileToDownload['size'];
+            $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload->getTimestamp());
+            $processedFilesInLastTimestampSecond[] = $fileToDownload->getKey();
+            $downloadedSize += $fileToDownload->getSizeBytes();
         }
 
         if (count($filesToDownload) > 0) {
@@ -104,7 +108,7 @@ class Extractor
 
         if ($this->config->isNewFilesOnly() === true) {
             return [
-                'lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp,
+                'lastDownloadedFileTimestamp' => (string)$lastDownloadedFileTimestamp,
                 'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond,
             ];
         } else {

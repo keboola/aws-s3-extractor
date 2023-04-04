@@ -33,11 +33,7 @@ class Finder
     }
 
     /**
-     * @return array<int, array{
-     *     'timestamp': string,
-     *     'size': int,
-     *     'parameters': array{'Bucket': string, 'Key': string, 'SaveAs': string},
-     * }
+     * @return S3File[]
      */
     public function listFiles(S3Client $client, string $outputPath): array
     {
@@ -52,12 +48,7 @@ class Finder
             $saveAsSubfolder = $this->config->getSaveAs() . '/';
         }
 
-        /** @var array<int, array{
-         *     'timestamp': string,
-         *     'size': int,
-         *     'parameters': array{'Bucket': string, 'Key': string, 'SaveAs': string},
-         * }> $filesToDownload
-         */
+        /** @var S3File[] $filesToDownload */
         $filesToDownload = [];
         $this->logger->info('Listing files to be downloaded');
 
@@ -85,7 +76,7 @@ class Finder
                      *     StorageClass: string,
                      *     Key: string,
                      *     Size: string,
-                     *     LastModified: DateTimeInterface,
+                     *     LastModified: \DateTimeInterface,
                      * } $object
                      */
                     $filesListedCount++;
@@ -145,17 +136,13 @@ class Finder
                     } else {
                         $dst = $outputPath . '/' . $saveAsSubfolder . basename($object['Key']);
                     }
-
-                    $parameters = [
-                        'Bucket' => $this->config->getBucket(),
-                        'Key' => $object['Key'],
-                        'SaveAs' => $dst,
-                    ];
-                    $filesToDownload[] = [
-                        "timestamp" => $object['LastModified']->format("U"),
-                        "size" => (int) $object['Size'],
-                        "parameters" => $parameters,
-                    ];
+                    $filesToDownload[] = new S3File(
+                        $this->config->getBucket(),
+                        $object['Key'],
+                        $object['LastModified'],
+                        (int)$object['Size'],
+                        $dst
+                    );
                     $filesToDownloadCount++;
 
                     $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
@@ -175,24 +162,28 @@ class Finder
             if ($this->config->isIncludeSubfolders() === true) {
                 throw new UserException("Cannot include subfolders without wildcard.");
             }
-            $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);
-            $parameters = [
+
+            /** @var array{
+             *     ContentLength: string,
+             *     LastModified: \DateTimeInterface,
+             * } $head
+             */
+            $head = $client->getObject([
                 'Bucket' => $this->config->getBucket(),
                 'Key' => $key,
-                'SaveAs' => $dst,
-            ];
-            $head = $client->headObject($parameters);
-            /** @var \Datetime $lastModified */
-            $lastModified = $head['LastModified'];
-            $filesToDownload[] = [
-                "timestamp" => $lastModified->format("U"),
-                "size" => $head->get('ContentLength'),
-                "parameters" => $parameters,
-            ];
+            ]);
+            $dst = $outputPath . '/' . $saveAsSubfolder . basename($key);
+            $filesToDownload[] = new S3File(
+                $this->config->getBucket(),
+                $key,
+                $head['LastModified'],
+                (int)$head['ContentLength'],
+                $dst
+            );
         }
 
         // Timestamp of last downloaded file, processed files in the last timestamp second
-        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
+        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? (int)$this->state['lastDownloadedFileTimestamp'] : 0;
         $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
 
         $this->logger->info(sprintf(
@@ -202,15 +193,15 @@ class Finder
 
         // Filter out old files with newFilesOnly flag
         if ($this->config->isNewFilesOnly() === true) {
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use (
+            $filesToDownload = array_filter($filesToDownload, function (S3File $fileToDownload) use (
                 $lastDownloadedFileTimestamp,
                 $processedFilesInLastTimestampSecond
             ) {
-                if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
+                if ($fileToDownload->getTimestamp() < $lastDownloadedFileTimestamp) {
                     return false;
                 }
-                if ($fileToDownload["timestamp"] === $lastDownloadedFileTimestamp
-                    && in_array($fileToDownload["parameters"]["Key"], $processedFilesInLastTimestampSecond)
+                if ($fileToDownload->getTimestamp() === $lastDownloadedFileTimestamp
+                    && in_array($fileToDownload->getKey(), $processedFilesInLastTimestampSecond)
                 ) {
                     return false;
                 }
@@ -224,11 +215,11 @@ class Finder
         }
 
         // Sort files to download using timestamp
-        usort($filesToDownload, function ($a, $b) {
-            if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
-                return strcmp($a["parameters"]["Key"], $b["parameters"]["Key"]);
+        usort($filesToDownload, function (S3File $a, S3File $b) {
+            if ($a->getTimestamp() - $b->getTimestamp() === 0) {
+                return strcmp($a->getKey(), $b->getKey());
             }
-            return intval($a["timestamp"]) - intval($b["timestamp"]);
+            return $a->getTimestamp() - $b->getTimestamp();
         });
 
         // Apply limit if set
