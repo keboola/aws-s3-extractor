@@ -13,9 +13,6 @@ class Finder
     /** @var Config */
     private $config;
 
-    /** @var array */
-    private $state;
-
     /** @var LoggerInterface */
     private $logger;
 
@@ -55,15 +52,14 @@ class Finder
     public function __construct(Config $config, array $state, LoggerInterface $logger, S3Client $client)
     {
         $this->config = $config;
-        $this->state = $state;
         $this->logger = $logger;
         $this->client = $client;
         $this->key = $config->getKey();
         if (!empty($this->config->getSaveAs())) {
             $this->subFolder = $this->config->getSaveAs() . '/';
         }
-        $this->lastDownloadedFileTimestamp = (int)($this->state['lastDownloadedFileTimestamp'] ?? 0);
-        $this->processedFilesInLastTimestampSecond = $this->state['processedFilesInLastTimestampSecond'] ?? [];
+        $this->lastDownloadedFileTimestamp = (int)($state['lastDownloadedFileTimestamp'] ?? 0);
+        $this->processedFilesInLastTimestampSecond = $state['processedFilesInLastTimestampSecond'] ?? [];
     }
 
     /**
@@ -129,11 +125,19 @@ class Finder
      */
     private function listWildcard(): iterable
     {
+        $keyWithoutWildcard = trim($this->key, "*");
+
+        // search key can contain folder
+        $dirPrefixToBeRemoved = '';
+        if (strrpos($keyWithoutWildcard, '/') !== false) {
+            $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
+        }
+
         $paginator = $this->client->getPaginator(
             'ListObjectsV2',
             [
                 'Bucket' => $this->config->getBucket(),
-                'Prefix' => substr($this->key, 0, -1),
+                'Prefix' => $keyWithoutWildcard,
                 'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
             ]
         );
@@ -149,15 +153,6 @@ class Finder
                     continue;
                 }
                 $this->matchedCount++;
-
-                // remove wilcard mask from search key
-                $keyWithoutWildcard = trim($this->key, "*");
-
-                // search key contains folder
-                $dirPrefixToBeRemoved = '';
-                if (strrpos($keyWithoutWildcard, '/') !== false) {
-                    $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
-                }
 
                 // remove folder mask from object key to figure out, if there is a subfolder
                 $objectKeyWithoutDirPrefix = substr($object['Key'], strlen($dirPrefixToBeRemoved));
