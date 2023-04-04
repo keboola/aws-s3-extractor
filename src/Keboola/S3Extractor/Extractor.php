@@ -18,7 +18,7 @@ use function Keboola\Utils\formatBytes;
 
 class Extractor
 {
-    const MAX_OBJECTS_PER_PAGE = 100;
+    const MAX_OBJECTS_PER_PAGE = 1000;
     /**
      * @var Config
      */
