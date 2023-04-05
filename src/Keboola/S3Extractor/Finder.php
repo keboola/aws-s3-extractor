@@ -114,25 +114,7 @@ class Finder
                  * } $object
                  */
                 $filesListedCount++;
-
-                // Skip objects in Glacier
-                if ($object['StorageClass'] === "GLACIER") {
-                    continue;
-                }
-
-                // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
-                // https://github.com/keboola/s3-extractor/issues/1
-                if (strlen($this->key) > strlen($object['Key'])) {
-                    continue;
-                }
-
-                // Skip objects in subfolders if not includeSubfolders
-                if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->includeSubFolders) {
-                    continue;
-                }
-
-                // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
-                if (substr($object['Key'], -1, 1) === '/') {
+                if ($this->isFileIgnored($object)) {
                     continue;
                 }
 
@@ -249,6 +231,35 @@ class Finder
             $filesToDownload = array_slice($filesToDownload, 0, $this->limit);
         }
         return $filesToDownload;
+    }
+
+    /**
+     * @param array{StorageClass: string, Key: string} $object
+     */
+    private function isFileIgnored(array $object): bool
+    {
+        // Skip objects in Glacier
+        if ($object['StorageClass'] === "GLACIER") {
+            return true;
+        }
+
+        // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
+        // https://github.com/keboola/s3-extractor/issues/1
+        if (strlen($this->key) > strlen($object['Key'])) {
+            return true;
+        }
+
+        // Skip objects in subfolders if not includeSubfolders
+        if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->includeSubFolders) {
+            return true;
+        }
+
+        // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
+        if (substr($object['Key'], -1, 1) === '/') {
+            return true;
+        }
+
+        return false;
     }
 
     private function isFileOld(File $file): bool
