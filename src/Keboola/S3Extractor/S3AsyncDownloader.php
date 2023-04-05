@@ -13,6 +13,7 @@ use Retry\Policy\SimpleRetryPolicy;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Promise\PromiseInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use function Keboola\Utils\formatBytes;
 
 class S3AsyncDownloader
@@ -25,6 +26,11 @@ class S3AsyncDownloader
      * @var S3Client
      */
     private $client;
+
+    /**
+     * @var Filesystem
+     */
+    private $fs;
 
     /**
      * @var LoggerInterface
@@ -56,9 +62,10 @@ class S3AsyncDownloader
      * @param LoggerInterface $logger
      * @param callable|null $retryCallback
      */
-    public function __construct(S3Client $client, LoggerInterface $logger, callable $retryCallback = null)
+    public function __construct(S3Client $client, Filesystem $fs, LoggerInterface $logger, callable $retryCallback = null)
     {
         $this->client = $client;
+        $this->fs = $fs;
         $this->logger = $logger;
         $this->retryCallback = $retryCallback;
     }
@@ -96,7 +103,14 @@ class S3AsyncDownloader
         return new CommandPool($this->client, $this->commands, [
             'concurrency' => self::MAX_CONCURRENT_DOWNLOADS,
             'before' => function (CommandInterface $command, int $index) {
-                $this->filesParameter[$index] = $command->toArray();
+                $parameters = $command->toArray();
+
+                // create folder
+                if (!$this->fs->exists(dirname($parameters['SaveAs']))) {
+                    $this->fs->mkdir(dirname($parameters['SaveAs']));
+                }
+
+                $this->filesParameter[$index] = $parameters;
             },
             'fulfilled' => function (ResultInterface $result, int $index) {
                 $this->processFulfilled($result, $index);

@@ -68,19 +68,12 @@ class Extractor
         $filesToDownload = $finder->findFiles();
 
         $fs = new Filesystem();
-        $downloader = new S3AsyncDownloader($client, $this->logger);
+        $downloader = new S3AsyncDownloader($client, $fs, $this->logger);
 
         // Download files
         $downloadedSize = 0;
         foreach ($filesToDownload as $fileToDownload) {
-            $parameters = $fileToDownload->getParameters($outputDir);
-            
-            // create folder
-            if (!$fs->exists(dirname($parameters['SaveAs']))) {
-                $fs->mkdir(dirname($parameters['SaveAs']));
-            }
-
-            $downloader->addFileRequest($parameters);
+            $downloader->addFileRequest($fileToDownload->getParameters($outputDir));
 
             if ($this->state->lastTimestamp != $fileToDownload->getTimestamp()) {
                 $this->state->filesInLastTimestamp = [];
