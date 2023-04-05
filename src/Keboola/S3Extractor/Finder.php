@@ -60,123 +60,13 @@ class Finder
      */
     public function findFiles(): array
     {
-        /** @var File[] */
-        $filesToDownload = [];
-
         $this->logger->info('Listing files to be downloaded');
 
         // Detect wildcard at the end
         if (substr($this->key, -1) == '*') {
-            $paginator = $this->client->getPaginator(
-                'ListObjectsV2',
-                [
-                    'Bucket' => $this->bucket,
-                    'Prefix' => substr($this->key, 0, -1),
-                    'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
-                ]
-            );
-
-            $filesListedCount = 0;
-            $filesToDownloadCount = 0;
-            /** @var array{
-             *     Contents: ?array,
-             * } $page
-             */
-            foreach ($paginator as $page) {
-                $objects = $page['Contents'] ?? [];
-                foreach ($objects as $object) {
-                    /** @var array{
-                     *     StorageClass: string,
-                     *     Key: string,
-                     *     Size: string,
-                     *     LastModified: \DateTimeInterface,
-                     * } $object
-                     */
-                    $filesListedCount++;
-
-                    // Skip objects in Glacier
-                    if ($object['StorageClass'] === "GLACIER") {
-                        continue;
-                    }
-
-                    // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
-                    // https://github.com/keboola/s3-extractor/issues/1
-                    if (strlen($this->key) > strlen($object['Key'])) {
-                        continue;
-                    }
-
-                    // Skip objects in subfolders if not includeSubfolders
-                    if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->includeSubFolders) {
-                        continue;
-                    }
-
-                    // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
-                    if (substr($object['Key'], -1, 1) === '/') {
-                        continue;
-                    }
-
-                    // remove wilcard mask from search key
-                    $keyWithoutWildcard = trim($this->key, "*");
-
-                    // search key contains folder
-                    $dirPrefixToBeRemoved = '';
-                    if (strrpos($keyWithoutWildcard, '/') !== false) {
-                        $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
-                    }
-
-                    // remove folder mask from object key to figure out, if there is a subfolder
-                    $objectKeyWithoutDirPrefix = substr($object['Key'], strlen($dirPrefixToBeRemoved));
-
-                    // trim object key without dir and figure out the dir name
-                    $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
-
-                    // complete path
-                    if ($this->includeSubFolders) {
-                        if ($dstDir && $dstDir != '.') {
-                            $flattened = str_replace(
-                                '/',
-                                '-',
-                                str_replace('-', '--', $dstDir . '/' . basename($object['Key']))
-                            );
-                        } else {
-                            $flattened = str_replace(
-                                '/',
-                                '-',
-                                str_replace('-', '--', basename($object['Key']))
-                            );
-                        }
-                        $dst = $this->subFolder . $flattened;
-                    } else {
-                        $dst = $this->subFolder . basename($object['Key']);
-                    }
-
-                    $filesToDownload[] = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
-                    $filesToDownloadCount++;
-
-                    $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
-                        && $filesListedCount !== 0;
-                    $isImportantMilestoneForDownloaded = ($filesToDownloadCount % 1000) === 0
-                        && $filesToDownloadCount !== 0;
-                    if ($isImportantMilestoneForListed || $isImportantMilestoneForDownloaded) {
-                        $this->logger->info(sprintf(
-                            'Listed %s files (%s matching the filter so far)',
-                            $filesListedCount,
-                            $filesToDownloadCount
-                        ));
-                    }
-                }
-            }
+            $filesToDownload = $this->listFilesInPrefix();
         } else {
-            if ($this->includeSubFolders) {
-                throw new UserException("Cannot include subfolders without wildcard.");
-            }
-            $dst = $this->subFolder . basename($this->key);
-            $head = $this->client->headObject([
-                'Bucket' => $this->bucket,
-                'Key' => $this->key,
-                'SaveAs' => $dst,
-            ]);
-            $filesToDownload[] = new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst);
+            $filesToDownload = $this->listSingleFile();
         }
 
         $this->logger->info(sprintf(
@@ -184,6 +74,145 @@ class Finder
             count($filesToDownload)
         ));
 
+        $filesToDownload = $this->filterNewFiles($filesToDownload);
+        $filesToDownload = $this->sort($filesToDownload);
+        $filesToDownload = $this->limit($filesToDownload);
+        return $filesToDownload;
+    }
+
+    /**
+     * @return iterable|File[]
+     */
+    private function listFilesInPrefix(): array
+    {
+        $paginator = $this->client->getPaginator(
+            'ListObjectsV2',
+            [
+                'Bucket' => $this->bucket,
+                'Prefix' => substr($this->key, 0, -1),
+                'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
+            ]
+        );
+
+        /** @var File[] $filesToDownload */
+        $filesToDownload = [];
+
+        $filesListedCount = 0;
+        $filesToDownloadCount = 0;
+        /** @var array{
+         *     Contents: ?array,
+         * } $page
+         */
+        foreach ($paginator as $page) {
+            $objects = $page['Contents'] ?? [];
+            foreach ($objects as $object) {
+                /** @var array{
+                 *     StorageClass: string,
+                 *     Key: string,
+                 *     Size: string,
+                 *     LastModified: \DateTimeInterface,
+                 * } $object
+                 */
+                $filesListedCount++;
+
+                // Skip objects in Glacier
+                if ($object['StorageClass'] === "GLACIER") {
+                    continue;
+                }
+
+                // Skip folder object keys (/myfolder/) from folder wildcards (/myfolder/*) - happens with empty folder
+                // https://github.com/keboola/s3-extractor/issues/1
+                if (strlen($this->key) > strlen($object['Key'])) {
+                    continue;
+                }
+
+                // Skip objects in subfolders if not includeSubfolders
+                if (strrpos($object['Key'], '/', strlen($this->key) - 1) !== false && !$this->includeSubFolders) {
+                    continue;
+                }
+
+                // Skip empty folder files (https://github.com/keboola/aws-s3-extractor/issues/21)
+                if (substr($object['Key'], -1, 1) === '/') {
+                    continue;
+                }
+
+                // remove wilcard mask from search key
+                $keyWithoutWildcard = trim($this->key, "*");
+
+                // search key contains folder
+                $dirPrefixToBeRemoved = '';
+                if (strrpos($keyWithoutWildcard, '/') !== false) {
+                    $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
+                }
+
+                // remove folder mask from object key to figure out, if there is a subfolder
+                $objectKeyWithoutDirPrefix = substr($object['Key'], strlen($dirPrefixToBeRemoved));
+
+                // trim object key without dir and figure out the dir name
+                $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
+
+                // complete path
+                if ($this->includeSubFolders) {
+                    if ($dstDir && $dstDir != '.') {
+                        $flattened = str_replace(
+                            '/',
+                            '-',
+                            str_replace('-', '--', $dstDir . '/' . basename($object['Key']))
+                        );
+                    } else {
+                        $flattened = str_replace(
+                            '/',
+                            '-',
+                            str_replace('-', '--', basename($object['Key']))
+                        );
+                    }
+                    $dst = $this->subFolder . $flattened;
+                } else {
+                    $dst = $this->subFolder . basename($object['Key']);
+                }
+
+                $filesToDownload[] = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
+                $filesToDownloadCount++;
+
+                $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
+                    && $filesListedCount !== 0;
+                $isImportantMilestoneForDownloaded = ($filesToDownloadCount % 1000) === 0
+                    && $filesToDownloadCount !== 0;
+                if ($isImportantMilestoneForListed || $isImportantMilestoneForDownloaded) {
+                    $this->logger->info(sprintf(
+                        'Listed %s files (%s matching the filter so far)',
+                        $filesListedCount,
+                        $filesToDownloadCount
+                    ));
+                }
+            }
+        }
+
+        return $filesToDownload;
+    }
+
+    /**
+     * @return iterable|File[]
+     */
+    private function listSingleFile(): array
+    {
+        if ($this->includeSubFolders) {
+            throw new UserException("Cannot include subfolders without wildcard.");
+        }
+        $dst = $this->subFolder . basename($this->key);
+        $head = $this->client->headObject([
+            'Bucket' => $this->bucket,
+            'Key' => $this->key,
+            'SaveAs' => $dst,
+        ]);
+        return [new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst)];
+    }
+
+    /**
+     * @return iterable|File[]
+     */
+    private function filterNewFiles(array $filesToDownload): array
+    {
         // Filter out old files with newFilesOnly flag
         if ($this->newFilesOnly) {
             $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) {
@@ -204,6 +233,15 @@ class Finder
             ));
         }
 
+        return $filesToDownload;
+    }
+
+    /**
+     * @param iterable|File[] $filesToDownload
+     * @return iterable|File[]
+     */
+    private function sort(array $filesToDownload): array
+    {
         // Sort files to download using timestamp
         usort($filesToDownload, function ($a, $b) {
             if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
@@ -211,13 +249,20 @@ class Finder
             }
             return intval($a["timestamp"]) - intval($b["timestamp"]);
         });
+        return $filesToDownload;
+    }
 
+    /**
+     * @param iterable|File[] $filesToDownload
+     * @return iterable|File[]
+     */
+    private function limit(array $filesToDownload): array
+    {
         // Apply limit if set
         if ($this->limit > 0 && count($filesToDownload) > $this->limit) {
             $this->logger->info("Downloading only {$this->limit} oldest file(s) out of " . count($filesToDownload));
             $filesToDownload = array_slice($filesToDownload, 0, $this->limit);
         }
-
         return $filesToDownload;
     }
 }
