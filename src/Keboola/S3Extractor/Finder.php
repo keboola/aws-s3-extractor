@@ -254,9 +254,15 @@ class Finder
         ])->toArray();
 
         $dst = $this->subFolder . basename($this->key);
-        yield new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst);
-
+        $file = new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst);
         $this->logger->info('Found 1 file(s)');
+
+        if ($this->isFileOld($file)) {
+            $this->logger->info('There are 0 new file(s)');
+            return;
+        }
+
+        yield $file;
         if ($this->newFilesOnly) {
             $this->logger->info('There are 1 new file(s)');
         }
