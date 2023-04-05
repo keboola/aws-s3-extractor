@@ -30,7 +30,7 @@ class Extractor
     private $logger;
 
     /**
-     * @var array
+     * @var State
      */
     private $state;
 
@@ -44,7 +44,7 @@ class Extractor
     public function __construct(Config $config, array $state = [], LoggerInterface $logger = null)
     {
         $this->config = $config;
-        $this->state = $state;
+        $this->state = new State($state);
         if ($logger) {
             $this->logger = $logger;
         } else {
@@ -63,7 +63,7 @@ class Extractor
     public function extract($outputPath): array
     {
         $client = $this->login();
-        
+
         $saveAsSubfolder = '';
         if (!empty($this->config->getSaveAs())) {
             $saveAsSubfolder = $this->config->getSaveAs() . '/';
@@ -210,10 +210,6 @@ class Extractor
             ];
         }
 
-        // Timestamp of last downloaded file, processed files in the last timestamp second
-        $lastDownloadedFileTimestamp = isset($this->state['lastDownloadedFileTimestamp']) ? $this->state['lastDownloadedFileTimestamp'] : 0;
-        $processedFilesInLastTimestampSecond = isset($this->state['processedFilesInLastTimestampSecond']) ? $this->state['processedFilesInLastTimestampSecond'] : [];
-
         $this->logger->info(sprintf(
             'Found %s file(s)',
             count($filesToDownload)
@@ -221,15 +217,12 @@ class Extractor
 
         // Filter out old files with newFilesOnly flag
         if ($this->config->isNewFilesOnly() === true) {
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) use (
-                $lastDownloadedFileTimestamp,
-                $processedFilesInLastTimestampSecond
-            ) {
-                if ($fileToDownload["timestamp"] < $lastDownloadedFileTimestamp) {
+            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) {
+                if ($fileToDownload["timestamp"] < $this->state->lastTimestamp) {
                     return false;
                 }
-                if ($fileToDownload["timestamp"] === $lastDownloadedFileTimestamp
-                    && in_array($fileToDownload["parameters"]["Key"], $processedFilesInLastTimestampSecond)
+                if ($fileToDownload["timestamp"] == $this->state->lastTimestamp
+                    && in_array($fileToDownload["parameters"]["Key"], $this->state->filesInLastTimestamp)
                 ) {
                     return false;
                 }
@@ -269,11 +262,11 @@ class Extractor
 
             $downloader->addFileRequest($fileToDownload['parameters']);
 
-            if ($lastDownloadedFileTimestamp != $fileToDownload["timestamp"]) {
-                $processedFilesInLastTimestampSecond = [];
+            if ($this->state->lastTimestamp != $fileToDownload["timestamp"]) {
+                $this->state->filesInLastTimestamp = [];
             }
-            $lastDownloadedFileTimestamp = max($lastDownloadedFileTimestamp, $fileToDownload["timestamp"]);
-            $processedFilesInLastTimestampSecond[] = $fileToDownload["parameters"]["Key"];
+            $this->state->lastTimestamp = max($this->state->lastTimestamp, (int)$fileToDownload["timestamp"]);
+            $this->state->filesInLastTimestamp[] = $fileToDownload["parameters"]["Key"];
             $downloadedSize += $fileToDownload['size'];
         }
 
@@ -288,10 +281,7 @@ class Extractor
         $downloader->processRequests();
 
         if ($this->config->isNewFilesOnly() === true) {
-            return [
-                'lastDownloadedFileTimestamp' => $lastDownloadedFileTimestamp,
-                'processedFilesInLastTimestampSecond' => $processedFilesInLastTimestampSecond,
-            ];
+            return $this->state->toArray();
         } else {
             return [];
         }
