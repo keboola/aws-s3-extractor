@@ -64,6 +64,7 @@ class Finder
         $sortedFilePath = $this->sortLines($tmpFilePath);
 
         // Make rewindable iterator, so files can be iterated multiple times if needed.
+        /** @var \Iterator|File[] $iterator */
         $iterator = makeRewindable(function () use ($sortedFilePath): \Iterator {
             return $this->iteratorFromTmpFile($sortedFilePath);
         })();
@@ -122,7 +123,9 @@ class Finder
             "--output", $sortedFilePath,
             "-t", '\0', // words are separated by NUL character
             "-k", "1,1", // sort lines by the first word "<timestamp><key>" (start=1, end=1)
-            "--parallel=1", // optimizes memory usage
+            "--parallel=1", // optimize memory usage
+            "--batch-size=8", // optimize memory usage
+            "--buffer-size=100M", // optimize memory usage
             $tmpFilePath,
         ];
         $env = ["LC_ALL" => "C"];

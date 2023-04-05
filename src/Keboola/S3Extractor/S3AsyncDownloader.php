@@ -2,7 +2,6 @@
 
 namespace Keboola\S3Extractor;
 
-use Aws\Command;
 use Aws\S3\S3Client;
 use Aws\CommandInterface;
 use Aws\CommandPool;
