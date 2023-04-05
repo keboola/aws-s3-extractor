@@ -62,12 +62,8 @@ class Extractor
      */
     public function extract($outputPath): array
     {
-        if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
-            $client = $this->loginViaRole();
-        } else {
-            $client = $this->loginViaCredentials();
-        }
-
+        $client = $this->login();
+        
         $saveAsSubfolder = '';
         if (!empty($this->config->getSaveAs())) {
             $saveAsSubfolder = $this->config->getSaveAs() . '/';
@@ -84,6 +80,7 @@ class Extractor
         $this->logger->info('Listing files to be downloaded');
 
         // Detect wildcard at the end
+        $key = $this->config->getKey();
         if (substr($key, -1) == '*') {
             $paginator = $client->getPaginator(
                 'ListObjectsV2',
@@ -303,6 +300,14 @@ class Extractor
     public function getExternalId(): string
     {
         return sprintf('%s-%s', getenv('KBC_STACKID'), getenv('KBC_PROJECTID'));
+    }
+
+    private function login(): S3Client
+    {
+        if ($this->config->getLoginType() === ConfigDefinition::LOGIN_TYPE_ROLE) {
+            return $this->loginViaRole();
+        }
+        return $this->loginViaCredentials();
     }
 
     private function loginViaCredentials(): S3Client
