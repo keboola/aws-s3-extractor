@@ -17,7 +17,7 @@
     }
   ],
   "require": {
-    "php": "^7.2",
+    "php": "^8.2",
     "symfony/process": "^5.4",
     "symfony/filesystem": "^5.4",
     "symfony/console": "^5.4",
