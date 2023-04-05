@@ -102,6 +102,9 @@ class S3AsyncDownloader
                 $this->filesParameter[$index] = $parameters;
             },
             'fulfilled' => function (ResultInterface $result, int $index) {
+                if (($index % 10000) === 0) {
+                    gc_collect_cycles();
+                }
                 $this->processFulfilled($result, $index);
             },
             'rejected' => function (AwsException $reason, int $index, PromiseInterface $promise) {

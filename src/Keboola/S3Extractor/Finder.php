@@ -100,6 +100,7 @@ class Finder
                 $file = unserialize(base64_decode($serialized));
 
                 yield $file;
+
                 if ($this->limit > 0 && ++$i >= $this->limit) {
                     break;
                 }
