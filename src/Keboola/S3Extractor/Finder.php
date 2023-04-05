@@ -102,62 +102,19 @@ class Finder
         $filesListedCount = 0;
         $filesMatchedCount = 0;
         $newFilesCount = 0;
-        /** @var array{
-         *     Contents: ?array,
-         * } $page
-         */
+        /** @var array{Contents: ?array} $page */
         foreach ($paginator as $page) {
             $objects = $page['Contents'] ?? [];
             foreach ($objects as $object) {
-                /** @var array{
-                 *     StorageClass: string,
-                 *     Key: string,
-                 *     Size: string,
-                 *     LastModified: \DateTimeInterface,
-                 * } $object
-                 */
+                /** @var array{StorageClass: string, Key: string, Size: string, LastModified: \DateTimeInterface} $object */
                 $filesListedCount++;
                 if ($this->isFileIgnored($object)) {
                     continue;
                 }
 
-                // remove wilcard mask from search key
-                $keyWithoutWildcard = trim($this->key, "*");
-
-                // search key contains folder
-                $dirPrefixToBeRemoved = '';
-                if (strrpos($keyWithoutWildcard, '/') !== false) {
-                    $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
-                }
-
-                // remove folder mask from object key to figure out, if there is a subfolder
-                $objectKeyWithoutDirPrefix = substr($object['Key'], strlen($dirPrefixToBeRemoved));
-
-                // trim object key without dir and figure out the dir name
-                $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
-
-                // complete path
-                if ($this->includeSubFolders) {
-                    if ($dstDir && $dstDir != '.') {
-                        $flattened = str_replace(
-                            '/',
-                            '-',
-                            str_replace('-', '--', $dstDir . '/' . basename($object['Key']))
-                        );
-                    } else {
-                        $flattened = str_replace(
-                            '/',
-                            '-',
-                            str_replace('-', '--', basename($object['Key']))
-                        );
-                    }
-                    $dst = $this->subFolder . $flattened;
-                } else {
-                    $dst = $this->subFolder . basename($object['Key']);
-                }
-
-                $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
                 $filesMatchedCount++;
+                $dst = $this->getFileDestination($object['Key']);
+                $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
 
                 // log progress
                 if ($filesListedCount !== 0 &&
@@ -174,7 +131,7 @@ class Finder
                 if ($this->isFileOld($file)) {
                     continue;
                 }
-                
+
                 $newFilesCount++;
                 yield $file;
             }
@@ -234,6 +191,44 @@ class Finder
             $filesToDownload = array_slice($filesToDownload, 0, $this->limit);
         }
         return $filesToDownload;
+    }
+
+    private function getFileDestination(string $key): string
+    {
+        // remove wilcard mask from search key
+        $keyWithoutWildcard = trim($this->key, "*");
+
+        // search key contains folder
+        $dirPrefixToBeRemoved = '';
+        if (strrpos($keyWithoutWildcard, '/') !== false) {
+            $dirPrefixToBeRemoved = substr($keyWithoutWildcard, 0, strrpos($keyWithoutWildcard, '/'));
+        }
+
+        // remove folder mask from object key to figure out, if there is a subfolder
+        $objectKeyWithoutDirPrefix = substr($key, strlen($dirPrefixToBeRemoved));
+
+        // trim object key without dir and figure out the dir name
+        $dstDir = trim(dirname($objectKeyWithoutDirPrefix), '/');
+
+        // complete path
+        if ($this->includeSubFolders) {
+            if ($dstDir && $dstDir != '.') {
+                $flattened = str_replace(
+                    '/',
+                    '-',
+                    str_replace('-', '--', $dstDir . '/' . basename($key))
+                );
+            } else {
+                $flattened = str_replace(
+                    '/',
+                    '-',
+                    str_replace('-', '--', basename($key))
+                );
+            }
+            return $this->subFolder . $flattened;
+        } else {
+            return $this->subFolder . basename($key);
+        }
     }
 
     /**
