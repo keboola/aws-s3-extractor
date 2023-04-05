@@ -100,7 +100,7 @@ class Finder
         );
 
         $filesListedCount = 0;
-        $filesToDownloadCount = 0;
+        $filesMatchedCount = 0;
         $newFilesCount = 0;
         /** @var array{
          *     Contents: ?array,
@@ -157,26 +157,26 @@ class Finder
                 }
 
                 $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
-                $filesToDownloadCount++;
+                $filesMatchedCount++;
+
+                // log progress
+                if ($filesListedCount !== 0 &&
+                    $filesMatchedCount !== 0 &&
+                    (($filesListedCount % 10000) === 0 || ($filesMatchedCount % 1000) === 0)
+                ) {
+                    $this->logger->info(sprintf(
+                        'Listed %s files (%s matching the filter so far)',
+                        $filesListedCount,
+                        $filesMatchedCount
+                    ));
+                }
 
                 if ($this->isFileOld($file)) {
                     continue;
                 }
+                
                 $newFilesCount++;
-
                 yield $file;
-
-                $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
-                    && $filesListedCount !== 0;
-                $isImportantMilestoneForDownloaded = ($filesToDownloadCount % 1000) === 0
-                    && $filesToDownloadCount !== 0;
-                if ($isImportantMilestoneForListed || $isImportantMilestoneForDownloaded) {
-                    $this->logger->info(sprintf(
-                        'Listed %s files (%s matching the filter so far)',
-                        $filesListedCount,
-                        $filesToDownloadCount
-                    ));
-                }
             }
         }
 
