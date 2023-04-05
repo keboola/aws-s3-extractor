@@ -13,7 +13,7 @@ use function iter\makeRewindable;
  */
 class Finder
 {
-    private const MAX_OBJECTS_PER_PAGE = 100;
+    private const MAX_OBJECTS_PER_PAGE = 1000;
     private const TIMESTAMP_STR_LENGTH = 12;
 
     /** @var LoggerInterface */
