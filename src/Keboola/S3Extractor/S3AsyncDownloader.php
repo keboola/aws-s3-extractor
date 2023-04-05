@@ -22,7 +22,7 @@ class S3AsyncDownloader
 {
     private const MAX_ATTEMPTS = 5;
     private const INTERVAL_MS = 500;
-    private const MAX_CONCURRENT_DOWNLOADS = 50;
+    private const MAX_CONCURRENT_DOWNLOADS = 200;
 
     /** @var S3Client */
     private $client;
