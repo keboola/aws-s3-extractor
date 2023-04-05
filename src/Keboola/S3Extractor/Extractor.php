@@ -68,12 +68,6 @@ class Extractor
             $client = $this->loginViaCredentials();
         }
 
-        // Remove initial forwardslash
-        $key = $this->config->getKey();
-        if (substr($key, 0, 1) == '/') {
-            $key = substr($key, 1);
-        }
-
         $saveAsSubfolder = '';
         if (!empty($this->config->getSaveAs())) {
             $saveAsSubfolder = $this->config->getSaveAs() . '/';
