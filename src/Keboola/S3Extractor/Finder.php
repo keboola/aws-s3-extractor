@@ -62,13 +62,7 @@ class Finder
     {
         $this->logger->info('Listing files to be downloaded');
 
-        // Detect wildcard at the end
-        if (substr($this->key, -1) == '*') {
-            $filesToDownload = $this->listFilesInPrefix();
-        } else {
-            $filesToDownload = $this->listSingleFile();
-        }
-
+        $filesToDownload = iterator_to_array($this->listFiles());
         $this->logger->info(sprintf(
             'Found %s file(s)',
             count($filesToDownload)
@@ -80,9 +74,21 @@ class Finder
     }
 
     /**
-     * @return iterable|File[]
+     * @return \Iterator|File[]
      */
-    private function listFilesInPrefix(): array
+    private function listFiles(): \Iterator
+    {
+        if (substr($this->key, -1) == '*') {
+            return $this->listFilesInPrefix();
+        } else {
+            return $this->listSingleFile();
+        }
+    }
+
+    /**
+     * @return \Iterator|File[]
+     */
+    private function listFilesInPrefix(): \Iterator
     {
         $paginator = $this->client->getPaginator(
             'ListObjectsV2',
@@ -92,9 +98,6 @@ class Finder
                 'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
             ]
         );
-
-        /** @var File[] $filesToDownload */
-        $filesToDownload = [];
 
         $filesListedCount = 0;
         $filesToDownloadCount = 0;
@@ -161,8 +164,7 @@ class Finder
                 }
                 $newFilesCount++;
 
-                $filesToDownload[] = $file;
-                $filesToDownloadCount++;
+                yield $file;
 
                 $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
                     && $filesListedCount !== 0;
@@ -189,18 +191,19 @@ class Finder
     /**
      * @return iterable|File[]
      */
-    private function listSingleFile(): array
+    private function listSingleFile(): iterable
     {
         if ($this->includeSubFolders) {
             throw new UserException("Cannot include subfolders without wildcard.");
         }
-        $dst = $this->subFolder . basename($this->key);
+
         $head = $this->client->headObject([
             'Bucket' => $this->bucket,
             'Key' => $this->key,
-            'SaveAs' => $dst,
         ]);
-        return [new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst)];
+
+        $dst = $this->subFolder . basename($this->key);
+        yield new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst);
     }
 
     /**
