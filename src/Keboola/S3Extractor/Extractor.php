@@ -63,21 +63,6 @@ class Extractor
         $finder = new Finder($this->config, $this->state, $this->logger, $client);
         $foundFiles = $finder->findFiles();
 
-        $fs = new Filesystem();
-        $downloader = new S3AsyncDownloader($client, $fs, $this->logger);
-
-        // Download files
-        $downloadedSize = 0;
-        foreach ($foundFiles->getIterator() as $fileToDownload) {
-            $downloader->addFileRequest($fileToDownload->getParameters($outputDir));
-
-            if ($this->state->lastTimestamp != $fileToDownload->getTimestamp()) {
-                $this->state->filesInLastTimestamp = [];
-            }
-            $this->state->lastTimestamp = max($this->state->lastTimestamp, $fileToDownload->getTimestamp());
-            $this->state->filesInLastTimestamp[] = $fileToDownload->getKey();
-        }
-
         if ($foundFiles->getCount() > 0) {
             $this->logger->info(sprintf(
                 'Downloading %d file(s) (%s)',
@@ -86,9 +71,10 @@ class Extractor
             ));
         }
 
-        $downloader->processRequests();
+        $downloader = new S3AsyncDownloader($client, $this->logger, $this->state, $outputDir, $foundFiles->getIterator());
+        $downloader->startAndWait();
 
-        if ($this->config->isNewFilesOnly() === true) {
+        if ($this->config->isNewFilesOnly()) {
             return $this->state->toArray();
         } else {
             return [];
@@ -143,9 +129,9 @@ class Extractor
         /** @var array $credentials */
         $credentials = $result->offsetGet('Credentials');
         $awsCred = new Credentials(
-            (string) $credentials['AccessKeyId'],
-            (string) $credentials['SecretAccessKey'],
-            (string) $credentials['SessionToken']
+            (string)$credentials['AccessKeyId'],
+            (string)$credentials['SecretAccessKey'],
+            (string)$credentials['SessionToken']
         );
 
         return new S3Client([

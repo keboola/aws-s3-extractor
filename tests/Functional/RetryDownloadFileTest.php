@@ -56,7 +56,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
             'SaveAs' => $tempPath . $retryFile,
         ]);
 
-        $downloader->processRequests();
+        $downloader->startAndWait();
 
         self::assertFileExists($tempPath . 'file1.csv');
         self::assertFileExists($tempPath . 'collision-file1.csv');
@@ -81,7 +81,7 @@ class RetryDownloadFileTest extends FunctionalTestCase
         ]);
 
         try {
-            $downloader->processRequests();
+            $downloader->startAndWait();
         } catch (S3Exception $e) {
             $this->assertCount(4, $handler->getRecords());
             self::assertTrue($handler->hasInfoThatContains('404 Not Found'));
