@@ -3,9 +3,13 @@
 namespace Keboola\S3ExtractorTest\Functional;
 
 use Aws\S3\Exception\S3Exception;
+use Keboola\S3Extractor\File;
+use Keboola\S3Extractor\State;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Keboola\S3Extractor\S3AsyncDownloader;
+use Symfony\Component\Filesystem\Filesystem;
+use function iter\makeRewindable;
 
 class RetryDownloadFileTest extends FunctionalTestCase
 {
@@ -32,29 +36,20 @@ class RetryDownloadFileTest extends FunctionalTestCase
             }
         };
 
-        $downloader = new S3AsyncDownloader(
-            self::s3Client(),
-            (new Logger('s3ClientTest'))->pushHandler($handler),
-            $retryCallback
-        );
+        /** @var \Iterator|File[] $files */
+        $files = makeRewindable(function () use ($tempPath, $retryFile): \Iterator {
+            $bucket = getenv(self::AWS_S3_BUCKET_ENV);
+            $lastModified = new \DateTimeImmutable();
+            $size = 123;
 
-        $downloader->addFileRequest([
-            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'file1.csv',
-            'SaveAs' => $tempPath . 'file1.csv',
-        ]);
+            yield new File($bucket, 'file1.csv', $lastModified, $size, $tempPath . 'file1.csv');
+            yield new File($bucket, 'collision-file1.csv', $lastModified, $size, $tempPath . 'collision-file1.csv');
+            yield new File($bucket, $retryFile, $lastModified, $size, $tempPath . $retryFile);
+        })();
 
-        $downloader->addFileRequest([
-            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'collision-file1.csv',
-            'SaveAs' => $tempPath . 'collision-file1.csv',
-        ]);
-
-        $downloader->addFileRequest([
-            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => $retryFile,
-            'SaveAs' => $tempPath . $retryFile,
-        ]);
+        $handler = new TestHandler;
+        $logger = (new Logger('s3ClientTest'))->pushHandler($handler);
+        $downloader = new S3AsyncDownloader(self::s3Client(), $logger, new State([]), "", $files, $retryCallback);
 
         $downloader->startAndWait();
 
@@ -72,13 +67,19 @@ class RetryDownloadFileTest extends FunctionalTestCase
 
     public function testRetryFailure(): void
     {
+        /** @var \Iterator|File[] $files */
+        $files = makeRewindable(function (): \Iterator {
+            $bucket = getenv(self::AWS_S3_BUCKET_ENV);
+            $key = 'file-not-found.csv';
+            $lastModified = new \DateTimeImmutable();
+            $size = 123;
+            $destination = self::makeTempPath('retry-failure') . 'file-not-found.csv';
+            yield new File($bucket, $key, $lastModified, $size, $destination);
+        })();
+
         $handler = new TestHandler;
-        $downloader = new S3AsyncDownloader(self::s3Client(), (new Logger('s3ClientTest'))->pushHandler($handler));
-        $downloader->addFileRequest([
-            'Bucket' => getenv(self::AWS_S3_BUCKET_ENV),
-            'Key' => 'file-not-found.csv',
-            'SaveAs' => self::makeTempPath('retry-failure') . 'file-not-found.csv',
-        ]);
+        $logger = (new Logger('s3ClientTest'))->pushHandler($handler);
+        $downloader = new S3AsyncDownloader(self::s3Client(), $logger, new State([]), "", $files);
 
         try {
             $downloader->startAndWait();
