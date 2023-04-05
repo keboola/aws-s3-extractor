@@ -55,24 +55,20 @@ class Extractor
 
     /**
      * Creates exports and runs extraction
-     *
-     * @param string $outputPath
-     * @return array
-     * @throws UserException
      */
-    public function extract($outputDir): array
+    public function extract(string $outputDir): array
     {
         $client = $this->login();
 
         $finder = new Finder($this->config, $this->state, $this->logger, $client);
-        $filesToDownload = $finder->findFiles();
+        $foundFiles = $finder->findFiles();
 
         $fs = new Filesystem();
         $downloader = new S3AsyncDownloader($client, $fs, $this->logger);
 
         // Download files
         $downloadedSize = 0;
-        foreach ($filesToDownload as $fileToDownload) {
+        foreach ($foundFiles->getIterator() as $fileToDownload) {
             $downloader->addFileRequest($fileToDownload->getParameters($outputDir));
 
             if ($this->state->lastTimestamp != $fileToDownload->getTimestamp()) {
@@ -80,14 +76,13 @@ class Extractor
             }
             $this->state->lastTimestamp = max($this->state->lastTimestamp, $fileToDownload->getTimestamp());
             $this->state->filesInLastTimestamp[] = $fileToDownload->getKey();
-            $downloadedSize += $fileToDownload->getSizeBytes();
         }
 
-        if (count($filesToDownload) > 0) {
+        if ($foundFiles->getCount() > 0) {
             $this->logger->info(sprintf(
                 'Downloading %d file(s) (%s)',
-                count($filesToDownload),
-                formatBytes($downloadedSize)
+                $foundFiles->getCount(),
+                formatBytes($foundFiles->getDownloadSizeBytes())
             ));
         }
 

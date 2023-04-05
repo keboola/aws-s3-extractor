@@ -5,6 +5,8 @@ namespace Keboola\S3Extractor;
 use Aws\S3\S3Client;
 use Keboola\Component\UserException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Process\Process;
+use function iter\makeRewindable;
 
 /**
  * Finder search for file for download.
@@ -12,6 +14,7 @@ use Psr\Log\LoggerInterface;
 class Finder
 {
     private const MAX_OBJECTS_PER_PAGE = 100;
+    private const TIMESTAMP_STR_LENGTH = 12;
 
     /** @var LoggerInterface */
     private $logger;
@@ -55,22 +58,108 @@ class Finder
         $this->state = $state;
     }
 
-    /**
-     * @return iterable|File[]
-     */
-    public function findFiles(): array
+    public function findFiles(): FinderResult
     {
-        $this->logger->info('Listing files to be downloaded');
+        $tmpFilePath = $this->dumpFilesListToTmpFile($this->listFiles());
+        $sortedFilePath = $this->sortLines($tmpFilePath);
 
-        $filesToDownload = iterator_to_array($this->listFiles());
-        $this->logger->info(sprintf(
-            'Found %s file(s)',
-            count($filesToDownload)
-        ));
+        // Make rewindable iterator, so files can be iterated multiple times if needed.
+        $iterator = makeRewindable(function () use ($sortedFilePath): \Iterator {
+            return $this->iteratorFromTmpFile($sortedFilePath);
+        })();
 
-        $filesToDownload = $this->sort($filesToDownload);
-        $filesToDownload = $this->limit($filesToDownload);
-        return $filesToDownload;
+        // Compute total count and size, take into account the limit.
+        // It is needed for a log message before download.
+        $count = 0;
+        $size = 0;
+        foreach ($iterator as $file) {
+            $count++;
+            $size += $file->getSizeBytes();
+        }
+        return new FinderResult($iterator, $count, $size);
+    }
+
+    /**
+     * @return   \Iterator|File[] $files
+     */
+    private function iteratorFromTmpFile(string $sortedFilePath): \Iterator
+    {
+        // Read sorted metadata
+        $sortedFile = fopen($sortedFilePath, "r");
+        if (!$sortedFile) {
+            throw new \RuntimeException(sprintf('Cannot open sorted file "%s".', $sortedFilePath));
+        }
+        try {
+            $i = 0;
+            while (($line = fgets($sortedFile, 20480)) !== false) {
+                // Skip the first word "<timestamp><key>", separated by NUL char
+                strtok($line, "\0");
+                $serialized = (string)strtok("");
+
+                /** @var File $file */
+                $file = unserialize(base64_decode($serialized));
+
+                yield $file;
+                if ($this->limit > 0 && ++$i >= $this->limit) {
+                    break;
+                }
+            }
+        } finally {
+            fclose($sortedFile);
+        }
+    }
+
+    /**
+     * sortLines by the first word: "<timestamp><key>"
+     */
+    private function sortLines(string $tmpFilePath): string
+    {
+        $sortedFilePath = $tmpFilePath . ".sorted";
+        $args = [
+            "sort", // the sort command has small memory requirements, it uses temp files for sorting, instead of memory
+            "--stable",
+            "--output", $sortedFilePath,
+            "-t", '\0', // words are separated by NUL character
+            "-k", "1,1", // sort lines by the first word "<timestamp><key>" (start=1, end=1)
+            "--parallel=1", // optimizes memory usage
+            $tmpFilePath,
+        ];
+        $env = ["LC_ALL" => "C"];
+        (new Process($args, null, $env))->mustRun();
+        return $sortedFilePath;
+    }
+
+    /**
+     * @param \Iterator|File[] $files
+     */
+    private function dumpFilesListToTmpFile(\Iterator $files): string
+    {
+        // Write all metadata from the generator to a temporary file, to prevent memory issues.
+        $tmpFilePath = tempnam(sys_get_temp_dir(), 'aws-files');
+        if (!$tmpFilePath) {
+            throw new \RuntimeException("Cannot create a temp file.");
+        }
+
+        $tmpFile = fopen($tmpFilePath, "w");
+        if (!$tmpFile) {
+            throw new \RuntimeException(sprintf('Cannot open temp file "%s".', $tmpFilePath));
+        }
+
+        try {
+            foreach ($files as $file) {
+                // Write each file metadata as: <timestamp><key>\0<serialized S3File object>\n
+                // The base64 encoding is used to prevent new lines in the serialized object.
+                fwrite($tmpFile, str_pad((string)$file->getTimestamp(), self::TIMESTAMP_STR_LENGTH, "0"));
+                fwrite($tmpFile, $file->getKey());
+                fwrite($tmpFile, "\0");
+                fwrite($tmpFile, base64_encode(serialize($file)));
+                fwrite($tmpFile, "\n");
+            }
+        } finally {
+            fclose($tmpFile);
+        }
+
+        return $tmpFilePath;
     }
 
     /**
@@ -78,6 +167,7 @@ class Finder
      */
     private function listFiles(): \Iterator
     {
+        $this->logger->info('Listing files to be downloaded');
         if (substr($this->key, -1) == '*') {
             return $this->listFilesInPrefix();
         } else {
@@ -117,6 +207,7 @@ class Finder
                 $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
 
                 // log progress
+                /** @phpstan-ignore-next-line */
                 if ($filesListedCount !== 0 &&
                     $filesMatchedCount !== 0 &&
                     (($filesListedCount % 10000) === 0 || ($filesMatchedCount % 1000) === 0)
@@ -136,17 +227,19 @@ class Finder
                 yield $file;
             }
         }
+        $this->logger->info(sprintf('Found %s file(s)', $filesMatchedCount));
 
         if ($this->newFilesOnly) {
-            $this->logger->info(sprintf(
-                'There are %s new file(s)',
-                count($newFilesCount)
-            ));
+            $this->logger->info(sprintf('There are %s new file(s)', $newFilesCount));
+        }
+
+        if ($this->limit > 0 && $newFilesCount > $this->limit) {
+            $this->logger->info("Downloading only {$this->limit} oldest file(s) out of " . $newFilesCount);
         }
     }
 
     /**
-     * @return iterable|File[]
+     * @return \Iterator|File[]
      */
     private function listSingleFile(): iterable
     {
@@ -154,43 +247,19 @@ class Finder
             throw new UserException("Cannot include subfolders without wildcard.");
         }
 
+        /** @var array{ContentLength: int, LastModified: \DateTimeInterface} $head */
         $head = $this->client->headObject([
             'Bucket' => $this->bucket,
             'Key' => $this->key,
-        ]);
+        ])->toArray();
 
         $dst = $this->subFolder . basename($this->key);
         yield new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst);
-    }
 
-    /**
-     * @param iterable|File[] $filesToDownload
-     * @return iterable|File[]
-     */
-    private function sort(array $filesToDownload): array
-    {
-        // Sort files to download using timestamp
-        usort($filesToDownload, function ($a, $b) {
-            if (intval($a["timestamp"]) - intval($b["timestamp"]) === 0) {
-                return strcmp($a["parameters"]["Key"], $b["parameters"]["Key"]);
-            }
-            return intval($a["timestamp"]) - intval($b["timestamp"]);
-        });
-        return $filesToDownload;
-    }
-
-    /**
-     * @param iterable|File[] $filesToDownload
-     * @return iterable|File[]
-     */
-    private function limit(array $filesToDownload): array
-    {
-        // Apply limit if set
-        if ($this->limit > 0 && count($filesToDownload) > $this->limit) {
-            $this->logger->info("Downloading only {$this->limit} oldest file(s) out of " . count($filesToDownload));
-            $filesToDownload = array_slice($filesToDownload, 0, $this->limit);
+        $this->logger->info('Found 1 file(s)');
+        if ($this->newFilesOnly) {
+            $this->logger->info('There are 1 new file(s)');
         }
-        return $filesToDownload;
     }
 
     private function getFileDestination(string $key): string
