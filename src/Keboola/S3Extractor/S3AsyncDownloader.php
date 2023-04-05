@@ -105,6 +105,7 @@ class S3AsyncDownloader
                     gc_collect_cycles();
                 }
                 $this->processFulfilled($result, $index);
+                unset($this->filesParameter[$index]);
             },
             'rejected' => function (AwsException $reason, int $index, PromiseInterface $promise) {
                 /** @var ResultInterface $result */
