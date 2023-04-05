@@ -74,7 +74,6 @@ class Finder
             count($filesToDownload)
         ));
 
-        $filesToDownload = $this->filterNewFiles($filesToDownload);
         $filesToDownload = $this->sort($filesToDownload);
         $filesToDownload = $this->limit($filesToDownload);
         return $filesToDownload;
@@ -99,6 +98,7 @@ class Finder
 
         $filesListedCount = 0;
         $filesToDownloadCount = 0;
+        $newFilesCount = 0;
         /** @var array{
          *     Contents: ?array,
          * } $page
@@ -171,7 +171,15 @@ class Finder
                     $dst = $this->subFolder . basename($object['Key']);
                 }
 
-                $filesToDownload[] = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
+                $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
+                $filesToDownloadCount++;
+
+                if ($this->isFileOld($file)) {
+                    continue;
+                }
+                $newFilesCount++;
+
+                $filesToDownload[] = $file;
                 $filesToDownloadCount++;
 
                 $isImportantMilestoneForListed = ($filesListedCount % 10000) === 0
@@ -188,7 +196,12 @@ class Finder
             }
         }
 
-        return $filesToDownload;
+        if ($this->newFilesOnly) {
+            $this->logger->info(sprintf(
+                'There are %s new file(s)',
+                count($newFilesCount)
+            ));
+        }
     }
 
     /**
@@ -206,34 +219,6 @@ class Finder
             'SaveAs' => $dst,
         ]);
         return [new File($this->bucket, $this->key, $head['LastModified'], $head['ContentLength'], $dst)];
-    }
-
-    /**
-     * @return iterable|File[]
-     */
-    private function filterNewFiles(array $filesToDownload): array
-    {
-        // Filter out old files with newFilesOnly flag
-        if ($this->newFilesOnly) {
-            $filesToDownload = array_filter($filesToDownload, function ($fileToDownload) {
-                if ($fileToDownload["timestamp"] < $this->state->lastTimestamp) {
-                    return false;
-                }
-                if ($fileToDownload["timestamp"] == $this->state->lastTimestamp
-                    && in_array($fileToDownload["parameters"]["Key"], $this->state->filesInLastTimestamp)
-                ) {
-                    return false;
-                }
-                return true;
-            });
-
-            $this->logger->info(sprintf(
-                'There are %s new file(s)',
-                count($filesToDownload)
-            ));
-        }
-
-        return $filesToDownload;
     }
 
     /**
@@ -264,5 +249,22 @@ class Finder
             $filesToDownload = array_slice($filesToDownload, 0, $this->limit);
         }
         return $filesToDownload;
+    }
+
+    private function isFileOld(File $file): bool
+    {
+        if ($this->newFilesOnly) {
+            if ($file->getTimestamp() < $this->state->lastTimestamp) {
+                return true;
+            }
+
+            if ($file->getTimestamp() === $this->state->lastTimestamp
+                && in_array($file->getKey(), $this->state->filesInLastTimestamp)
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
