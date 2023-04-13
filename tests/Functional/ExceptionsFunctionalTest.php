@@ -71,7 +71,7 @@ class ExceptionsFunctionalTest extends FunctionalTestCase
         ]);
 
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Error 404: Key "/doesnotexist" not found.');
+        $this->expectExceptionMessage('Error 404: Key "doesnotexist" not found.');
 
         (new Application(
             (new Logger('s3Test'))->pushHandler(new TestHandler)

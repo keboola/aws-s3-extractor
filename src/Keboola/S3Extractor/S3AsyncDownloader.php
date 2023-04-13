@@ -13,69 +13,67 @@ use Retry\Policy\SimpleRetryPolicy;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use GuzzleHttp\Psr7\LazyOpenStream;
 use GuzzleHttp\Promise\PromiseInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use function iter\makeRewindable;
 use function Keboola\Utils\formatBytes;
 
 class S3AsyncDownloader
 {
     private const MAX_ATTEMPTS = 5;
     private const INTERVAL_MS = 500;
-    private const MAX_CONCURRENT_DOWNLOADS = 50;
+    private const MAX_CONCURRENT_DOWNLOADS = 200;
 
-    /**
-     * @var S3Client
-     */
+    /** @var S3Client */
     private $client;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var Filesystem */
+    private $fs;
+
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var CommandInterface[]
-     */
-    private $commands = [];
+    /** @var string */
+    private $outputDir;
 
-    /**
-     * @var array
-     */
+    /** @var State */
+    private $state;
+
+    /** @var \Iterator|File[] */
+    private $files;
+
+    /** @var array */
     private $filesParameter = [];
 
-    /**
-     * @var int
-     */
+    /** @var int */
+    private $downloadedCount = 0;
+
+    /** @var int */
     private $downloadedSize = 0;
 
-    /**
-     * @var callable|null
-     */
+    /** @var callable|null */
     private $retryCallback;
 
     /**
-     * @param S3Client $client
-     * @param LoggerInterface $logger
-     * @param callable|null $retryCallback
+     * @param \Iterator|File[] $files
      */
-    public function __construct(S3Client $client, LoggerInterface $logger, callable $retryCallback = null)
-    {
+    public function __construct(
+        S3Client        $client,
+        LoggerInterface $logger,
+        State           $state,
+        string          $outputDir,
+        \Iterator       $files,
+        callable        $retryCallback = null
+    ) {
         $this->client = $client;
+        $this->fs = new Filesystem();
         $this->logger = $logger;
+        $this->state = $state;
+        $this->outputDir = $outputDir;
+        $this->files = $files;
         $this->retryCallback = $retryCallback;
     }
 
-    /**
-     * @param array $fileParameters
-     * @return void
-     */
-    public function addFileRequest(array $fileParameters): void
-    {
-        $this->commands[] = $this->client->getCommand('getObject', $fileParameters);
-    }
-
-    /**
-     * @return void
-     */
-    public function processRequests(): void
+    public function startAndWait(): void
     {
         $this->makeCommandPool()
             ->promise()
@@ -83,23 +81,31 @@ class S3AsyncDownloader
 
         $this->logger->info(sprintf(
             'Downloaded %d file(s) (%s)',
-            count($this->commands),
+            $this->downloadedCount,
             formatBytes($this->downloadedSize)
         ));
     }
 
-    /**
-     * @return CommandPool
-     */
     private function makeCommandPool(): CommandPool
     {
-        return new CommandPool($this->client, $this->commands, [
+        return new CommandPool($this->client, $this->getCommands(), [
             'concurrency' => self::MAX_CONCURRENT_DOWNLOADS,
             'before' => function (CommandInterface $command, int $index) {
-                $this->filesParameter[$index] = $command->toArray();
+                $parameters = $command->toArray();
+
+                // create folder
+                if (!$this->fs->exists(dirname($parameters['SaveAs']))) {
+                    $this->fs->mkdir(dirname($parameters['SaveAs']));
+                }
+
+                $this->filesParameter[$index] = $parameters;
             },
             'fulfilled' => function (ResultInterface $result, int $index) {
+                if (($index % 10000) === 0) {
+                    gc_collect_cycles();
+                }
                 $this->processFulfilled($result, $index);
+                unset($this->filesParameter[$index]);
             },
             'rejected' => function (AwsException $reason, int $index, PromiseInterface $promise) {
                 /** @var ResultInterface $result */
@@ -122,13 +128,29 @@ class S3AsyncDownloader
     }
 
     /**
-     * @param ResultInterface $result
-     * @param int $index
+     * @return \Iterator|CommandInterface[]
      */
+    private function getCommands(): \Iterator
+    {
+        return makeRewindable(function (): \Iterator {
+            foreach ($this->files as $file) {
+                // Update the state of the incremental fetching
+                if ($this->state->lastTimestamp != $file->getTimestamp()) {
+                    $this->state->filesInLastTimestamp = [];
+                }
+                $this->state->lastTimestamp = max($this->state->lastTimestamp, $file->getTimestamp());
+                $this->state->filesInLastTimestamp[] = $file->getKey();
+
+                // Create command
+                yield $this->client->getCommand('getObject', $file->getParameters($this->outputDir));
+            }
+        })();
+    }
+
     private function processFulfilled(ResultInterface $result, int $index): void
     {
-        $body = $result->get('Body');
         /** @var LazyOpenStream $body */
+        $body = $result->get('Body');
         $fileSize = $body->getSize();
         $this->logger->info(sprintf(
             'Downloaded file /%s (%s)',
@@ -136,6 +158,7 @@ class S3AsyncDownloader
             formatBytes($fileSize)
         ));
 
+        $this->downloadedCount++;
         $this->downloadedSize += $fileSize;
     }
 }
