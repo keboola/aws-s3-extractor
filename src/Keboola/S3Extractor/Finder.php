@@ -129,7 +129,7 @@ class Finder
             $tmpFilePath,
         ];
         $env = ["LC_ALL" => "C"];
-        $process = new Process($args, null, $env)
+        $process = new Process($args, null, $env);
         $process->setTimeout(3600);
         $process->mustRun();
         return $sortedFilePath;
