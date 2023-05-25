@@ -28,7 +28,8 @@ class S3AsyncDownloader
     //    The SDK downloads the response body to a PHP temp stream by default.
     //    This means that the data stays in memory until the size of the body reaches ***2 MB***,
     //    at which point the data is written to a temporary file on disk.
-    private const MAX_CONCURRENT_DOWNLOADS = 100;
+    // 100 is too much for large files.
+    private const MAX_CONCURRENT_DOWNLOADS = 50;
 
     /** @var S3Client */
     private $client;
