@@ -21,7 +21,15 @@ class S3AsyncDownloader
 {
     private const MAX_ATTEMPTS = 5;
     private const INTERVAL_MS = 500;
-    private const MAX_CONCURRENT_DOWNLOADS = 200;
+
+    // Component memory limit is 300MB.
+    // One download keeps 2MB buffer in the memory:
+    //    https://docs.aws.amazon.com/sdk-for-php/v3/developer-guide/guide_configuration.html
+    //    The SDK downloads the response body to a PHP temp stream by default.
+    //    This means that the data stays in memory until the size of the body reaches ***2 MB***,
+    //    at which point the data is written to a temporary file on disk.
+    // 100 is too much for large files.
+    private const MAX_CONCURRENT_DOWNLOADS = 50;
 
     /** @var S3Client */
     private $client;
