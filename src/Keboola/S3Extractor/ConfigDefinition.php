@@ -66,6 +66,9 @@ class ConfigDefinition extends BaseConfigDefinition
                     ->defaultValue(0)
                     ->min(0)
                 ->end()
+                ->booleanNode('decodeContent')
+                    ->defaultTrue()
+                ->end()
             ->end()
         ;
        // @formatter:on

@@ -66,6 +66,11 @@ class Config extends BaseConfig
         return $this->getValue(['parameters', 'limit']);
     }
 
+    public function hasDecodeContent(): bool
+    {
+        return $this->getValue(['parameters', 'decodeContent']);
+    }
+
     public function getKeboolaUserAwsAccessKey(): string
     {
         $accessKey = getenv('KEBOOLA_USER_AWS_ACCESS_KEY');

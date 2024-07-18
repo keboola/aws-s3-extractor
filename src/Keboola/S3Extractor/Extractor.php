@@ -101,7 +101,8 @@ class Extractor
             'region' => $this->getBucketRegion($awsCred),
             'version' => '2006-03-01',
             'credentials' => $awsCred,
-            'retries' => 10
+            'retries' => 10,
+            'http' => ['decode_content' => $this->config->hasDecodeContent()],
         ]);
     }
 
@@ -138,6 +139,7 @@ class Extractor
             'region' => $this->getBucketRegion($awsCred),
             'version' => '2006-03-01',
             'credentials' => $awsCred,
+            'http' => ['decode_content' => $this->config->hasDecodeContent()],
         ]);
     }
 
