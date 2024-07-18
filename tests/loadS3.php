@@ -56,7 +56,7 @@ $files = [
     'folder2/file1.csv',
     'folder2/file2.csv',
     'folder2/collision/file1.csv',
-    'folder2/file3/file1.csv'
+    'folder2/file3/file1.csv',
 ];
 foreach ($files as $file) {
     echo "Transferring {$bucket}/{$file} slowly\n";
@@ -68,6 +68,19 @@ foreach ($files as $file) {
     // This ensures each file has a unique timestamp
     sleep(1);
 }
+
+$file = 'snappy-compressed/snappy_compressed_data.orc';
+echo "Transferring {$bucket}/snappy-compressed/{$file}\n";
+$client->putObject(
+    [
+        'Bucket' => $bucket,
+        'Key' => $file,
+        'Body' => fopen($source . '/' . $file, 'r'),
+        'ContentType' => 'hadoop-snappy',
+        'ContentEncoding' => 'x-snappy-framed'
+    ]
+);
+sleep(1);
 
 // Manually transfer files
 $files = [
@@ -123,5 +136,17 @@ $client->putObject([
     'Bucket' => $bucket,
     'Key' => 'emptyfolder/'
 ]);
+
+$file = 'snappy-compressed/snappy_compressed_data.orc';
+echo "Transferring {$bucket}/snappy-compressed/{$file}\n";
+$client->putObject(
+    [
+        'Bucket' => $bucket,
+        'Key' => $file,
+        'Body' => fopen($source . '/' . $file, 'r'),
+        'ContentType' => 'hadoop-snappy',
+        'ContentEncoding' => 'x-snappy-framed'
+    ]
+);
 
 echo "Data loaded OK\n";

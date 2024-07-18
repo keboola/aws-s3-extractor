@@ -1,0 +1,1 @@
+1ÀSome data to be compressed using Snappy encoding.

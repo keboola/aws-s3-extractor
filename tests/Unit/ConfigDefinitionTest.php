@@ -22,7 +22,8 @@ class ConfigDefinitionTest extends TestCase
                 'saveAs' => 'myfile.csv',
                 'limit' => 1,
                 'loginType' => 'credentials',
-                'roleName' => 'keboola-s3-extractor'
+                'roleName' => 'keboola-s3-extractor',
+                'decodeContent' => false,
             ],
         ];
 
