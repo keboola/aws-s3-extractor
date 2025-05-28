@@ -205,12 +205,20 @@ class Finder
         $limit = $this->limit;
 
         foreach ($paginator as $page) {
-            /** @var array{Contents?: array<array{Key: string, LastModified: \DateTimeInterface, Size: int, [key: string]: mixed}>} $page */
-            foreach ($page['Contents'] ?? [] as $object) {
-                /** @var array{Key: string, LastModified: \DateTimeInterface, Size: int} $object */
+            $contents = isset($page['Contents']) && is_array($page['Contents']) ? $page['Contents'] : [];
+
+            foreach ($contents as $object) {
+                if (!isset($object['StorageClass'])) {
+                    $object['StorageClass'] = 'STANDARD';
+                }
+
                 $filesListedCount++;
 
                 if ($this->isFileIgnored($object)) {
+                    continue;
+                }
+
+                if (!isset($object['Key'], $object['LastModified'], $object['Size'])) {
                     continue;
                 }
 
