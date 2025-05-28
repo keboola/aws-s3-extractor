@@ -204,6 +204,8 @@ class Finder
         $newFilesCount = 0;
         $limit = $this->limit;
 
+        $matchedFiles = [];
+
         foreach ($paginator as $page) {
             $contents = isset($page['Contents']) && is_array($page['Contents']) ? $page['Contents'] : [];
 
@@ -238,15 +240,8 @@ class Finder
                     continue;
                 }
 
+                $matchedFiles[] = $file;
                 $filesMatchedCount++;
-                $newFilesCount++;
-
-                yield $file;
-
-                if ($limit > 0 && $newFilesCount >= $limit) {
-                    $this->logger->info("Reached limit of {$limit} new file(s)");
-                    return;
-                }
 
                 if ($filesListedCount % 10000 === 0 || $filesMatchedCount % 1000 === 0) {
                     $this->logger->info(sprintf(
@@ -260,8 +255,22 @@ class Finder
         }
 
         $this->logger->info(sprintf('Found %s file(s)', $filesMatchedCount));
-        if ($this->newFilesOnly && strpos($this->key, '*') === false) {
-            $this->logger->info(sprintf('There are %s new file(s)', $newFilesCount));
+
+        if ($this->newFilesOnly) {
+            $this->logger->info(sprintf('There are %s new file(s)', count($matchedFiles)));
+        }
+
+        if ($limit > 0 && count($matchedFiles) > $limit) {
+            $this->logger->info(sprintf(
+                'Downloading only %s oldest file(s) out of %s',
+                $limit,
+                count($matchedFiles)
+            ));
+            $matchedFiles = array_slice($matchedFiles, 0, $limit);
+        }
+
+        foreach ($matchedFiles as $file) {
+            yield $file;
         }
     }
 
