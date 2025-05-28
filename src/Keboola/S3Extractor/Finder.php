@@ -259,8 +259,8 @@ class Finder
             }
         }
 
-        $this->logger->info(sprintf('Found %s file(s) matching pattern', $filesMatchedCount));
-        if ($this->newFilesOnly) {
+        $this->logger->info(sprintf('Found %s file(s)', $filesMatchedCount));        
+        if ($this->newFilesOnly && strpos($this->key, '*') === false) {
             $this->logger->info(sprintf('There are %s new file(s)', $newFilesCount));
         }
     }
