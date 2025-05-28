@@ -174,10 +174,82 @@ class Finder
     private function listFiles(): \Iterator
     {
         $this->logger->info('Listing files to be downloaded');
-        if (substr($this->key, -1) == '*') {
-            return $this->listFilesInPrefix();
-        } else {
-            return $this->listSingleFile();
+        if (strpos($this->key, '*') !== false) {
+            return $this->listFilesWithPattern();
+        }
+    
+        return $this->listSingleFile();
+    }
+
+    /**
+     * @return \Iterator|File[]
+     */
+    private function listFilesWithPattern(): \Iterator
+    {
+        $wildcardPosition = strpos($this->key, '*');
+        $prefix = substr($this->key, 0, $wildcardPosition);
+        $suffix = substr($this->key, $wildcardPosition + 1);
+
+        $paginator = $this->client->getPaginator(
+            'ListObjectsV2',
+            [
+                'Bucket' => $this->bucket,
+                'Prefix' => $prefix,
+                'MaxKeys' => self::MAX_OBJECTS_PER_PAGE,
+            ]
+        );
+
+        $filesListedCount = 0;
+        $filesMatchedCount = 0;
+        $newFilesCount = 0;
+        $limit = $this->limit;
+
+        foreach ($paginator as $page) {
+            foreach ($page['Contents'] ?? [] as $object) {
+                $filesListedCount++;
+
+                if ($this->isFileIgnored($object)) {
+                    continue;
+                }
+
+                $key = $object['Key'];
+
+                if (!empty($suffix) && !str_ends_with($key, $suffix)) {
+                    continue;
+                }
+
+                $dst = $this->getFileDestination($key);
+                $file = new File($this->bucket, $key, $object['LastModified'], (int)$object['Size'], $dst);
+
+                if ($this->isFileOld($file)) {
+                    continue;
+                }
+
+                $filesMatchedCount++;
+                $newFilesCount++;
+
+                yield $file;
+
+                if ($limit > 0 && $newFilesCount >= $limit) {
+                    $this->logger->info("Reached limit of {$limit} new file(s)");
+                    return;
+                }
+
+                // Periodic progress logs
+                if ($filesListedCount % 10000 === 0 || $filesMatchedCount % 1000 === 0) {
+                    $this->logger->info(sprintf(
+                        'Listed %s files (%s matched, %s new)',
+                        $filesListedCount,
+                        $filesMatchedCount,
+                        $newFilesCount
+                    ));
+                }
+            }
+        }
+
+        $this->logger->info(sprintf('Found %s file(s) matching pattern', $filesMatchedCount));
+        if ($this->newFilesOnly) {
+            $this->logger->info(sprintf('There are %s new file(s)', $newFilesCount));
         }
     }
 
