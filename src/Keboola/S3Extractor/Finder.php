@@ -174,73 +174,103 @@ class Finder
     private function listFiles(): \Iterator
     {
         $this->logger->info('Listing files to be downloaded');
-        if (substr($this->key, -1) == '*') {
-            return $this->listFilesInPrefix();
-        } else {
-            return $this->listSingleFile();
+        if (strpos($this->key, '*') !== false) {
+            return $this->listFilesWithPattern();
         }
+    
+        return $this->listSingleFile();
     }
 
     /**
      * @return \Iterator|File[]
      */
-    private function listFilesInPrefix(): \Iterator
+    private function listFilesWithPattern(): \Iterator
     {
+        $wildcardPosition = strpos($this->key, '*');
+        $prefix = substr($this->key, 0, (int) $wildcardPosition);
+        $suffix = substr($this->key, (int) $wildcardPosition + 1);
+
         $paginator = $this->client->getPaginator(
             'ListObjectsV2',
             [
                 'Bucket' => $this->bucket,
-                'Prefix' => substr($this->key, 0, -1),
-                'MaxKeys' => self::MAX_OBJECTS_PER_PAGE
+                'Prefix' => $prefix,
+                'MaxKeys' => self::MAX_OBJECTS_PER_PAGE,
             ]
         );
 
         $filesListedCount = 0;
         $filesMatchedCount = 0;
         $newFilesCount = 0;
-        /** @var array{Contents: ?array} $page */
+        $limit = $this->limit;
+
+        $matchedFiles = [];
+
         foreach ($paginator as $page) {
-            $objects = $page['Contents'] ?? [];
-            foreach ($objects as $object) {
-                /** @var array{StorageClass: string, Key: string, Size: string, LastModified: \DateTimeInterface} $object */
+            $contents = isset($page['Contents']) && is_array($page['Contents']) ? $page['Contents'] : [];
+
+            foreach ($contents as $object) {
+                if (!isset($object['StorageClass'])) {
+                    $object['StorageClass'] = 'STANDARD';
+                }
+
                 $filesListedCount++;
+
                 if ($this->isFileIgnored($object)) {
                     continue;
                 }
 
-                $filesMatchedCount++;
-                $dst = $this->getFileDestination($object['Key']);
-                $file = new File($this->bucket, $object['Key'], $object['LastModified'], (int)$object['Size'], $dst);
-
-                // log progress
-                /** @phpstan-ignore-next-line */
-                if ($filesListedCount !== 0 &&
-                    $filesMatchedCount !== 0 &&
-                    (($filesListedCount % 10000) === 0 || ($filesMatchedCount % 1000) === 0)
-                ) {
-                    $this->logger->info(sprintf(
-                        'Listed %s files (%s matching the filter so far)',
-                        $filesListedCount,
-                        $filesMatchedCount
-                    ));
+                if (!isset($object['Key'], $object['LastModified'], $object['Size'])) {
+                    continue;
                 }
+
+                $key = $object['Key'];
+
+                if (!empty($suffix) && !str_ends_with($key, $suffix)) {
+                    continue;
+                }
+
+                $lastModified = $object['LastModified'];
+                $size = (int) $object['Size'];
+
+                $dst = $this->getFileDestination($key);
+                $file = new File($this->bucket, $key, $lastModified, $size, $dst);
 
                 if ($this->isFileOld($file)) {
                     continue;
                 }
 
-                $newFilesCount++;
-                yield $file;
+                $matchedFiles[] = $file;
+                $filesMatchedCount++;
+
+                if ($filesListedCount % 10000 === 0 || $filesMatchedCount % 1000 === 0) {
+                    $this->logger->info(sprintf(
+                        'Listed %s files (%s matched, %s new)',
+                        $filesListedCount,
+                        $filesMatchedCount,
+                        $newFilesCount
+                    ));
+                }
             }
         }
+
         $this->logger->info(sprintf('Found %s file(s)', $filesMatchedCount));
 
         if ($this->newFilesOnly) {
-            $this->logger->info(sprintf('There are %s new file(s)', $newFilesCount));
+            $this->logger->info(sprintf('There are %s new file(s)', count($matchedFiles)));
         }
 
-        if ($this->limit > 0 && $newFilesCount > $this->limit) {
-            $this->logger->info("Downloading only {$this->limit} oldest file(s) out of " . $newFilesCount);
+        if ($limit > 0 && count($matchedFiles) > $limit) {
+            $this->logger->info(sprintf(
+                'Downloading only %s oldest file(s) out of %s',
+                $limit,
+                count($matchedFiles)
+            ));
+            $matchedFiles = array_slice($matchedFiles, 0, $limit);
+        }
+
+        foreach ($matchedFiles as $file) {
+            yield $file;
         }
     }
 
