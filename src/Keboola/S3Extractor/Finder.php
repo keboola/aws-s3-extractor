@@ -317,6 +317,11 @@ class Finder
      */
     private function isFileIgnored(array $object): bool
     {
+        // Skip objects in Deep Archive
+        if ($object['StorageClass'] === "DEEP_ARCHIVE") {
+            return true;
+        }
+
         // Skip objects in Glacier
         if ($object['StorageClass'] === "GLACIER") {
             return true;
