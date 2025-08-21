@@ -6,7 +6,7 @@ This component downloads files from S3 to `/data/out/files`.
 - Supports `*` wildcards
 - Handles subfolders
 - Can process only new files
-- Skips files stored in Glacier
+- Skips files stored in Glacier & Glacier Deep Archive
 
 ## Configuration Options
 
